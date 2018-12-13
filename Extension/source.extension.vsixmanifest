@@ -4,6 +4,7 @@
         <Identity Id="ReSequel.Extension.70bbd75d-9802-4f8d-8173-d8adc5440ed9" Version="0.2" Language="en-US" Publisher="lsoft" />
         <DisplayName>ReSequel Visual Studio Extension</DisplayName>
         <Description xml:space="preserve">ReSequel: validate SQL queries, find all references by a table name or a column name</Description>
+        <MoreInfo>https://github.com/lsoft/ReSequel</MoreInfo>
         <Tags>SQL Extraction Validation</Tags>
     </Metadata>
     <Installation>

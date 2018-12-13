@@ -77,11 +77,12 @@ namespace Main.Inclusion.Validated.Result
                 return;
             }
 
-            if (excp.InnerException == null)
-            {
-                sb.Append(new string(' ', prefix));
-                sb.AppendLine(excp.Message);
-            }
+            sb.AppendLine(new string(' ', prefix) + excp.Message);
+
+            //if(excp.InnerException == null)
+            //{
+            //    sb.AppendLine(excp.StackTrace);
+            //}
 
             if (excp.InnerException != null)
             {
