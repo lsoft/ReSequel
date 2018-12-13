@@ -1,0 +1,116 @@
+﻿<UserControl
+    x:Class="Extension.Wpf.ChooseDefaultExecutor.ChooseDefaultExecutorWindowControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+    xmlns:local="Extension.Wpf.ChooseDefaultExecutor"
+    Background="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"
+    Foreground="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"
+    mc:Ignorable="d"
+    d:DesignHeight="300" d:DesignWidth="300"
+    Name="ParentWindow"
+    >
+    <Grid
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch"
+        IsEnabled="{Binding Path=ConfigurationExists}"
+        >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition />
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock
+            Grid.Row="0"
+            Grid.RowSpan="5"
+            Margin="5,2,5,2"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Foreground="Red"
+            Text="{Binding Path=ErrorMessage}"
+            TextWrapping="Wrap"
+            />
+
+        <TextBlock
+            Name="JustTextBox"
+            Visibility="{Binding Path=ControlVisibility}"
+            Grid.Row="1"
+            Margin="5,2,5,2"
+            HorizontalAlignment="Left"
+            Text="List of available SQL executors:"
+            TextWrapping="Wrap"
+            />
+
+        <ListBox
+            Grid.Row="2"
+            Margin="5,2,5,2"
+            Visibility="{Binding Path=ControlVisibility}"
+            ItemsSource="{Binding Path=ExecutorList}"
+            Foreground="{Binding ElementName=JustTextBox, Path=Foreground}"
+            Background="Transparent"
+            SelectedItem="{Binding SelectedWrapper}"
+            >
+            <ListBox.ItemTemplate>
+                <ItemContainerTemplate DataType="ExecutorWrapper">
+                    <Grid
+                        Background="{Binding Background}"
+                        >
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Label
+                            Grid.Row="0"
+                            Margin="0,2,0,2"
+                            Foreground="{Binding ElementName=JustTextBox, Path=Foreground}"
+                            FontWeight="Bold"
+                            Content="{Binding Executor.Name}"
+                            />
+                        <Label
+                            Grid.Row="1"
+                            Margin="0,2,0,2"
+                            Foreground="{Binding ElementName=JustTextBox, Path=Foreground}"
+                            FontWeight="Bold"
+                            Content="{Binding Executor.Type}"
+                            />
+                        <Label
+                            Grid.Row="2"
+                            Margin="0,2,0,2"
+                            Foreground="{Binding ElementName=JustTextBox, Path=Foreground}"
+                            Content="{Binding Executor.ConnectionString}"
+                            />
+                    </Grid>
+                </ItemContainerTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <!-- DisplayMemberPath="PresentationString" -->
+        <!-- ItemsSource="{Binding ElementName=ParentWindow, Path=DataContext.ExecutorList}" -->
+        <!-- ItemsSource="{Binding Path=DataContext.(local:ChooseDefaultExecutorViewModel.ExecutorList), RelativeSource={RelativeSource AncestorType=ChooseDefaultExecutorWindowControl}}" -->
+        
+        <TextBlock
+            Grid.Row="3"
+            Margin="5,2,5,2"
+            Visibility="{Binding Path=ControlVisibility}"
+            HorizontalAlignment="Right"
+            Text="Choose 'Edit settings' to add/remove items to/from this list."
+            TextWrapping="Wrap"
+            />
+
+        <Button
+            Grid.Row="4"
+            Margin="5"
+            Visibility="{Binding Path=ControlVisibility}"
+            HorizontalAlignment="Right"
+            Content="Set as default"
+            Command="{Binding SetDefaultCommand}"
+            />
+
+    </Grid>
+</UserControl>

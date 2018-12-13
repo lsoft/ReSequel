@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+  <ScanScheme>.\ScanDescription.xml</ScanScheme>
+
+  <Solutions>
+    <!-- list of wild card (? and *) applied to solution full path -->
+    <Solution>*.sln</Solution>
+  </Solutions>
+  
+  
+  <!-- a list of available executors -->
+  <SqlExecutors>
+    <SqlExecutor>
+      <Name>Master</Name>
+      <Type>SqlServer</Type>
+      <!-- need to specific database due to specific forms of SQLs -->
+      <ConnectionString>Data Source=(local); Initial Catalog=master; Integrated Security=true; Connection Timeout=10; Max Pool Size=50;</ConnectionString>
+      <IsDefault>false</IsDefault>
+    </SqlExecutor>
+    <SqlExecutor>
+      <Name>SomeDatabase</Name>
+      <Type>SqlServer</Type>
+      <!-- need to specific database due to specific forms of SQLs -->
+      <ConnectionString>Data Source=(local); Initial Catalog=SomeDatabase; Integrated Security=true; Connection Timeout=10; Max Pool Size=50;</ConnectionString>
+      <IsDefault>true</IsDefault>
+    </SqlExecutor>
+  </SqlExecutors>
+
+</Configuration>

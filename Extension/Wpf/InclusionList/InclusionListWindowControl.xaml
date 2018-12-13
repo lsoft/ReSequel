@@ -1,0 +1,315 @@
+﻿<UserControl
+    x:Class="Extension.Wpf.InclusionList.InclusionListWindowControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+    Background="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"
+    Foreground="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"
+    mc:Ignorable="d" 
+    d:DesignHeight="450" d:DesignWidth="800"
+    Name="ParentWindow"
+    >
+    <Grid
+        Margin="0,10,0,0"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch"
+        >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <Button
+            Grid.Row="0"
+            Grid.Column="0"
+            Margin="5,2,5,2"
+            Padding="20,0,20,0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Stretch"
+            Content="{Binding ScanButtonCaption}"
+            Command="{Binding DoScanCommand}"
+            />
+
+        <Button
+            Grid.Row="0"
+            Grid.Column="1"
+            Margin="5,2,5,2"
+            Padding="20,0,20,0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Stretch"
+            Content="Help"
+            Command="{Binding OpenHelpCommand}"
+            />
+
+        <Grid
+            Grid.Row="1"
+            >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition />
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock
+                Grid.Row="0"
+                Grid.Column="0"
+                Margin="5,2,5,2"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                Text="Table names:"
+                TextWrapping="Wrap"
+                ToolTip="Separated with spaces or commas. Wild cards accepted. Please look at the help for additional information."
+                />
+
+            <TextBox
+                Grid.Row="0"
+                Grid.Column="1"
+                Grid.ColumnSpan="2"
+                Margin="5,2,5,2"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Center"
+                MinWidth="50"
+                Text="{Binding TableNames, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                />
+
+            <TextBlock
+                Grid.Row="1"
+                Grid.Column="0"
+                Margin="5,2,5,2"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                Text="Column names:"
+                ToolTip="Separated with spaces or commas. Wild cards accepted. Please look at the help for additional information."
+                TextWrapping="Wrap"
+                />
+
+            <TextBox
+                Grid.Row="1"
+                Grid.Column="1"
+                Grid.ColumnSpan="2"
+                Margin="5,2,5,2"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Center"
+                MinWidth="50"
+                Text="{Binding ColumnNames, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                />
+
+            <CheckBox
+                Grid.Row="2"
+                Grid.Column="1"
+                Margin="5,2,5,2"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                Foreground="{Binding ElementName=JustTextBox, Path=Foreground}"
+                Content="Require using a star in a select query"
+                MinWidth="50"
+                IsChecked="{Binding IncludeWithStar, Mode=TwoWay}"
+                />
+
+            <Button
+                Grid.Row="2"
+                Grid.Column="2"
+                Margin="5,2,5,2"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Stretch"
+                Content="Filter results"
+                Padding="20,0,20,0"
+                Command="{Binding FilterResultCommand}"
+                />
+
+        </Grid>
+
+
+        <TextBlock
+            Grid.Row="2"
+            Margin="5,10,5,2"
+            HorizontalAlignment="Center"
+            Foreground="Red"
+            Text="{Binding ErrorMessage}"
+            TextWrapping="Wrap"
+            />
+
+        <TextBlock
+            Name="JustTextBox"
+            Grid.Row="3"
+            Margin="5,10,5,2"
+            HorizontalAlignment="Left"
+            Text="{Binding InclusionListCaption}"
+            TextWrapping="Wrap"
+            />
+
+        <StackPanel
+            Grid.Row="3"
+            Margin="0,10,0,0"
+            Orientation="Horizontal"
+            HorizontalAlignment="Right"
+            >
+
+            <CheckBox
+                Margin="5,2,5,2"
+                VerticalAlignment="Center"
+                Foreground="{Binding ElementName=JustTextBox, Path=Foreground}"
+                Content="Show GREEN queries"
+                MinWidth="50"
+                IsChecked="{Binding ShowGreen, Mode=TwoWay}"
+                IsEnabled="{Binding FilterCheckBoxesEnabled}"
+                />
+
+            <CheckBox
+                Margin="5,2,5,2"
+                VerticalAlignment="Center"
+                Foreground="{Binding ElementName=JustTextBox, Path=Foreground}"
+                Content="Show RED queries"
+                MinWidth="50"
+                IsChecked="{Binding ShowRed, Mode=TwoWay}"
+                IsEnabled="{Binding FilterCheckBoxesEnabled}"
+                />
+
+            <CheckBox
+                Margin="5,2,5,2"
+                VerticalAlignment="Center"
+                Foreground="{Binding ElementName=JustTextBox, Path=Foreground}"
+                Content="Show MUTED queries"
+                MinWidth="50"
+                IsChecked="{Binding ShowMuted, Mode=TwoWay}"
+                IsEnabled="{Binding FilterCheckBoxesEnabled}"
+                />
+
+            <Button
+                Margin="5,2,5,2"
+                VerticalAlignment="Stretch"
+                Content="Clear results"
+                Padding="20,0,20,0"
+                Command="{Binding ClearResultCommand}"
+                IsEnabled="{Binding FilterCheckBoxesEnabled}"
+                />
+
+        </StackPanel>
+
+
+        <ListBox
+            Grid.Row="4"
+
+            Name="ItemsListBox"
+            
+            Margin="5,2,5,2"
+
+            ItemsSource="{Binding Path=InclusionView}"
+            SelectedItem="{Binding SelectedInclusion}"
+            
+            Foreground="{Binding ElementName=JustTextBox, Path=Foreground}"
+            Background="Transparent"
+
+            VirtualizingStackPanel.IsVirtualizing="True" 
+            VirtualizingStackPanel.VirtualizationMode="Recycling"
+            >
+            <!--
+            ScrollViewer.CanContentScroll="False"
+            -->
+            
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="InclusionWrapper">
+                    
+                    <VirtualizingStackPanel
+                        Background="{Binding Background}"
+                        VirtualizingPanel.IsVirtualizing="True"
+                        VirtualizingPanel.VirtualizationMode="Recycling"
+                        >
+                        <VirtualizingStackPanel.InputBindings>
+                            <MouseBinding Gesture="LeftDoubleClick" CommandParameter="{Binding}" Command="{Binding ElementName=ParentWindow, Path=DataContext.NavigateCommand}" />
+                        </VirtualizingStackPanel.InputBindings>
+
+                        <VirtualizingStackPanel
+                            Orientation="Horizontal"
+                            >
+
+                            <TextBlock
+                                Margin="0,2,20,2"
+                                Foreground="{Binding ElementName=JustTextBox, Path=Foreground}"
+                                FontWeight="Bold"
+                                Text="{Binding InclusionIndex}"
+                                TextWrapping="NoWrap"
+                                />
+
+                            <TextBlock
+                                Margin="0,2,0,2"
+                                Foreground="{Binding ElementName=JustTextBox, Path=Foreground}"
+                                FontWeight="Bold"
+                                Text="{Binding Path=FullPath}"
+                                TextWrapping="NoWrap"
+                                />
+                        
+                        </VirtualizingStackPanel>
+
+                        <TextBlock
+                            Margin="30,2,0,2"
+                            Foreground="{Binding Path=Foreground}"
+                            Text="{Binding Path=PartialSql}"
+                            TextWrapping="NoWrap"
+                            />
+                        <Expander
+                            Header="Full body"
+                            Foreground="{Binding Path=Foreground}"
+                            Visibility="{Binding FullBodyVisibility}"
+                            >
+                            <TextBlock
+                                Margin="30,2,0,2"
+                                Foreground="{Binding Path=Foreground}"
+                                Text="{Binding Path=FullSql}"
+                                TextWrapping="NoWrap"
+                                />
+                        </Expander>
+                        <TextBlock
+                            Margin="0,2,0,2"
+                            Foreground="{Binding Path=Foreground}"
+                            Text="{Binding Path=ValidationMessage}"
+                            TextWrapping="NoWrap"
+                            />
+                        <TextBlock
+                            Margin="0,2,0,2"
+                            Foreground="{Binding Path=Foreground}"
+                            Text="{Binding Path=TableReferences}"
+                            TextWrapping="NoWrap"
+                            />
+                        <TextBlock
+                            Margin="0,2,0,2"
+                            Foreground="{Binding Path=Foreground}"
+                            Text="{Binding Path=ColumnReferences}"
+                            TextWrapping="NoWrap"
+                            />
+                    </VirtualizingStackPanel>
+
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+            
+            <!-- <Style TargetType="ListBoxItem">
+                <Style.Triggers>
+                    <Trigger Property="ItemsControl.AlternationIndex" Value="0">
+                        <Setter Property="Background" Value="LightGray"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style> -->
+            
+        </ListBox>
+
+        <TextBlock
+            Grid.Row="4"
+            Margin="5,2,5,2"
+            Text="{Binding SearchingMessage}"
+            Foreground="{Binding ElementName=JustTextBox, Path=Foreground}"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            />
+
+    </Grid>
+</UserControl>

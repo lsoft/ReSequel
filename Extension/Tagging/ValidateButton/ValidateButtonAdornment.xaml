@@ -1,0 +1,66 @@
+﻿<UserControl x:Class="Extension.Tagging.ValidateButton.ValidateButtonAdornment"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Extension.Tagging.ValidateButton"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid
+        >
+
+        <!-- x:Name is a workaround for https://stackoverflow.com/questions/22108712/could-not-load-file-or-assembly-xceed-wpf-toolkit -->
+        <xctk:SplitButton
+            x:Name="DetailsButton"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Stretch"
+            HorizontalContentAlignment="Left"
+            Margin="2,0,5,0"
+            Content="Waiting to validate..."
+            Click="DetailsButton_Click"
+            >
+            <xctk:SplitButton.DropDownContent>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel
+                        Grid.Column="0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Top"
+                        >
+
+                        <Button
+                            Content="Ctrl+C"
+                            Padding="10,0,10,0"
+                            Click="CopyToCliboard_Click"
+                            />
+
+                        <Button
+                            Name="MuteButton"
+                            Content="Mute"
+                            Padding="10,0,10,0"
+                            Click="Mute_Click"
+                            />
+                        
+                    </StackPanel>
+
+                    <TextBlock
+                        Grid.Column="1"
+                        Margin="20,0,0,0"
+                        Name="ErrorMessageLabel"
+                        MinWidth="200"
+                        MaxWidth="600"
+                        Text="Analysis is in progress..."
+                        TextWrapping="Wrap"
+                        />
+                    
+                </Grid>
+            </xctk:SplitButton.DropDownContent>
+        </xctk:SplitButton>
+    </Grid>
+    
+</UserControl>

@@ -1,0 +1,187 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Tests" GeneratedClassName="TestSettings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ConnectionString" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Data Source=(local); Initial Catalog={0}; Integrated Security=true; Connection Timeout=10; Max Pool Size=50;</Value>
+    </Setting>
+    <Setting Name="DatabaseName" Type="System.String" Scope="User">
+      <Value Profile="(Default)">__resequel_TestScopeDatabase_FeelFreeToDeleteIt</Value>
+    </Setting>
+    <Setting Name="CreateDatabaseScript" Type="System.String" Scope="User">
+      <Value Profile="(Default)">USE [master]
+GO
+
+DROP DATABASE IF EXISTS [{0}]
+GO
+
+/****** Object:  Database [{0}]    ******/
+CREATE DATABASE [{0}]
+ CONTAINMENT = NONE
+
+ALTER DATABASE [{0}] SET COMPATIBILITY_LEVEL = 140
+GO
+
+--IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+--begin
+--EXEC [{0}].[dbo].[sp_fulltext_database] @action = 'enable'
+--end
+--GO
+
+ALTER DATABASE [{0}] SET ANSI_NULL_DEFAULT OFF 
+GO
+
+ALTER DATABASE [{0}] SET ANSI_NULLS OFF 
+GO
+
+ALTER DATABASE [{0}] SET ANSI_PADDING OFF 
+GO
+
+ALTER DATABASE [{0}] SET ANSI_WARNINGS OFF 
+GO
+
+ALTER DATABASE [{0}] SET ARITHABORT OFF 
+GO
+
+ALTER DATABASE [{0}] SET AUTO_CLOSE OFF 
+GO
+
+ALTER DATABASE [{0}] SET AUTO_SHRINK OFF 
+GO
+
+ALTER DATABASE [{0}] SET AUTO_UPDATE_STATISTICS ON 
+GO
+
+ALTER DATABASE [{0}] SET CURSOR_CLOSE_ON_COMMIT OFF 
+GO
+
+ALTER DATABASE [{0}] SET CURSOR_DEFAULT  GLOBAL 
+GO
+
+ALTER DATABASE [{0}] SET CONCAT_NULL_YIELDS_NULL OFF 
+GO
+
+ALTER DATABASE [{0}] SET NUMERIC_ROUNDABORT OFF 
+GO
+
+ALTER DATABASE [{0}] SET QUOTED_IDENTIFIER OFF 
+GO
+
+ALTER DATABASE [{0}] SET RECURSIVE_TRIGGERS OFF 
+GO
+
+ALTER DATABASE [{0}] SET  DISABLE_BROKER 
+GO
+
+ALTER DATABASE [{0}] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
+GO
+
+ALTER DATABASE [{0}] SET DATE_CORRELATION_OPTIMIZATION OFF 
+GO
+
+ALTER DATABASE [{0}] SET TRUSTWORTHY OFF 
+GO
+
+ALTER DATABASE [{0}] SET ALLOW_SNAPSHOT_ISOLATION OFF 
+GO
+
+ALTER DATABASE [{0}] SET PARAMETERIZATION SIMPLE 
+GO
+
+ALTER DATABASE [{0}] SET READ_COMMITTED_SNAPSHOT OFF 
+GO
+
+ALTER DATABASE [{0}] SET HONOR_BROKER_PRIORITY OFF 
+GO
+
+ALTER DATABASE [{0}] SET RECOVERY FULL 
+GO
+
+ALTER DATABASE [{0}] SET  MULTI_USER 
+GO
+
+ALTER DATABASE [{0}] SET PAGE_VERIFY CHECKSUM  
+GO
+
+ALTER DATABASE [{0}] SET DB_CHAINING OFF 
+GO
+
+ALTER DATABASE [{0}] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
+GO
+
+ALTER DATABASE [{0}] SET TARGET_RECOVERY_TIME = 60 SECONDS 
+GO
+
+ALTER DATABASE [{0}] SET DELAYED_DURABILITY = DISABLED 
+GO
+
+ALTER DATABASE [{0}] SET QUERY_STORE = OFF
+GO
+
+ALTER DATABASE [{0}] SET  READ_WRITE 
+GO
+
+
+USE [{0}]
+GO
+/****** Object:  Table [dbo].[TestTable0]   ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[TestTable0](
+	[id] [int] NOT NULL,
+	[name] [varchar](100) NOT NULL,
+	[additional] [varchar](100) NULL,
+ CONSTRAINT [PK_TestTable0] PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+INSERT [dbo].[TestTable0] ([id], [name]) VALUES (1, N'Record 1')
+GO
+INSERT [dbo].[TestTable0] ([id], [name]) VALUES (2, N'Record 2')
+GO
+INSERT [dbo].[TestTable0] ([id], [name]) VALUES (3, N'Record 3')
+GO
+
+
+CREATE NONCLUSTERED INDEX [TestTable0_Index0] ON [dbo].[TestTable0]
+(
+	[name] ASC
+)
+INCLUDE ( [additional]) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+
+
+
+
+CREATE TABLE [dbo].[TestTable1](
+	[id] [int] NOT NULL,
+	[name] [varchar](100) NOT NULL,
+	[additional] [varchar](100) NULL,
+ CONSTRAINT [PK_TestTable1] PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+CREATE TABLE [dbo].[TestTable2](
+	[id] [int] NOT NULL,
+	[name] [varchar](100) NOT NULL,
+	[additional] [varchar](100) NULL,
+ CONSTRAINT [PK_TestTable2] PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+use [master]
+GO</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
