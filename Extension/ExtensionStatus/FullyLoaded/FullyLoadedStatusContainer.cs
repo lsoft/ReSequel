@@ -70,7 +70,7 @@ namespace Extension.ExtensionStatus.FullyLoaded
         }
 
 
-        public async System.Threading.Tasks.Task ReadFullyLoadStatusAsync()
+        private async System.Threading.Tasks.Task ReadFullyLoadStatusAsync()
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 

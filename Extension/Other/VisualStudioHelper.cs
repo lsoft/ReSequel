@@ -21,14 +21,14 @@ namespace Extension.Other
         {
             ThreadHelper.ThrowIfNotOnUIThread(nameof(VisualStudioHelper.OpenAndNavigate));
 
-#if VS2019
-            Process.Start(
-                "notepad.exe",
-                documentFullPath
-                );
-#else
+//#if VS2019
+//            Process.Start(
+//                "notepad.exe",
+//                documentFullPath
+//                );
+//#else
             dte.ItemOperations.OpenFile(documentFullPath, "{" + VSConstants.LOGVIEWID_Code + "}");
-#endif
+//#endif
         }
 
         public static void OpenAndNavigate(
