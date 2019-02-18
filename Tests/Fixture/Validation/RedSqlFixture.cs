@@ -27,25 +27,25 @@ select id, [name], null from @incomingTable
         [TestMethod]
         public void CreateAndInsertTempTables()
         {
-            var sqlBody = @"
-create table    	    kppk 	 . 	 dbo 	 . 	 ##temp1  (id0 int, id1 int)
-create table    	    kppk 	 . 	 dbo 	 . 	 #temp2  (id0 int, id1 int)
-create table    	    kppk 	 . 	 dbo 	 . 	 ##temp3  (id0 int, id1 int)
-create table    	    kppk 	 . 	 dbo 	 . 	 #temp4  (id0 int, id1 int)
-create table    	    dbo 	 . 	 ##temp5  (id0 int, id1 int)
-create table    	    dbo 	 . 	 #temp6  (id0 int, id1 int)
+            var sqlBody = string.Format(@"
+create table    	    {0}	.	 dbo 	 . 	 ##temp1  (id0 int, id1 int)
+create table    	    {0}	.	 dbo 	 . 	 #temp2  (id0 int, id1 int)
+create table    	    {0}	.	 dbo 	 . 	 ##temp3  (id0 int, id1 int)
+create table    	    {0}	.	 dbo 	 . 	 #temp4  (id0 int, id1 int)
+create table    	    dbo	.	 ##temp5  (id0 int, id1 int)
+create table    	    dbo	.	 #temp6  (id0 int, id1 int)
 create table    	    ##temp7  (id0 int, id1 int)
 create table    	    #temp8  (id0 int, id1 int)
 
-insert into     	    kppk 	 . 	 dbo 	 . 	 ##temp1 (id0 , id1) values (1, 1)
-insert into     	    kppk 	 . 	 dbo 	 . 	 #temp2 (id0 , id1) values (1, 1)
-insert into     	    kppk 	 . 	 dbo 	 . 	 ##temp3 (id0 , id1) values (1, 1)
-insert into     	    kppk 	 . 	 dbo 	 . 	 #temp4 (id0 , id1) values (1, 1)
-insert into     	    dbo 	 . 	 ##temp5 (id0 , id1) values (1, 1)
-insert into     	    dbo 	 . 	 #temp6 (id0 , id1) values (1, 1)
+insert into     	    {0}	.	 dbo 	 . 	 ##temp1 (id0 , id1) values (1, 1)
+insert into     	    {0}	.	 dbo 	 . 	 #temp2 (id0 , id1) values (1, 1)
+insert into     	    {0}	.	 dbo 	 . 	 ##temp3 (id0 , id1) values (1, 1)
+insert into     	    {0}	.	 dbo 	 . 	 #temp4 (id0 , id1) values (1, 1)
+insert into     	    dbo	.	 ##temp5 (id0 , id1) values (1, 1)
+insert into     	    dbo	.	 #temp6 (id0 , id1) values (1, 1)
 insert into     	    ##temp7 (id0 , id1) values (1, 1)
 insert into     	    #temp8 (id0 , id1) values (1, 1)
-";
+", TestSettings.Default.DatabaseName);
 
             var processed = ValidateAgainstSchema(
                 sqlBody
