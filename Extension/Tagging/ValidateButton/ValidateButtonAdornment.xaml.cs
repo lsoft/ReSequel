@@ -233,7 +233,7 @@ namespace Extension.Tagging.ValidateButton
             var newText = string.Join(Environment.NewLine, lines);
 
             var newDocument = document.WithText(SourceText.From(newText));
-            newDocument.Project.Solution.Workspace.TryApplyChanges(newDocument.Project.Solution);
+            var applied = newDocument.Project.Solution.Workspace.TryApplyChanges(newDocument.Project.Solution);
         }
     }
 

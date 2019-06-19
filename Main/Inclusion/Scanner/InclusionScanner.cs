@@ -670,7 +670,7 @@ namespace Main.Inclusion.Scanner
                                 var ase = argumentSyntax.Expression.ToFullString();
                                 ase = ase.Replace(" ", "").Trim();
 
-                                if (ase == StringEmptyStatement)
+                                if (StringComparer.InvariantCultureIgnoreCase.Compare(ase, StringEmptyStatement) == 0)
                                 {
                                     argValues.Add(string.Empty);
                                 }
@@ -696,12 +696,16 @@ namespace Main.Inclusion.Scanner
 
                 if (!generator.IsEmpty)
                 {
+                    var isMuted = comments.Contains(
+                        pair.Value.OrderBy(k => k.Span.Start).First().GetLocation().GetLineSpan().StartLinePosition.Line - 1
+                        );
+
                     var inclusion = new FoundSqlInclusion(
                         document,
                         pair.Value.First(),
 
                         generator,
-                        false
+                        isMuted
                         );
 
                     if (!duplicateChecker.CheckForExistsAndAddIfNot(inclusion))
