@@ -3,6 +3,8 @@ using Extension.Tagging.SqlQuery;
 using Main.Inclusion.Found;
 using Main.Inclusion.Scanner;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Shell;
 using Ninject;
@@ -200,8 +202,8 @@ namespace Extension.Tagging.ValidateButton
         private async void Mute_Click(object sender, RoutedEventArgs e)
         {
             var foundInclusion = _tag.Inclusion.Inclusion;
+
             Document document;
-            
             if(!foundInclusion.TryGetDocument(out document))
             {
                 return;
@@ -218,7 +220,7 @@ namespace Extension.Tagging.ValidateButton
 
             var shift = Array.FindIndex(
                 origLine.ToCharArray(),
-                j => !Char.IsSeparator(j)
+                j => !char.IsSeparator(j)
                 );
 
             if(shift < 0)
@@ -234,6 +236,42 @@ namespace Extension.Tagging.ValidateButton
 
             var newDocument = document.WithText(SourceText.From(newText));
             var applied = newDocument.Project.Solution.Workspace.TryApplyChanges(newDocument.Project.Solution);
+
+            #region код, завернутый сюда, хоть и выглядит Roslyn-style, но не работает корректно в некоторых ситуациях; простой метод выше работает правильно, пусть и остается
+
+            //var editor = await Microsoft.CodeAnalysis.Editing.DocumentEditor.CreateAsync(document);
+
+            //var prefix = new string(' ', foundInclusion.TargetSyntax.GetLocation().GetMappedLineSpan().StartLinePosition.Character);
+            //var prefixedComment = prefix + InclusionScanner.MuteComment;
+
+            //var leadings = foundInclusion.TargetSyntax.GetLeadingTrivia();
+            ////leadings = leadings.Add(SyntaxFactory.Comment(headedComment));
+            //leadings = leadings.Add(SyntaxFactory.Comment(InclusionScanner.MuteComment));
+            //leadings = leadings.Add(SyntaxFactory.LineFeed);
+            //leadings = leadings.Add(SyntaxFactory.Comment(prefix));
+            ////leadings = leadings.AddRange(foundInclusion.TargetSyntax.GetLeadingTrivia());
+
+            ////var formatted = Formatter.Format(
+            ////    foundInclusion.TargetSyntax.WithLeadingTrivia(
+            ////        SyntaxFactory.Comment(InclusionScanner.MuteComment),
+            ////        SyntaxFactory.LineFeed
+            ////        ),
+            ////    document.Project.Solution.Workspace
+            ////    );
+
+            ////var formatted2 = Formatter.Format(
+            ////    foundInclusion.TargetSyntax.WithLeadingTrivia(leadings),
+            ////    document.Project.Solution.Workspace
+            ////    );
+
+            //editor.ReplaceNode(
+            //    foundInclusion.TargetSyntax,
+            //    foundInclusion.TargetSyntax.WithLeadingTrivia(leadings)
+            //    );
+
+            //var newText123 = (await editor.GetChangedDocument().GetTextAsync()).ToString();
+
+            #endregion
         }
     }
 
