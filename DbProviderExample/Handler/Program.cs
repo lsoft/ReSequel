@@ -13,30 +13,31 @@ namespace Handler
         {
             var dbp = new DBProvider();
 
-            var generator = dbp.WithGenerator(
-                );
-
             const string JoinOptionName = "join";
             const string Part2OptionName = "part2";
             const string Part3OptionName = "part3";
 
-            //generator
+            //dbp
+            //    .WithGenerator()
             //    .WithQuery("select 1 {0} {1} {2} {3}")
-            //    .BindToOption(JoinOptionName, "union", "except")
-            //    .BindToOption(Part2OptionName, "select 2", "select 2,2")
-            //    .BindToOption(JoinOptionName, "except", "union")
-            //    .BindToOption(Part3OptionName, "select 3", "select 3,3")
+            //    .DeclareOption(JoinOptionName, "union", "except")
+            //    .DeclareOption(Part2OptionName, "select 2", "select 2,2")
+            //    .DeclareOption(JoinOptionName, "except", "union")
+            //    .DeclareOption(Part3OptionName, "select 3", "select 3,3")
             //    ;
+
+            var generator = dbp.WithGenerator(
+                );
 
             generator
                 .WithQuery("select 1 {0} {1} {2} {3}")
-                .BindToOption(JoinOptionName, "union", "except")
-                .BindToOption(Part2OptionName, "select 2", "select 2,2")
+                .DeclareOption(JoinOptionName, "union", "except")
+                .DeclareOption(Part2OptionName, "select 2", "select 2,2")
                 ;
 
             generator
-                .BindToOption(JoinOptionName, "except", "union")
-                .BindToOption(Part3OptionName, "select 3", "select 3,3")
+                .DeclareOption(JoinOptionName, "except", "union")
+                .DeclareOption(Part3OptionName, "select 3", "select 3,3")
                 ;
 
 

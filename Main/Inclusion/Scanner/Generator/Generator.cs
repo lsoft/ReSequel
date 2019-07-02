@@ -45,14 +45,14 @@ namespace Main.Inclusion.Scanner.Generator
             _queryTemplate = queryTemplate;
         }
 
-        public void BindToOption(
+        public void DeclareOption(
             params string[] args
             )
         {
-            BindToOption(args.ToList());
+            DeclareOption(args.ToList());
         }
 
-        public void BindToOption(
+        public void DeclareOption(
             List<string> args
             )
         {

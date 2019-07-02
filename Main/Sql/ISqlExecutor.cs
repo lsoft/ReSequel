@@ -5,8 +5,8 @@ namespace Main.Sql
 {
     public interface ISqlExecutor
     {
-        IComplexValidationResult Execute(
-            string sqlBody
+        IEnumerable<IComplexValidationResult> Execute(
+            IEnumerable<string> sqlBodies
             );
     }
 

@@ -41,17 +41,14 @@ namespace Main.Sql.SqlServer.Executor
             _sqlValidatorFactory = sqlValidatorFactory;
         }
 
-        public IComplexValidationResult Execute(
-            string sqlBody
+        public IEnumerable<IComplexValidationResult> Execute(
+            IEnumerable<string> sqlBodies
             )
         {
-            if (sqlBody == null)
+            if (sqlBodies == null)
             {
-                throw new ArgumentNullException(nameof(sqlBody));
+                throw new ArgumentNullException(nameof(sqlBodies));
             }
-
-            var result = new ComplexValidationResult(
-                );
 
             var parser = new TSql140Parser(
                 false
@@ -61,42 +58,43 @@ namespace Main.Sql.SqlServer.Executor
             {
                 connection.Open();
 
-                var validator = _sqlValidatorFactory.Create(
-                    connection
-                    );
-
-                var visitor = new StatementVisitor(
-                    validator
-                    );
-
-                using (var sql = new StringReader(sqlBody))
+                var index = 0;
+                foreach (var sqlBody in sqlBodies)
                 {
-                    IList<ParseError> errors;
-                    var parseResult = (TSqlScript)parser.Parse(sql, out errors);
+                    var result = new ComplexValidationResult();
 
-                    if (errors.Count > 0)
-                    {
-                        throw new InvalidOperationException(
-                            string.Join(
-                                Environment.NewLine,
-                                errors.Select(error => string.Format("{0}:{1}: {2}", error.Line, error.Column, error.Message))
-                                )
-                            );
-                    }
+                    var validator = _sqlValidatorFactory.Create(connection);
 
-                    foreach (var batch in parseResult.Batches)
+
+                    var visitor = new StatementVisitor(validator);
+
+                    using (var sql = new StringReader(sqlBody))
                     {
-                        foreach (TSqlStatement statement in batch.Statements)
+                        IList<ParseError> errors;
+                        var parseResult = (TSqlScript) parser.Parse(sql, out errors);
+
+                        if (errors.Count > 0)
                         {
-                            var visitorResult = visitor.ProcessNextStatement(statement);
+                            throw new InvalidOperationException(string.Join(Environment.NewLine,
+                                errors.Select(error => string.Format("{0}:{1}: {2}", error.Line, error.Column, error.Message))));
+                        }
 
-                            result.Append(visitorResult);
+                        foreach (var batch in parseResult.Batches)
+                        {
+                            foreach (TSqlStatement statement in batch.Statements)
+                            {
+                                var visitorResult = visitor.ProcessNextStatement(statement);
+
+                                result.Append(visitorResult);
+                            }
                         }
                     }
+
+                    yield return result;
+                    index++;
                 }
             }
 
-            return result;
         }
     }
 

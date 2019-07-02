@@ -17,7 +17,7 @@
       <Method Name="WithQuery" ContainsSql="true">
       </Method>
 
-      <Method Name="BindToOption" ContainsOptions="true">
+      <Method Name="DeclareOption" ContainsOptions="true">
       </Method>
       
     </Generator>

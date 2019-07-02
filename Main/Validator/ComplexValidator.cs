@@ -99,31 +99,28 @@ namespace Main.Validator
 
             foreach (var inclusion in inclusionBatch)
             {
-                var failMessage = string.Empty;
-
                 try
                 {
-                    IComplexValidationResult executeResult = null;
-                    foreach (var sqlBody in inclusion.Inclusion.FormattedSqlBodies)
+                    IComplexValidationResult successExecuteResult = null;
+                    foreach (var executeResult in executor.Execute(inclusion.Inclusion.FormattedSqlBodies))
                     {
-                        executeResult = executor.Execute(
-                            sqlBody
-                            );
-
                         if (!executeResult.IsSuccess)
                         {
                             inclusion.SetResult(
                                 executeResult
-                                );
+                            );
+
                             break;
                         }
+
+                        successExecuteResult = executeResult;
                     }
 
-                    if(inclusion.Result == null)
+                    if (successExecuteResult != null)
                     {
                         inclusion.SetResult(
-                            executeResult
-                            );
+                            successExecuteResult
+                        );
                     }
                 }
                 catch (Exception excp)

@@ -689,7 +689,7 @@ namespace Main.Inclusion.Scanner
                                 }
                             }
 
-                            generator.BindToOption(argValues);
+                            generator.DeclareOption(argValues);
                         }
                     }
                 }

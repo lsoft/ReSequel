@@ -15,14 +15,14 @@
       <Name>Master</Name>
       <Type>SqlServer</Type>
       <!-- need to specific database due to specific forms of SQLs -->
-      <ConnectionString>Data Source=(local); Initial Catalog=master; Integrated Security=true; Connection Timeout=10; Max Pool Size=50;</ConnectionString>
+      <ConnectionString>Data Source=tomato; Initial Catalog=KPPK; Integrated Security=SSPI; Connection Timeout=10; Max Pool Size=50;</ConnectionString>
       <IsDefault>false</IsDefault>
     </SqlExecutor>
     <SqlExecutor>
       <Name>SomeDatabase</Name>
       <Type>SqlServer</Type>
       <!-- need to specific database due to specific forms of SQLs -->
-      <ConnectionString>Data Source=(local); Initial Catalog=SomeDatabase; Integrated Security=true; Connection Timeout=10; Max Pool Size=50;</ConnectionString>
+      <ConnectionString>Data Source=tomato; Initial Catalog=KPPK; Integrated Security=SSPI; Connection Timeout=10; Max Pool Size=50;</ConnectionString>
       <IsDefault>true</IsDefault>
     </SqlExecutor>
   </SqlExecutors>

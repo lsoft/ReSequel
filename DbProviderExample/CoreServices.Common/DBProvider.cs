@@ -81,7 +81,7 @@ namespace LSoft.Server
                 this;
         }
 
-        public Generator BindToOption(
+        public Generator DeclareOption(
             string optionName,
             params string[] parts
             )
