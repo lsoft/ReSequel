@@ -47,6 +47,8 @@ namespace Main.Inclusion.Found
             get;
         }
 
+        int GetFormattedQueriesCount();
+
         bool TryGetDocument(out Document document);
     }
 }

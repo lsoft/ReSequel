@@ -47,22 +47,17 @@ namespace Main.Inclusion.Found
             get;
         }
 
-
         public IEnumerable<string> FormattedSqlBodies
         {
             get
             {
                 if (_generator == null)
                 {
-                    yield return SqlBody;
+                    return new string[] { SqlBody };
                 }
-                else
-                {
-                    foreach(var fq in _generator.FormattedQueries)
-                    {
-                        yield return fq;
-                    }
-                }
+
+                return
+                    _generator.GetFormattedQueriesLazy();
             }
         }
 
@@ -162,6 +157,17 @@ namespace Main.Inclusion.Found
             FilePath = Location.Path;
             Start = Location.StartLinePosition;
             End = Location.EndLinePosition;
+        }
+
+        public int GetFormattedQueriesCount()
+        {
+            if (_generator == null)
+            {
+                return 1;
+            }
+
+            return
+                _generator.GetFormattedQueriesCount();
         }
 
         public bool TryGetDocument(out Document document)

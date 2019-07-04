@@ -6,10 +6,12 @@ using Microsoft.SqlServer.TransactSql.ScriptDom;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Main.Inclusion.Found;
 
 namespace Main.Sql.SqlServer.Executor
 {
@@ -42,13 +44,17 @@ namespace Main.Sql.SqlServer.Executor
         }
 
         public IEnumerable<IComplexValidationResult> Execute(
-            IEnumerable<string> sqlBodies
+            IFoundSqlInclusion inclusion
             )
         {
-            if (sqlBodies == null)
+            if (inclusion == null)
             {
-                throw new ArgumentNullException(nameof(sqlBodies));
+                throw new ArgumentNullException(nameof(inclusion));
             }
+
+            var index = 0;
+            var total = inclusion.GetFormattedQueriesCount();
+            var before = DateTime.Now;
 
             var parser = new TSql140Parser(
                 false
@@ -58,8 +64,7 @@ namespace Main.Sql.SqlServer.Executor
             {
                 connection.Open();
 
-                var index = 0;
-                foreach (var sqlBody in sqlBodies)
+                foreach (var sqlBody in inclusion.FormattedSqlBodies)
                 {
                     var result = new ComplexValidationResult();
 
@@ -75,8 +80,10 @@ namespace Main.Sql.SqlServer.Executor
 
                         if (errors.Count > 0)
                         {
-                            throw new InvalidOperationException(string.Join(Environment.NewLine,
-                                errors.Select(error => string.Format("{0}:{1}: {2}", error.Line, error.Column, error.Message))));
+                            throw new InvalidOperationException(
+                                string.Join(Environment.NewLine,
+                                errors.Select(error => string.Format("{0}:{1}: {2}", error.Line, error.Column, error.Message)))
+                                );
                         }
 
                         foreach (var batch in parseResult.Batches)
@@ -95,6 +102,8 @@ namespace Main.Sql.SqlServer.Executor
                 }
             }
 
+            var after = DateTime.Now;
+            Debug.WriteLine("Inclusion validation checks {0} variants, takes {1}", index, (after - before));
         }
     }
 

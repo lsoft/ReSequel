@@ -104,7 +104,7 @@ namespace Main.Validator
                 try
                 {
                     IComplexValidationResult successExecuteResult = null;
-                    foreach (var executeResult in executor.Execute(inclusion.Inclusion.FormattedSqlBodies))
+                    foreach (var executeResult in executor.Execute(inclusion.Inclusion))
                     {
                         if (!executeResult.IsSuccess)
                         {

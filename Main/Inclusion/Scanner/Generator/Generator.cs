@@ -89,61 +89,68 @@ namespace Main.Inclusion.Scanner.Generator
             _optionCount++;
         }
 
-        public IEnumerable<string> FormattedQueries
+        public int GetFormattedQueriesCount()
         {
-            get
+            var joinEquation = CreateJoinEquation();
+
+            var result = joinEquation.Count();
+
+            return result;
+        }
+
+        public IEnumerable<string> GetFormattedQueriesLazy()
+        {
+            var valueList = _options.Values.ToList();
+
+            var joinEquation = CreateJoinEquation();
+            foreach (var indexes in joinEquation)
             {
-                List<List<int>> lists = new List<List<int>>();
+                var preformat = new List<(int FormatIndex, string OptionValue)>();
 
-                foreach (var pair in _options)
+                for (var cc = 0; cc < valueList.Count; cc++)
                 {
-                    lists.Add(
-                        Enumerable.Range(0, pair.Value.Count).ToList()
-                        );
-                }
+                    var index = indexes[cc];
+                    var optionList = valueList[cc].Options;
 
-                IEnumerable<List<int>> joinEquation = lists.ElementAt(0).ConvertAll(j => new List<int> { j });
-
-                if (lists.Count > 1)
-                {
-                    foreach (var list in lists.Skip(1))
+                    foreach (var option in optionList)
                     {
-                        joinEquation = joinEquation
-                            .Join(
-                                list.ConvertAll(j => new List<int> { j }),
-                                i => 1,
-                                i => 1,
-                                (i0, i1) => i0.Concat(i1).ToList()
-                                )
-                            ;
+                        preformat.Add((option.SequenceIndex, option.Parts[index]));
                     }
                 }
 
-                var valueList = _options.Values.ToList();
+                var result = string.Format(
+                    _queryTemplate,
+                    preformat.OrderBy(j => j.FormatIndex).Select(j => j.OptionValue).Cast<object>().ToArray()
+                );
 
-                foreach (var indexes in joinEquation)
+                yield return result;
+            }
+        }
+
+        private IEnumerable<List<int>> CreateJoinEquation()
+        {
+            List<List<int>> lists = new List<List<int>>();
+
+            foreach (var pair in _options)
+            {
+                lists.Add(Enumerable.Range(0, pair.Value.Count).ToList());
+            }
+
+            IEnumerable<List<int>> joinEquation = lists.ElementAt(0).ConvertAll(j => new List<int> { j })
+                ;
+
+            if (lists.Count > 1)
+            {
+                foreach (var list in lists.Skip(1))
                 {
-                    var preformat = new List<(int FormatIndex, string OptionValue)>();
-
-                    for (var cc = 0; cc < valueList.Count; cc++)
-                    {
-                        var index = indexes[cc];
-                        var optionList = valueList[cc].Options;
-
-                        foreach (var option in optionList)
-                        {
-                            preformat.Add((option.SequenceIndex, option.Parts[index]));
-                        }
-                    }
-
-                    var result = string.Format(
-                        _queryTemplate,
-                        preformat.OrderBy(j => j.FormatIndex).Select(j => j.OptionValue).Cast<object>().ToArray()
-                        );
-
-                    yield return result;
+                    joinEquation = joinEquation.Join(list.ConvertAll(j => new List<int> { j }),
+                        i => 1,
+                        i => 1,
+                        (i0, i1) => i0.Concat(i1).ToList());
                 }
             }
+
+            return joinEquation;
         }
 
     }
