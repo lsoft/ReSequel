@@ -67,7 +67,8 @@ namespace Main.Validator
         /// No order guarrantee!
         /// </summary>
         public void Validate(
-            List<IValidatedSqlInclusion> inclusions
+            List<IValidatedSqlInclusion> inclusions,
+            Func<bool> shouldBreak
             )
         {
             if (inclusions == null)
@@ -78,21 +79,22 @@ namespace Main.Validator
             if (_batchSize == 0 || inclusions.Count < _batchSize)
             {
                 //sequence verify
-                DoValidation(_status, inclusions);
+                DoValidation(_status, inclusions, shouldBreak);
             }
             else
             {
                 //parallel batch verify
                 Parallel.ForEach(inclusions.Split(_batchSize), inclusionBatch =>
                 {
-                    DoValidation(_status, inclusionBatch);
+                    DoValidation(_status, inclusionBatch, shouldBreak);
                 });
             }
         }
 
         private void DoValidation(
             ValidationProgress status,
-            List<IValidatedSqlInclusion> inclusionBatch
+            List<IValidatedSqlInclusion> inclusionBatch,
+            Func<bool> shouldBreak
             )
         {
             var executor = _executorFactory.Create();
@@ -114,6 +116,21 @@ namespace Main.Validator
                         }
 
                         successExecuteResult = executeResult;
+
+                        if (shouldBreak())
+                        {
+                            //we should stop prematurely
+
+                            successExecuteResult = null;
+
+                            var cvr = new ComplexValidationResult();
+                            cvr.Append(ValidationResult.Error(inclusion.Inclusion.SqlBody, inclusion.Inclusion.SqlBody, "Process stopped prematurely"));
+
+                            inclusion.SetResult(
+                                cvr
+                                );
+                            break;
+                        }
                     }
 
                     if (successExecuteResult != null)

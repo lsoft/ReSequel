@@ -101,7 +101,8 @@ namespace Tests.Fixture
                 );
 
             validator.Validate(
-                validationInclusionList
+                validationInclusionList,
+                () => false
                 );
 
             return

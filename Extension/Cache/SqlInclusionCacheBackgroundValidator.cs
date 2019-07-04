@@ -141,7 +141,8 @@ namespace Extension.Cache
                         );
 
                     validator.Validate(
-                        unprocesseds
+                        unprocesseds,
+                        () => _stopSignal.WaitOne(0)
                         );
                 }
             }

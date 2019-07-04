@@ -7,15 +7,20 @@ using System.Threading.Tasks;
 
 namespace Handler
 {
-    class Program
+    class BaseProgram
     {
+        protected const string Part2OptionName = "part2";
+    }
+
+    class Program : BaseProgram
+    {
+        private const string Part3OptionName = "part3";
+
         static void Main(string[] args)
         {
             var dbp = new DBProvider();
 
             const string JoinOptionName = "join";
-            const string Part2OptionName = "part2";
-            const string Part3OptionName = "part3";
 
             //dbp
             //    .WithGenerator()
@@ -30,14 +35,14 @@ namespace Handler
                 );
 
             generator
-                .WithQuery("select 1 {0} {1} {2} {3}")
+                .WithQuery("select 1,1 {0} {1} {2} {3}")
                 .DeclareOption(JoinOptionName, "union", "except")
-                .DeclareOption(Part2OptionName, "select 2", "select 2,2")
+                .DeclareOption(Part2OptionName, "select 2,2", "select 2,2")
                 ;
 
             generator
                 .DeclareOption(JoinOptionName, "except", "union")
-                .DeclareOption(Part3OptionName, "select 3", "select 3,3")
+                .DeclareOption(Part3OptionName, "select 3,3", "select 3,3")
                 ;
 
 
@@ -59,6 +64,11 @@ VALUES
 
 SELECT @@IDENTITY as ident;
 ");
+
+            dbp.PrepareQuery(@"
+select * from [dbo].[X4_TARIF_HEAD] where id_km in (@t)
+");
+
 
             dbp.PrepareQuery(@"
 INSERT INTO [dbo].[X4_TARIF_HEAD]

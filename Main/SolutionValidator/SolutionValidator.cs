@@ -108,7 +108,8 @@ namespace Main.SolutionValidator
                 );
 
             validator.Validate(
-                validationInclusionList
+                validationInclusionList,
+                () => false
                 );
 
             Progress.Finish();
