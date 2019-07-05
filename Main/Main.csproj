@@ -249,6 +249,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Helper\RegExHelper.cs" />
+    <Compile Include="Inclusion\Carved\CarvedSqlInclusion.cs" />
     <Compile Include="Inclusion\Carved\ICarvedSqlInclusion.cs" />
     <Compile Include="Inclusion\Carved\Result\ComplexCarveResult.cs" />
     <Compile Include="Inclusion\Carved\Result\ICarveResult.cs" />
@@ -259,13 +260,16 @@
     <Compile Include="Inclusion\Scanner\InclusionScannerFactory.cs" />
     <Compile Include="Inclusion\Found\FoundSqlInclusion.cs" />
     <Compile Include="Inclusion\Found\IFoundSqlInclusion.cs" />
+    <Compile Include="Inclusion\Validated\InclusionStatusChangedDelegate.cs" />
     <Compile Include="Inclusion\Validated\IValidatedSqlInclusion.cs" />
     <Compile Include="Inclusion\Validated\ValidatedSqlInclusion.cs" />
     <Compile Include="Inclusion\Found\FoundSqlInclusionEqualityComparer.cs" />
     <Compile Include="Inclusion\Validated\ValidatedSqlInclusionEqualityComparer.cs" />
     <Compile Include="Logger\ConsoleProcessLogger.cs" />
     <Compile Include="Logger\DebugProcessLogger.cs" />
-    <Compile Include="Logger\LastMessageLogger.cs" />
+    <Compile Include="Logger\ILastMessageProcessLogger.cs" />
+    <Compile Include="Logger\LastMessageProcessLogger.cs" />
+    <Compile Include="Logger\NewProcessLoggerMessageDelegate.cs" />
     <Compile Include="Logger\NullProcessLogger.cs" />
     <Compile Include="Other\AsyncAwaitHelper.cs" />
     <Compile Include="Other\ExtensionPath.cs" />
@@ -275,11 +279,20 @@
     <Compile Include="ScanRelated\ScanProjectContainer.cs" />
     <Compile Include="ScanRelated\ScanProjectContainerMethod.cs" />
     <Compile Include="ScanRelated\ScanProjectContainerProperty.cs" />
+    <Compile Include="ScanRelated\ScanProjectGenerator.cs" />
+    <Compile Include="ScanRelated\ScanProjectGeneratorMethod.cs" />
     <Compile Include="SolutionValidator\DefaultSolutionValidatorFactory.cs" />
     <Compile Include="SolutionValidator\ISolutionValidator.cs" />
     <Compile Include="SolutionValidator\ISolutionValidatorFactory.cs" />
-    <Compile Include="SolutionValidator\SolutionValidator.cs" />
+    <Compile Include="SolutionValidator\DefaultSolutionValidator.cs" />
+    <Compile Include="Sql\ConstantConnectionStringContainer.cs" />
     <Compile Include="Sql\Identifier\IColumnName.cs" />
+    <Compile Include="Validator\UnitProvider\ValidationUnit.cs" />
+    <Compile Include="Validator\UnitProvider\Bag\IInclusionBag.cs" />
+    <Compile Include="Validator\UnitProvider\Bag\InclusionBag.cs" />
+    <Compile Include="Validator\UnitProvider\UnitProvider.cs" />
+    <Compile Include="Validator\UnitProvider\IUnitProvider.cs" />
+    <Compile Include="Validator\UnitProvider\IValidationUnit.cs" />
     <Compile Include="Sql\SqlServer\Identifier\SqlServerColumnName.cs" />
     <Compile Include="Sql\IConnectionStringContainer.cs" />
     <Compile Include="Sql\ISqlButcher.cs" />

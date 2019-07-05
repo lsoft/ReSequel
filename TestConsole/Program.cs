@@ -22,18 +22,18 @@ namespace TestConsole
             {
                 root.BindAll();
 
-                var worker = root.GetInstance<ISolutionValidator>();
+                var solutionValidator = root.GetInstance<ISolutionValidator>();
 
                 MSBuildRegisterer.RegisterDefaultOnce();
 
-                var processedInclusions = worker.Execute(
+                var processedInclusions = solutionValidator.Execute(
                     task.TargetSolution
                     );
 
                 //make results: checking reports
                 var results = processedInclusions.ConvertAll(j => j.GenerateReport());
 
-                worker.Progress.UpdateMessage();
+                solutionValidator.Progress.UpdateMessage();
 
                 Console.WriteLine(Environment.NewLine);
                 Console.WriteLine(Environment.NewLine);

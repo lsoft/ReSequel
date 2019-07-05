@@ -6,6 +6,18 @@ namespace Tests.Fixture.Validation
     [TestClass]
     public class RedSqlFixture : BaseFixture
     {
+        [ClassInitialize]
+        public static void Init(TestContext context)
+        {
+            BaseFixture.ClassInit();
+        }
+
+        [ClassCleanup]
+        public static void Cleanup()
+        {
+            BaseFixture.ClassCleanup();
+        }
+
         [TestMethod]
         public void ReadFromUndeclaredTableVariable()
         {

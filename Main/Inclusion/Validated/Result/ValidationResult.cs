@@ -12,6 +12,8 @@ namespace Main.Inclusion.Validated.Result
 
         public bool IsSuccess => Result == ValidationResultEnum.Validated;
 
+        public bool IsFailed => !IsSuccess;
+
         public string WarningOrErrorMessage
         {
             get;

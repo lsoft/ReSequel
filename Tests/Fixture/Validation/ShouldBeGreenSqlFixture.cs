@@ -1,7 +1,9 @@
 using System;
 using System.Diagnostics;
+using Main.Inclusion.Scanner.Generator;
 using Main.Inclusion.Validated.Result;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Ninject.Planning.Bindings.Resolvers;
 using Tests.Fixture;
 
 namespace Tests.Fixture.Validation
@@ -814,5 +816,32 @@ declare @t0 int, @t1 varchar(100)
             Assert.IsTrue(report.IsSuccess, report.FailMessage);
         }
 
+        [TestMethod]
+        public void CorrectGeneratorVariable()
+        {
+            var generator = new Generator();
+            generator.WithQuery(@"
+select
+    {4}
+from dbo.TestTable0 t0
+{0} join dbo.TestTable1 t1 on t0.id {2} t1.id
+{1} join dbo.TestTable2 t2 on t0.id {3} t2.id
+");
+
+            generator.DeclareOption("0", "left", "right", "full", string.Empty);
+            generator.DeclareOption("1", "left", "right", "full", string.Empty);
+            generator.DeclareOption("2", "=", ">", "<", "<=", ">=", "<>");
+            generator.DeclareOption("3", "=", ">", "<", "<=", ">=", "<>");
+            generator.DeclareOption("4", "*", "t0.id", "t1.id", "t2.id");
+            generator.DoFixing();
+
+            var processed = ValidateAgainstSchema(
+                generator
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
     }
 }

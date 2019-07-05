@@ -99,8 +99,6 @@ namespace Main.Inclusion.Carved.Result
                 throw new ArgumentNullException(nameof(columnName));
             }
 
-            var columnList = ColumnList;
-
             return
                 _columnList.Any(j => j.IsSame(columnName));
         }

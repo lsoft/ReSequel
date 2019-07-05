@@ -123,7 +123,7 @@ namespace Extension.Cache
                 _cache.CopyTo(array);
             }
 
-            result.AddRange(array.Where(j => !j.IsProcessed));
+            result.AddRange(array.Where(j => !j.HasResult));
         }
 
         public void CleanupProcessedStatus()

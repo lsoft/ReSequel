@@ -696,6 +696,8 @@ namespace Main.Inclusion.Scanner
 
                 if (!generator.IsEmpty)
                 {
+                    generator.DoFixing();
+
                     var isMuted = comments.Contains(
                         pair.Value.OrderBy(k => k.Span.Start).First().GetLocation().GetLineSpan().StartLinePosition.Line - 1
                         );

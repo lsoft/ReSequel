@@ -11,6 +11,7 @@ using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
+using Main.Inclusion.Scanner.Generator;
 using Tests.CompositionRoot;
 
 namespace Tests.Fixture
@@ -108,6 +109,48 @@ namespace Tests.Fixture
             return
                 validationInclusionList[0];
         }
-        
+
+        protected IValidatedSqlInclusion ValidateAgainstSchema(
+            Generator generator
+            )
+        {
+            var syntax = SyntaxFactory.Argument(
+                SyntaxFactory.LiteralExpression(
+                    SyntaxKind.StringLiteralExpression,
+                    SyntaxFactory.Token(
+                        SyntaxKind.StringLiteralToken
+                    )
+                )
+            );
+
+            var foundInclusionList = new List<IFoundSqlInclusion>
+            {
+                new FoundSqlInclusion(
+                    syntax,
+                    generator,
+                    false
+                )
+            };
+
+            var validationInclusionList = foundInclusionList
+                   .ConvertAll(j => (IValidatedSqlInclusion)new ValidatedSqlInclusion(j))
+                ;
+
+            var status = Root.GetInstance<ValidationProgress>();
+
+            var validatorFactory = Root.GetInstance<IValidatorFactory>();
+
+            var validator = validatorFactory.Create(
+                status
+            );
+
+            validator.Validate(
+                validationInclusionList,
+                () => false
+            );
+
+            return
+                validationInclusionList[0];
+        }
     }
 }

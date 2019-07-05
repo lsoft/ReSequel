@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="ConnectionString" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Data Source=(local); Initial Catalog={0}; Integrated Security=true; Connection Timeout=10; Max Pool Size=50;</Value>
+      <Value Profile="(Default)">Data Source=tomato; Initial Catalog={0}; Integrated Security=true; Connection Timeout=1000; Max Pool Size=50;</Value>
     </Setting>
     <Setting Name="DatabaseName" Type="System.String" Scope="User">
       <Value Profile="(Default)">__resequel_TestScopeDatabase_FeelFreeToDeleteIt</Value>
@@ -12,14 +12,17 @@
       <Value Profile="(Default)">USE [master]
 GO
 
-DROP DATABASE IF EXISTS [{0}]
+if exists( select * from sys.databases where name = '{0}' )
+begin
+	DROP DATABASE {0}
+end
 GO
 
 /****** Object:  Database [{0}]    ******/
 CREATE DATABASE [{0}]
  CONTAINMENT = NONE
 
-ALTER DATABASE [{0}] SET COMPATIBILITY_LEVEL = 140
+ALTER DATABASE [{0}] SET COMPATIBILITY_LEVEL = 120
 GO
 
 --IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
@@ -115,8 +118,8 @@ GO
 ALTER DATABASE [{0}] SET DELAYED_DURABILITY = DISABLED 
 GO
 
-ALTER DATABASE [{0}] SET QUERY_STORE = OFF
-GO
+--ALTER DATABASE [{0}] SET QUERY_STORE = OFF
+--GO
 
 ALTER DATABASE [{0}] SET  READ_WRITE 
 GO

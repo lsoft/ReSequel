@@ -92,7 +92,7 @@ namespace Extension.Tagging.ValidateButton
             {
                 this.MuteButton.IsEnabled = !_tag.Inclusion.Inclusion.IsMuted;
 
-                if (!_tag.Inclusion.IsProcessed)
+                if (!_tag.Inclusion.HasResult)
                 {
                     this.ErrorMessageLabel.Foreground = _defaultForeground;
 
@@ -104,7 +104,7 @@ namespace Extension.Tagging.ValidateButton
                         _tag.Inclusion.Inclusion.SqlBody
                         );
 
-                    this.DetailsButton.Content = "Waiting to validate...";
+                    this.DetailsButton.Content = "Waiting for validation...";
                     this.DetailsButton.Foreground = _defaultForeground;
                 }
                 else

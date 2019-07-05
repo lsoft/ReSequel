@@ -61,6 +61,19 @@ namespace Main.Inclusion.Found
             }
         }
 
+        public int FormattedQueriesCount
+        {
+            get
+            {
+                if (_generator == null)
+                {
+                    return 1;
+                }
+
+                return
+                    _generator.FormattedQueriesCount;
+            }
+        }
 
         public FoundSqlInclusion(
             CSharpSyntaxNode targetSyntax,
@@ -83,6 +96,37 @@ namespace Main.Inclusion.Found
             SqlBody = sqlBody;
             IsMuted = isMuted;
             Location = TargetSyntax.GetLocation().GetLineSpan();
+
+            _generator = null;
+
+            FilePath = Location.Path;
+            Start = Location.StartLinePosition;
+            End = Location.EndLinePosition;
+        }
+
+        public FoundSqlInclusion(
+            CSharpSyntaxNode targetSyntax,
+            Generator generator,
+            bool isMuted
+            )
+        {
+            if (targetSyntax == null)
+            {
+                throw new ArgumentNullException(nameof(targetSyntax));
+            }
+
+            if (generator == null)
+            {
+                throw new ArgumentNullException(nameof(generator));
+            }
+
+            _document = null;
+            TargetSyntax = targetSyntax;
+            SqlBody = generator.SqlTemplate;
+            IsMuted = isMuted;
+            Location = TargetSyntax.GetLocation().GetLineSpan();
+
+            _generator = generator;
 
             FilePath = Location.Path;
             Start = Location.StartLinePosition;
@@ -157,17 +201,6 @@ namespace Main.Inclusion.Found
             FilePath = Location.Path;
             Start = Location.StartLinePosition;
             End = Location.EndLinePosition;
-        }
-
-        public int GetFormattedQueriesCount()
-        {
-            if (_generator == null)
-            {
-                return 1;
-            }
-
-            return
-                _generator.GetFormattedQueriesCount();
         }
 
         public bool TryGetDocument(out Document document)

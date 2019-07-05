@@ -8,9 +8,5 @@ namespace Main.Validator
            ValidationProgress status
             );
 
-        IValidator Create(
-           ValidationProgress status,
-           int batchSize
-            );
     }
 }

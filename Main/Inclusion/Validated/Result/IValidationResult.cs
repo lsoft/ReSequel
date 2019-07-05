@@ -29,6 +29,11 @@ namespace Main.Inclusion.Validated.Result
             get;
         }
 
+        bool IsFailed
+        {
+            get;
+        }
+
         string WarningOrErrorMessage
         {
             get;

@@ -22,20 +22,6 @@ namespace Main.Validator
         }
 
         public IValidator Create(
-            ValidationProgress status,
-            int batchSize
-            )
-        {
-            if (status == null)
-            {
-                throw new ArgumentNullException(nameof(status));
-            }
-
-            return
-                new ComplexValidator(status, _executorFactory, batchSize);
-        }
-
-        public IValidator Create(
             ValidationProgress status
             )
         {

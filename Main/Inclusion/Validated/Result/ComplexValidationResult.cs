@@ -8,13 +8,15 @@ namespace Main.Inclusion.Validated.Result
     public class ComplexValidationResult : IComplexValidationResult
     {
         private readonly List<IValidationResult> _internalResults;
-        private ComplexCarveResult _carveResult;
+        private readonly ComplexCarveResult _carveResult;
 
         public IReadOnlyCollection<IValidationResult> InternalResults => _internalResults;
 
         public ValidationResultEnum Result => InternalResults.Min(j => j.Result);
 
         public bool IsSuccess => InternalResults.All(j => j.IsSuccess);
+
+        public bool IsFailed => !IsSuccess;
 
         public string WarningOrErrorMessage => IsSuccess ? string.Empty : string.Join(Environment.NewLine, InternalResults.Select(j => j.WarningOrErrorMessage).Where(j => !string.IsNullOrWhiteSpace(j)));
 
@@ -42,7 +44,10 @@ namespace Main.Inclusion.Validated.Result
 
             _internalResults.Add(result);
 
-            _carveResult.Append(result.CarveResult);
+            if (result.CarveResult != null)
+            {
+                _carveResult.Append(result.CarveResult);
+            }
         }
     }
 }

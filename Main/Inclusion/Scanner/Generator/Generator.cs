@@ -16,6 +16,8 @@ namespace Main.Inclusion.Scanner.Generator
 
         private int _optionCount = 0;
 
+        private int _formattedQueriesCount = 0;
+
         public string SqlTemplate
         {
             get
@@ -32,6 +34,8 @@ namespace Main.Inclusion.Scanner.Generator
                     string.IsNullOrWhiteSpace(_queryTemplate) || _options.Count == 0;
             }
         }
+
+        public int FormattedQueriesCount => _formattedQueriesCount;
 
         public Generator(
             )
@@ -64,8 +68,7 @@ namespace Main.Inclusion.Scanner.Generator
             var optionName = args[0];
             var parts = args.Skip(1).ToArray();
 
-            (int Count, List<InternalOption> Options) existeds;
-            if (_options.TryGetValue(optionName, out existeds))
+            if (_options.TryGetValue(optionName, out var existeds))
             {
                 if (existeds.Options.Any(j => j.Parts.Length != parts.Length))
                 {
@@ -89,17 +92,18 @@ namespace Main.Inclusion.Scanner.Generator
             _optionCount++;
         }
 
-        public int GetFormattedQueriesCount()
+        public void DoFixing()
         {
-            var joinEquation = CreateJoinEquation();
-
-            var result = joinEquation.Count();
-
-            return result;
+            _formattedQueriesCount = CreateJoinEquation().Count();
         }
 
         public IEnumerable<string> GetFormattedQueriesLazy()
         {
+            if (_formattedQueriesCount == 0)
+            {
+                throw new InvalidOperationException("Generator should be fixed before usage");
+            }
+
             var valueList = _options.Values.ToList();
 
             var joinEquation = CreateJoinEquation();

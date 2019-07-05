@@ -12,6 +12,8 @@ namespace Main.Inclusion.Validated.Result
 
         public bool IsSuccess => false;
 
+        public bool IsFailed => !IsSuccess;
+
         public string WarningOrErrorMessage => _message;
 
         public string CheckedSqlBody => string.Empty;

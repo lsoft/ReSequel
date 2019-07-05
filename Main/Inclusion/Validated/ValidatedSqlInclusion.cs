@@ -20,7 +20,7 @@ namespace Main.Inclusion.Validated
 
         public IValidationResult Result => _result;
 
-        public bool IsProcessed => _result != null;
+        public bool HasResult => _result != null;
 
         public event InclusionStatusChangedDelegate InclusionStatusEvent;
 
@@ -62,7 +62,7 @@ namespace Main.Inclusion.Validated
         public Report GenerateReport(
             )
         {
-            if(!IsProcessed)
+            if(!HasResult)
             {
                 throw new InvalidOperationException("Not processed already");
             }

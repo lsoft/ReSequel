@@ -1,17 +1,12 @@
-
-using Main.Helper;
-using Main.Inclusion;
 using Main.Sql;
-using Main.Inclusion.Validated.Result;
 using Main.Progress;
-
-
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using Main.Inclusion.Validated;
+using Main.Validator.UnitProvider;
 
 namespace Main.Validator
 {
@@ -19,7 +14,6 @@ namespace Main.Validator
     {
         private readonly ValidationProgress _status;
         private readonly ISqlExecutorFactory _executorFactory;
-        private readonly int _batchSize;
 
         public ComplexValidator(
             ValidationProgress status,
@@ -38,33 +32,10 @@ namespace Main.Validator
 
             _status = status;
             _executorFactory = executorFactory;
-            _batchSize = 0;
-        }
-
-
-        public ComplexValidator(
-            ValidationProgress status,
-            ISqlExecutorFactory executorFactory,
-            int batchSize
-            )
-        {
-            if (status == null)
-            {
-                throw new ArgumentNullException(nameof(status));
-            }
-
-            if (executorFactory == null)
-            {
-                throw new ArgumentNullException(nameof(executorFactory));
-            }
-
-            _status = status;
-            _executorFactory = executorFactory;
-            _batchSize = batchSize;
         }
 
         /// <summary>
-        /// No order guarrantee!
+        /// No order guarantee!
         /// </summary>
         public void Validate(
             List<IValidatedSqlInclusion> inclusions,
@@ -76,85 +47,83 @@ namespace Main.Validator
                 throw new ArgumentNullException(nameof(inclusions));
             }
 
-            if (_batchSize == 0 || inclusions.Count < _batchSize)
+            if (inclusions.Count <= 0)
             {
-                //sequence verify
-                DoValidation(_status, inclusions, shouldBreak);
+                return;
+            }
+
+            var unitProvider = new UnitProvider.UnitProvider(
+                inclusions,
+                shouldBreak
+                );
+
+            if (unitProvider.TotalVariantCount < 20) //hand made constant
+            {
+                ProcessSequentially(unitProvider);
             }
             else
             {
-                //parallel batch verify
-                Parallel.ForEach(inclusions.Split(_batchSize), inclusionBatch =>
-                {
-                    DoValidation(_status, inclusionBatch, shouldBreak);
-                });
+                ProcessInParallel(unitProvider);
             }
-        }
 
-        private void DoValidation(
-            ValidationProgress status,
-            List<IValidatedSqlInclusion> inclusionBatch,
-            Func<bool> shouldBreak
-            )
-        {
-            var executor = _executorFactory.Create();
+            var prematurelyStopped = unitProvider.TotalVariantCount > unitProvider.CheckedVariantCount;
 
-            foreach (var inclusion in inclusionBatch)
+            foreach (var inclusion in inclusions)
             {
-                try
+                if (!unitProvider.Artifacts.TryGetValue(inclusion, out var bag))
                 {
-                    IComplexValidationResult successExecuteResult = null;
-                    foreach (var executeResult in executor.Execute(inclusion.Inclusion))
-                    {
-                        if (!executeResult.IsSuccess)
-                        {
-                            inclusion.SetResult(
-                                executeResult
-                            );
-
-                            break;
-                        }
-
-                        successExecuteResult = executeResult;
-
-                        if (shouldBreak())
-                        {
-                            //we should stop prematurely
-
-                            successExecuteResult = null;
-
-                            var cvr = new ComplexValidationResult();
-                            cvr.Append(ValidationResult.Error(inclusion.Inclusion.SqlBody, inclusion.Inclusion.SqlBody, "Process stopped prematurely"));
-
-                            inclusion.SetResult(
-                                cvr
-                                );
-                            break;
-                        }
-                    }
-
-                    if (successExecuteResult != null)
-                    {
-                        inclusion.SetResult(
-                            successExecuteResult
-                        );
-                    }
-                }
-                catch (Exception excp)
-                {
-                    inclusion.SetResult(
-                        new ExceptionValidationResult(
-                            inclusion.Inclusion.SqlBody,
-                            excp
-                            )
-                        );
+                    throw new InvalidOperationException("Bag must exists, unknown problem");
                 }
 
-                status.AddProcessedInclusionCount(1);
+                //bag is exists, fix the results
+                bag.FixResultIntoInclusion(prematurelyStopped);
+            }
+        }
+
+        private void ProcessSequentially(IUnitProvider unitProvider)
+        {
+            using (var executor = _executorFactory.Create())
+            {
+                executor.Execute(unitProvider);
             }
         }
 
 
+        private void ProcessInParallel(IUnitProvider unitProvider)
+        {
+            var executorCreated = 0;
+            var executorDisposed = 0;
+            var unitProcessedCount = 0;
 
+            var before = DateTime.Now;
+
+            Parallel.ForEach(
+                unitProvider.RequestNextUnitSync(),
+                () =>
+                {
+                    Debug.WriteLine("SqlExecutor works in thread {0}", Thread.CurrentThread.ManagedThreadId);
+                    Interlocked.Increment(ref executorCreated);
+
+                    var executor = _executorFactory.Create();
+                    return executor;
+                },
+                (unit, state, executor) =>
+                {
+                    Interlocked.Increment(ref unitProcessedCount);
+                    executor.Execute(unit);
+                    return executor;
+                },
+                executor =>
+                {
+                    Debug.WriteLine("SqlExecutor (thread {0}) processed {1} variants", Thread.CurrentThread.ManagedThreadId, executor.ProcessedUnits);
+                    Interlocked.Increment(ref executorDisposed);
+
+                    executor.Dispose();
+                });
+
+            var after = DateTime.Now;
+            Debug.WriteLine("Inclusion validation checks {0} variants, takes {1}", unitProvider.TotalVariantCount, (after - before));
+            Debug.WriteLine("Executors created {0}, disposed {1}", executorCreated, executorDisposed);
+        }
     }
 }

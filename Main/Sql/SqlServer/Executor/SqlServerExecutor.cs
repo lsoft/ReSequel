@@ -4,25 +4,31 @@ using Main.Sql.SqlServer.Visitor;
 
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Main.Inclusion.Found;
+using Main.Validator.UnitProvider;
 
 namespace Main.Sql.SqlServer.Executor
 {
-    public class SqlServerExecutor :  ISqlExecutor
+    public class SqlServerExecutor : ISqlExecutor
     {
         private readonly ISqlValidatorFactory _sqlValidatorFactory;
+        private readonly SqlConnection _connection;
 
-        public string ConnectionString
-        {
-            get;
-        }
+        private readonly TSql140Parser _parser;
+
+        private int _processedUnits;
+
+        private long _disposed = 0L;
+        public int ProcessedUnits => _processedUnits;
 
         public SqlServerExecutor(
             string connectionString,
@@ -39,71 +45,80 @@ namespace Main.Sql.SqlServer.Executor
                 throw new ArgumentNullException(nameof(sqlValidatorFactory));
             }
 
-            ConnectionString = connectionString;
             _sqlValidatorFactory = sqlValidatorFactory;
-        }
 
-        public IEnumerable<IComplexValidationResult> Execute(
-            IFoundSqlInclusion inclusion
-            )
-        {
-            if (inclusion == null)
-            {
-                throw new ArgumentNullException(nameof(inclusion));
-            }
+            var connection = new SqlConnection(connectionString);
+            connection.Open();
 
-            var index = 0;
-            var total = inclusion.GetFormattedQueriesCount();
-            var before = DateTime.Now;
+            _connection = connection;
 
-            var parser = new TSql140Parser(
+            _parser = new TSql140Parser(
                 false
                 );
+        }
 
-            using (var connection = new SqlConnection(ConnectionString))
+        public void Execute(
+            IUnitProvider unitProvider
+            )
+        {
+            if (unitProvider == null)
             {
-                connection.Open();
+                throw new ArgumentNullException(nameof(unitProvider));
+            }
 
-                foreach (var sqlBody in inclusion.FormattedSqlBodies)
+            while(unitProvider.TryRequestNextUnit(out var unit))
+            {
+                Execute(unit);
+            }
+        }
+
+        public void Execute(IValidationUnit unit)
+        {
+            if (unit == null)
+            {
+                throw new ArgumentNullException(nameof(unit));
+            }
+
+            Interlocked.Increment(ref _processedUnits);
+
+            var result = new ComplexValidationResult();
+
+            using (var sql = new StringReader(unit.SqlBody))
+            {
+                IList<ParseError> errors;
+                var parseResult = (TSqlScript) _parser.Parse(sql, out errors);
+
+                if (errors.Count > 0)
                 {
-                    var result = new ComplexValidationResult();
+                    throw new InvalidOperationException(string.Join(Environment.NewLine,
+                        errors.Select(error => string.Format("{0}:{1}: {2}", error.Line, error.Column, error.Message))));
+                }
 
-                    var validator = _sqlValidatorFactory.Create(connection);
+                var validator = _sqlValidatorFactory.Create(_connection);
+                var visitor = new StatementVisitor(validator);
 
-
-                    var visitor = new StatementVisitor(validator);
-
-                    using (var sql = new StringReader(sqlBody))
+                foreach (var batch in parseResult.Batches)
+                {
+                    foreach (TSqlStatement statement in batch.Statements)
                     {
-                        IList<ParseError> errors;
-                        var parseResult = (TSqlScript) parser.Parse(sql, out errors);
+                        var visitorResult = visitor.ProcessNextStatement(statement);
 
-                        if (errors.Count > 0)
-                        {
-                            throw new InvalidOperationException(
-                                string.Join(Environment.NewLine,
-                                errors.Select(error => string.Format("{0}:{1}: {2}", error.Line, error.Column, error.Message)))
-                                );
-                        }
-
-                        foreach (var batch in parseResult.Batches)
-                        {
-                            foreach (TSqlStatement statement in batch.Statements)
-                            {
-                                var visitorResult = visitor.ProcessNextStatement(statement);
-
-                                result.Append(visitorResult);
-                            }
-                        }
+                        result.Append(visitorResult);
                     }
-
-                    yield return result;
-                    index++;
                 }
             }
 
-            var after = DateTime.Now;
-            Debug.WriteLine("Inclusion validation checks {0} variants, takes {1}", index, (after - before));
+            unit.SetValidationResult(result);
+        }
+
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref _disposed, 1L) != 0L)
+            {
+                return;
+            }
+
+            _connection?.Dispose();
         }
     }
 

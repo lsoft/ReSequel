@@ -13,6 +13,8 @@ namespace Main.Inclusion.Validated.Result
 
         public bool IsSuccess => false;
 
+        public bool IsFailed => !IsSuccess;
+
         public string WarningOrErrorMessage => GetFailMessage(_excp);
 
         public string FullSqlBody => _sqlBody;

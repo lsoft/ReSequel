@@ -6,8 +6,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Main.Inclusion.Validated
 {
-    public delegate void InclusionStatusChangedDelegate();
-
     public interface IValidatedSqlInclusion
     {
         IFoundSqlInclusion Inclusion
@@ -20,7 +18,7 @@ namespace Main.Inclusion.Validated
             get;
         }
 
-        bool IsProcessed
+        bool HasResult
         {
             get;
         }
