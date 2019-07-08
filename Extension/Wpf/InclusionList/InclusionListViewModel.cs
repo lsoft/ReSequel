@@ -33,6 +33,7 @@ using Extension.Other;
 using System.Runtime.CompilerServices;
 using Microsoft.VisualStudio.Threading;
 using Extension.ExtensionStatus;
+using Main.Helper;
 using Main.Inclusion.Validated.Status;
 
 namespace Extension.Wpf.InclusionList
@@ -274,7 +275,7 @@ namespace Extension.Wpf.InclusionList
                                 }
                                 catch (Exception excp)
                                 {
-                                    ErrorMessage = excp.Message;
+                                    ErrorMessage = excp.AggregateMessages();
                                 }
                                 //finally
                                 //{
@@ -290,7 +291,7 @@ namespace Extension.Wpf.InclusionList
                             }
                             catch (Exception excp)
                             {
-                                ErrorMessage = excp.Message;
+                                ErrorMessage = excp.AggregateMessages();
                             }
                             finally
                             {

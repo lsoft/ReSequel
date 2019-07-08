@@ -5,7 +5,7 @@ namespace Main.Validator
     public interface IValidatorFactory
     {
         IValidator Create(
-           ValidationProgress status
+           ValidationProgress progress
             );
 
     }

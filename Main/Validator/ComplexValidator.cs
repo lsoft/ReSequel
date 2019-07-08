@@ -12,17 +12,17 @@ namespace Main.Validator
 {
     public class ComplexValidator : IValidator
     {
-        private readonly ValidationProgress _status;
+        private readonly ValidationProgress _progress;
         private readonly ISqlExecutorFactory _executorFactory;
 
         public ComplexValidator(
-            ValidationProgress status,
+            ValidationProgress progress,
             ISqlExecutorFactory executorFactory
             )
         {
-            if (status == null)
+            if (progress == null)
             {
-                throw new ArgumentNullException(nameof(status));
+                throw new ArgumentNullException(nameof(progress));
             }
 
             if (executorFactory == null)
@@ -30,7 +30,7 @@ namespace Main.Validator
                 throw new ArgumentNullException(nameof(executorFactory));
             }
 
-            _status = status;
+            _progress = progress;
             _executorFactory = executorFactory;
         }
 
@@ -54,7 +54,8 @@ namespace Main.Validator
 
             var unitProvider = new UnitProvider.UnitProvider(
                 inclusions,
-                shouldBreak
+                shouldBreak,
+                _progress
                 );
 
             if (unitProvider.TotalVariantCount < 20) //hand made constant

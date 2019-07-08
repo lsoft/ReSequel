@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Main.Inclusion.Validated;
 using Main.Inclusion.Validated.Result;
+using Main.Progress;
 using Main.Validator.UnitProvider.Bag;
 
 namespace Main.Validator.UnitProvider
@@ -11,6 +12,7 @@ namespace Main.Validator.UnitProvider
     public class UnitProvider : IUnitProvider
     {
         private readonly Func<bool> _shouldBreak;
+        private readonly ValidationProgress _progress;
 
         private readonly Dictionary<IValidatedSqlInclusion, IInclusionBag> _artifacts = new Dictionary<IValidatedSqlInclusion, IInclusionBag>();
 
@@ -39,7 +41,8 @@ namespace Main.Validator.UnitProvider
 
         public UnitProvider(
             List<IValidatedSqlInclusion> inclusions,
-            Func<bool> shouldBreak
+            Func<bool> shouldBreak, 
+            ValidationProgress progress
             )
         {
             if (inclusions == null)
@@ -52,7 +55,13 @@ namespace Main.Validator.UnitProvider
                 throw new ArgumentNullException(nameof(shouldBreak));
             }
 
+            if (progress == null)
+            {
+                throw new ArgumentNullException(nameof(progress));
+            }
+
             _shouldBreak = shouldBreak;
+            _progress = progress;
 
             if (inclusions.Count == 0)
             {
@@ -136,7 +145,7 @@ namespace Main.Validator.UnitProvider
                     yield return unit;
                 }
 
-                //bag.FixResultIntoInclusion(_shouldBreak());
+                _progress.AddProcessedInclusionCount(1);
             }
         }
     }

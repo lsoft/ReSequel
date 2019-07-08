@@ -22,16 +22,16 @@ namespace Main.Validator
         }
 
         public IValidator Create(
-            ValidationProgress status
+            ValidationProgress progress
             )
         {
-            if (status == null)
+            if (progress == null)
             {
-                throw new ArgumentNullException(nameof(status));
+                throw new ArgumentNullException(nameof(progress));
             }
 
             return
-                new ComplexValidator(status, _executorFactory);
+                new ComplexValidator(progress, _executorFactory);
         }
     }
 }
