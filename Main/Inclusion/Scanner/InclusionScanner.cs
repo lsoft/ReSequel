@@ -297,13 +297,17 @@ namespace Main.Inclusion.Scanner
                 //    continue;
                 //}
 
-                var cv = model.GetConstantValue(right);
-                if (!cv.HasValue)
+                if (!model.Compilation.TryGetStringValue(document, right, out var sqlBody))
                 {
                     continue;
                 }
 
-                var sqlBody = cv.Value?.ToString();
+                //var cv = model.GetConstantValue(right);
+                //if (!cv.HasValue)
+                //{
+                //    continue;
+                //}
+                //var sqlBody = cv.Value?.ToString();
 
                 var isMuted = comments.Contains(
                     assignment.Right.GetLocation().GetLineSpan().StartLinePosition.Line - 1
@@ -462,19 +466,18 @@ namespace Main.Inclusion.Scanner
                         }
 
                         ArgumentSyntax argumentSyntax = argumentListSyntax.Arguments[argIndex];
-                        //var argumentExpression = argumentSyntax.Expression;
-                        //if (!argumentExpression.IsKind(SyntaxKind.StringLiteralExpression))
-                        //{
-                        //    continue;
-                        //}
 
-                        var cv = model.GetConstantValue(argumentSyntax.Expression);
-                        if (!cv.HasValue)
+                        if (!model.Compilation.TryGetStringValue(document, argumentSyntax.Expression, out var sqlBody))
                         {
                             continue;
                         }
 
-                        var sqlBody = cv.Value?.ToString();
+                        //var cv = model.GetConstantValue(argumentSyntax.Expression);
+                        //if (!cv.HasValue)
+                        //{
+                        //    continue;
+                        //}
+                        //var sqlBody = cv.Value?.ToString();
 
                         var isMuted = comments.Contains(
                             argumentSyntax.Expression.GetLocation().GetLineSpan().StartLinePosition.Line - 1
@@ -651,13 +654,17 @@ namespace Main.Inclusion.Scanner
                         {
                             var argumentSyntax = argumentListSyntax.Arguments[0];
 
-                            var cv = model.GetConstantValue(argumentSyntax.Expression);
-                            if (!cv.HasValue)
+                            if (!model.Compilation.TryGetStringValue(document, argumentSyntax.Expression, out var queryTemplate))
                             {
                                 continue;
                             }
 
-                            var queryTemplate = cv.Value?.ToString();
+                            //var cv = model.GetConstantValue(argumentSyntax.Expression);
+                            //if (!cv.HasValue)
+                            //{
+                            //    continue;
+                            //}
+                            //var queryTemplate = cv.Value?.ToString();
 
                             generator.WithQuery(queryTemplate);
                         }

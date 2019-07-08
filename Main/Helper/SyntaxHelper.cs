@@ -88,7 +88,7 @@ namespace Main.Helper
             var leadingTrivia = node.GetLeadingTrivia();
             if (leadingTrivia.Count > 0)
             {
-                sstart = leadingTrivia.FullSpan.End + 1;
+                sstart = leadingTrivia.FullSpan.End;//+ 1;
             }
             else
             {
@@ -98,7 +98,7 @@ namespace Main.Helper
             var trailingTrivia = node.GetTrailingTrivia();
             if (trailingTrivia.Count > 0)
             {
-                eend = trailingTrivia.FullSpan.Start - 1;
+                eend = trailingTrivia.FullSpan.Start;//- 1;
             }
             else
             {

@@ -1,4 +1,4 @@
-﻿Rules how to works solution-wide scanner
+﻿Rules how to use solution-wide scanner
 
 1) Scanner requires ALL items (tables, columns) to be exists in the query.
 2) Every item is a wild card (? means only ONE any symbol, * means from zero to infinity any symbols).
@@ -13,6 +13,11 @@
 11) Symbol case (upper case, lower case) does not have any influence on the results.
 12) Scanner is able to find a temp table (create table #t (id int), wild card: #t), and table variable (declare @t table (id int), wild card: @t)
 13) Scanner DOES NOT process UNSAVED changes! Please save all changes before process.
+14) While scanner is working, please DO NOT:
+ - compile solution
+ - open\close solution
+ - reload solution
+ - close Visual Studio
 
 'Require using a star in a select query' means that SQL query MUST contain * in a column list, otherwise this query will removed from the results.
 

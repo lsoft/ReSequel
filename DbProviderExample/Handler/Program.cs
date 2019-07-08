@@ -31,6 +31,8 @@ namespace Handler
             //    .DeclareOption(Part3OptionName, "select 3", "select 3,3")
             //    ;
 
+            /*
+
             var generator0 = dbp.WithGenerator(
                 );
 
@@ -69,9 +71,9 @@ from X4_TARIF_HEAD t0
                 .DeclareOption("3", "=", ">", "<", "<=", ">=", "<>")
                 .DeclareOption("4", "*", "t0.id", "t1.id", "t2.id")
                 ;
+            //*/
 
 
-         
             /*
             var generator2 = dbp.WithGenerator(
                 );
@@ -94,9 +96,34 @@ from X4_TARIF_HEAD t0
                 "print 2"
                 );
 
-            //dbp1.PrepareQuery(
-            //    "print 1"
-            //    );
+            //*/
+
+            string q0 = "fake body";
+            q0 = "print 0";
+            dbp.PrepareQuery(
+                q0
+                );
+
+            string q1 = "fake body";
+            dbp.PrepareQuery(
+                q1
+                );
+
+            string q2 = "print 0" + "1" + "2";
+            dbp.PrepareQuery(
+                q2
+                );
+
+            const string constq = "print 1";
+            dbp.PrepareQuery(
+                constq
+                );
+
+            dbp.PrepareQuery(
+                "print 2"
+                );
+
+            
 
             dbp.PrepareQuery(@"
 --1
