@@ -16,7 +16,7 @@ namespace Main.Validator.UnitProvider
             get;
         }
 
-        public IComplexValidationResult Result => _bag.Result;
+        public IValidationResult Result => _bag.Result;
 
         public ValidationUnit(
             IInclusionBag bag,
@@ -38,7 +38,7 @@ namespace Main.Validator.UnitProvider
             _bag = bag;
         }
 
-        public void SetValidationResult(IComplexValidationResult result)
+        public void SetValidationResult(IValidationResult result)
         {
             if (result == null)
             {

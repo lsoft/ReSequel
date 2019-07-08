@@ -14,7 +14,7 @@ namespace Main.Validator.UnitProvider.Bag
             get;
         }
 
-        IComplexValidationResult Result
+        IValidationResult Result
         {
             get;
         }
@@ -24,7 +24,7 @@ namespace Main.Validator.UnitProvider.Bag
             get;
         }
 
-        void SetValidationResult(IComplexValidationResult result);
+        void SetValidationResult(IValidationResult result);
 
         void FixResultIntoInclusion(bool prematurelyStopped);
     }

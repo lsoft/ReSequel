@@ -11,9 +11,12 @@ using Ninject;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Main.Inclusion.Validated;
+using Main.Inclusion.Validated.Status;
 
 namespace Extension.Tagging.ValidateButton
 {
@@ -25,7 +28,13 @@ namespace Extension.Tagging.ValidateButton
         private readonly object _locker = new object();
 
         private SqlQueryTag _tag;
+        private TagStatusChangedDelegate _invokeAction;
+
         private readonly Brush _defaultForeground;
+
+        private readonly long _border = TimeSpan.FromMilliseconds(1000).Ticks; //max 1 refresh per second, no need to refresh faster
+        private long _nextRefreshTime = DateTime.Now.Ticks;
+        private volatile int _refreshIsInProgress = 0;
 
         public ValidateButtonAdornment(
             SqlQueryTag tag
@@ -36,7 +45,7 @@ namespace Extension.Tagging.ValidateButton
                 throw new ArgumentNullException(nameof(tag));
             }
 
-            _tag = tag;
+            ReplaceTag(tag);
 
             InitializeComponent();
 
@@ -46,27 +55,85 @@ namespace Extension.Tagging.ValidateButton
         }
 
         public void UpdateTag(
-            SqlQueryTag tag
+            SqlQueryTag newTag
             )
         {
-            if(tag==null)
+            if(newTag == null)
             {
                 throw new InvalidOperationException("Incoming tag is lost");
             }
 
-            if(ReferenceEquals(_tag, tag))
+            if(ReferenceEquals(_tag, newTag))
             {
                 return;
             }
 
-            _tag.TagStatusEvent -= UpdateControl;
-            _tag = tag;
-            _tag.TagStatusEvent += UpdateControl;
+            ReplaceTag(newTag);
 
-            UpdateControl();
+            DirectUpdateControl();
         }
 
-        private void UpdateControl(
+        private void ReplaceTag(SqlQueryTag newTag)
+        {
+            lock (_locker)
+            {
+                if (_tag != null)
+                {
+                    _tag.TagStatusEvent -= _invokeAction;
+                }
+
+                _tag = newTag;
+
+                TagStatusChangedDelegate invokeAction = () => TimedUpdateControl(_tag);
+                _invokeAction = invokeAction;
+                _tag.TagStatusEvent += invokeAction;
+            }
+        }
+
+        private void TimedUpdateControl(
+            SqlQueryTag contextTag
+            )
+        {
+            if (!IsNeedToRefreshInProgressState(contextTag))
+            {
+                return;
+            }
+
+            InvokeUpdateControl(contextTag);
+        }
+
+        private bool IsNeedToRefreshInProgressState(
+            SqlQueryTag tag
+            )
+        {
+            if (tag == null)
+            {
+                return true;
+            }
+
+            if (tag.Inclusion.Status.Status != ValidationStatusEnum.InProgress)
+            {
+                return true;
+            }
+
+            var now = DateTime.Now.Ticks;
+            var next = Interlocked.Read(ref _nextRefreshTime);
+
+            if (now < next)
+            {
+                return false;
+            }
+
+            if (Interlocked.CompareExchange(ref _refreshIsInProgress, 1, 0) == 1)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private void InvokeUpdateControl(
+            SqlQueryTag contextTag
             )
         {
             ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
@@ -75,7 +142,7 @@ namespace Extension.Tagging.ValidateButton
 
                 try
                 {
-                    DirectUpdateControl();
+                    TagUpdateControl(contextTag);
                 }
                 catch (Exception excp)
                 {
@@ -85,107 +152,166 @@ namespace Extension.Tagging.ValidateButton
             });
         }
 
-        private void DirectUpdateControl(
+        private void TagUpdateControl(
+            SqlQueryTag contextTag
             )
         {
-            lock (_locker)
+            if (!ReferenceEquals(_tag, contextTag))
             {
-                this.MuteButton.IsEnabled = !_tag.Inclusion.Inclusion.IsMuted;
+                return;
+            }
 
-                if (!_tag.Inclusion.HasResult)
-                {
-                    this.ErrorMessageLabel.Foreground = _defaultForeground;
+            DirectUpdateControl();
+        }
 
-                    //this.ErrorMessageLabel.Text = "Analysis is in progress..." + Environment.NewLine + Environment.NewLine + _tag.Inclusion.Inclusion.SqlBody;
-                    this.ErrorMessageLabel.Text = string.Format(
-                        "{1}{0}{0}{2}",
-                        Environment.NewLine,
-                        "Analysis is in progress...",
-                        _tag.Inclusion.Inclusion.SqlBody
-                        );
+        private void DirectUpdateControl()
+        {
+            this.MuteButton.IsEnabled = !_tag.Inclusion.Inclusion.IsMuted;
 
-                    this.DetailsButton.Content = "Waiting for validation...";
-                    this.DetailsButton.Foreground = _defaultForeground;
-                }
-                else
-                {
-                    if (_tag.Inclusion.Result.IsSuccess)
-                    {
-                        this.ErrorMessageLabel.Foreground = Brushes.Green;
+            switch (_tag.Inclusion.Status.Status)
+            {
+                case ValidationStatusEnum.NotStarted:
+                    ProcessNotStarted();
+                    break;
+                case ValidationStatusEnum.InProgress:
+                    ProcessInProgress();
+                    break;
+                case ValidationStatusEnum.Processed:
+                    ProcessProcessed();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
 
-                        if (_tag.Inclusion.Result.CarveResult != null)
-                        {
-                            this.ErrorMessageLabel.Text = string.Format(
-                                "{1}{0}{0}{2}{0}{3}{0}{0}{4}",
-                                Environment.NewLine,
-                                "No problem found",
-                                _tag.Inclusion.Result.CarveResult.TableNames,
-                                _tag.Inclusion.Result.CarveResult.ColumnNames,
-                                _tag.Inclusion.Inclusion.SqlBody
-                                );
-                        }
-                        else
-                        {
-                            this.ErrorMessageLabel.Text = string.Format(
-                                "{1}{0}{0}{2}",
-                                Environment.NewLine,
-                                "No problem found",
-                                _tag.Inclusion.Inclusion.SqlBody
-                                );
-                        }
+            var now = DateTime.Now.Ticks;
+            var next = now + _border;
 
-                        if (_tag.Inclusion.Inclusion.IsMuted)
-                        {
-                            this.DetailsButton.Content = "MUTED";
-                            this.DetailsButton.Foreground = _defaultForeground;
-                        }
-                        else
-                        {
-                            this.DetailsButton.Content = "SUCCESS";
-                            this.DetailsButton.Foreground = Brushes.Green;
-                        }
-                    }
-                    else
-                    {
-                        this.ErrorMessageLabel.Foreground = Brushes.Red;
+            Interlocked.Exchange(ref _nextRefreshTime, next);
+            Interlocked.Exchange(ref _refreshIsInProgress, 0);
+        }
 
-                        if (_tag.Inclusion.Result.CarveResult != null)
-                        {
-                            this.ErrorMessageLabel.Text =
-                                string.Format(
-                                    "{1}{0}{0}{2}{0}{3}{0}{0}{4}",
-                                    Environment.NewLine,
-                                    _tag.Inclusion.Result.WarningOrErrorMessage,
-                                    _tag.Inclusion.Result.CarveResult.TableNames,
-                                    _tag.Inclusion.Result.CarveResult.ColumnNames,
-                                    _tag.Inclusion.Inclusion.SqlBody
-                                    );
-                        }
-                        else
-                        {
-                            this.ErrorMessageLabel.Text =
-                                string.Format(
-                                    "{1}{0}{0}{2}",
-                                    Environment.NewLine,
-                                    _tag.Inclusion.Result.WarningOrErrorMessage,
-                                    _tag.Inclusion.Inclusion.SqlBody
-                                    );
-                        }
+        private void ProcessNotStarted()
+        {
+            this.ErrorMessageLabel.Foreground = _defaultForeground;
 
-                        if (_tag.Inclusion.Inclusion.IsMuted)
-                        {
-                            this.DetailsButton.Content = "MUTED";
-                            this.DetailsButton.Foreground = _defaultForeground;
-                        }
-                        else
-                        {
-                            this.DetailsButton.Content = "FAIL (click for details)";
-                            this.DetailsButton.Foreground = Brushes.Red;
-                        }
-                    }
-                }
+            this.ErrorMessageLabel.Text = string.Format(
+                "{1}{0}{0}{2}",
+                Environment.NewLine,
+                "Analysis has not started yet...",
+                _tag.Inclusion.Inclusion.SqlBody
+            );
+
+            this.DetailsButton.Content = "Not started yet...";
+            this.DetailsButton.Foreground = _defaultForeground;
+        }
+
+        private void ProcessInProgress()
+        {
+            this.ErrorMessageLabel.Foreground = _defaultForeground;
+
+            this.ErrorMessageLabel.Text = string.Format(
+                "{0}/{1} {2}{3}{3}{4}",
+                _tag.Inclusion.Status.ProcessedCount,
+                _tag.Inclusion.Status.TotalCount,
+                "Analysis is in progress...",
+                Environment.NewLine,
+                _tag.Inclusion.Inclusion.SqlBody
+                );
+
+            this.DetailsButton.Content = string.Format(
+                "{0}/{1} Waiting for validation...",
+                _tag.Inclusion.Status.ProcessedCount,
+                _tag.Inclusion.Status.TotalCount
+                );
+            this.DetailsButton.Foreground = _defaultForeground;
+        }
+
+        private void ProcessProcessed()
+        {
+            if (_tag.Inclusion.Status.IsSuccess)
+            {
+                ProcessSuccess();
+            }
+            else
+            {
+                ProcessNotSuccess();
             }
         }
+
+        private void ProcessNotSuccess()
+        {
+            this.ErrorMessageLabel.Foreground = Brushes.Red;
+
+            if (_tag.Inclusion.Status.Result.CarveResult != null)
+            {
+                this.ErrorMessageLabel.Text =
+                    string.Format(
+                        "{1}{0}{0}{2}{0}{3}{0}{0}{4}",
+                        Environment.NewLine,
+                        _tag.Inclusion.Status.Result.WarningOrErrorMessage,
+                        _tag.Inclusion.Status.Result.CarveResult.TableNames,
+                        _tag.Inclusion.Status.Result.CarveResult.ColumnNames,
+                        _tag.Inclusion.Inclusion.SqlBody);
+            }
+            else
+            {
+                this.ErrorMessageLabel.Text =
+                    string.Format(
+                        "{1}{0}{0}{2}",
+                        Environment.NewLine,
+                        _tag.Inclusion.Status.Result.WarningOrErrorMessage,
+                        _tag.Inclusion.Inclusion.SqlBody);
+            }
+
+            if (_tag.Inclusion.Inclusion.IsMuted)
+            {
+                this.DetailsButton.Content = "MUTED";
+                this.DetailsButton.Foreground = _defaultForeground;
+            }
+            else
+            {
+                this.DetailsButton.Content = "FAIL (click for details)";
+                this.DetailsButton.Foreground = Brushes.Red;
+            }
+        }
+
+        private void ProcessSuccess()
+        {
+            this.ErrorMessageLabel.Foreground = Brushes.Green;
+
+            if (_tag.Inclusion.Status.Result.CarveResult != null)
+            {
+                this.ErrorMessageLabel.Text = string.Format(
+                    "{1}{0}{0}{2}{0}{3}{0}{0}{4}",
+                    Environment.NewLine,
+                    "No problem found",
+                    _tag.Inclusion.Status.Result.CarveResult.TableNames,
+                    _tag.Inclusion.Status.Result.CarveResult.ColumnNames,
+                    _tag.Inclusion.Inclusion.SqlBody);
+            }
+            else
+            {
+                this.ErrorMessageLabel.Text = string.Format(
+                    "{1}{0}{0}{2}",
+                    Environment.NewLine,
+                    "No problem found",
+                    _tag.Inclusion.Inclusion.SqlBody);
+            }
+
+            if (_tag.Inclusion.Inclusion.IsMuted)
+            {
+                this.DetailsButton.Content = "MUTED";
+                this.DetailsButton.Foreground = _defaultForeground;
+            }
+            else
+            {
+                this.DetailsButton.Content = "SUCCESS";
+                this.DetailsButton.Foreground = Brushes.Green;
+            }
+        }
+
+
+
 
         private void DetailsButton_Click(object sender, RoutedEventArgs e)
         {

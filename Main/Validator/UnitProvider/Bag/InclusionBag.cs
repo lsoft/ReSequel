@@ -1,6 +1,7 @@
 ﻿using System;
 using Main.Inclusion.Validated;
 using Main.Inclusion.Validated.Result;
+using Main.Inclusion.Validated.Status;
 
 namespace Main.Validator.UnitProvider.Bag
 {
@@ -13,11 +14,7 @@ namespace Main.Validator.UnitProvider.Bag
             get;
         }
 
-        public IComplexValidationResult Result
-        {
-            get;
-            private set;
-        }
+        public IValidationResult Result => Inclusion.Status?.Result;
 
         public int TotalResultReceived
         {
@@ -37,7 +34,7 @@ namespace Main.Validator.UnitProvider.Bag
             Inclusion = inclusion;
         }
 
-        public void SetValidationResult(IComplexValidationResult result)
+        public void SetValidationResult(IValidationResult result)
         {
             if (result == null)
             {
@@ -50,67 +47,74 @@ namespace Main.Validator.UnitProvider.Bag
 
                 if (TotalResultReceived > Inclusion.Inclusion.FormattedQueriesCount)
                 {
-                    throw new InvalidOperationException("Too many results come in!");
+                    throw new InvalidOperationException("Too many results came in!");
                 }
 
-                if (Result != null)
+                if (Inclusion.Status?.Result?.IsFailed ?? false)
                 {
-                    if (Result.IsSuccess)
-                    {
-                        //if previous Result is a success, replace it
-                        Result = result;
-                    }
-                    else
-                    {
-                        //previous Result is a failure, so keep it in the place
-                    }
-                }
-                else
-                {
-                    //previous Result does not exists yet
-                    Result = result;
+                    //inclusion already contains a failed result, so nothing can be done here
+                    return;
                 }
 
-                if (TotalResultReceived == Inclusion.Inclusion.FormattedQueriesCount)
+                //inclusion contains no result or success result, both can be safely replaced
+                //but not result state SHOULD be replaced with existing result
+
+                if (result.IsFailed)
+                {
+                    //incoming result has failed, so it's the end of the result processing for this inclusion
+                    Inclusion.SetStatusProcessed(result);
+                    return;
+                }
+
+                var completed = TotalResultReceived == Inclusion.Inclusion.FormattedQueriesCount;
+
+                if (completed)
                 {
                     //all results has came
-                    //it's time to store result into inclusion
 
-                    FixResultIntoInclusion(false);
+                    if (Inclusion.Status.Status == ValidationStatusEnum.Processed)
+                    {
+                        throw new InvalidOperationException("Unknown problem with processed status");
+                    }
+
+                    Inclusion.SetStatusProcessed(result);
+                    return;
                 }
+
+                Inclusion.SetStatusInProgress(TotalResultReceived, Inclusion.Inclusion.FormattedQueriesCount, result);
             }
         }
 
         public void FixResultIntoInclusion(bool prematurelyStopped)
         {
-            if (Inclusion.HasResult)
+            if (Inclusion.IsProcessed)
             {
+                //inclusion has been processed already, nothing to do
                 return;
             }
 
-            if (Result != null && TotalResultReceived == Inclusion.Inclusion.FormattedQueriesCount)
-            {
-                //bag is exists and full, let's process it
+            //make note: if we are here then TotalResultReceived at least = 1
 
-                Inclusion.SetResult(Result);
+            var completed = TotalResultReceived == Inclusion.Inclusion.FormattedQueriesCount;
+
+            if (completed)
+            {
+                //Inclusion should contain valid (success or failure) Result
+                //so keep it in the place with new status 'Processed'
+                Inclusion.SetStatusProcessedWithNoResultChanged();
             }
             else
             {
-                //result for this inclusion is not found
-                if (!prematurelyStopped)
+                //incomplete validation found
+                if (prematurelyStopped)
                 {
-                    //validation process completed at 100%
-                    //but results does not exists
-                    //unknown problem
-                    throw new InvalidOperationException("Unknown problem with validation #2");
+                    var errorResult = ValidationResult.Error(Inclusion.Inclusion.SqlBody, Inclusion.Inclusion.SqlBody, "Process stopped prematurely");
+                    Inclusion.SetStatusProcessed(errorResult);
                 }
-
-                var errorResult = ValidationResult.Error(Inclusion.Inclusion.SqlBody, Inclusion.Inclusion.SqlBody, "Process stopped prematurely");
-                Inclusion.SetResult(errorResult);
-
-                //var cvr = new ComplexValidationResult();
-                //cvr.Append(ValidationResult.Error(Inclusion.Inclusion.SqlBody, Inclusion.Inclusion.SqlBody, "Process stopped prematurely"));
-                //Inclusion.SetResult(cvr);
+                else
+                {
+                    Inclusion.SetStatusProcessedWithNoResultChanged();
+                }
             }
         }
     }

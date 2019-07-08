@@ -5,27 +5,30 @@ using Main.Other;
 using Main.Inclusion.Validated.Result;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Main.Inclusion.Found;
+using Main.Inclusion.Validated.Status;
 
 namespace Main.Inclusion.Validated
 {
     public class ValidatedSqlInclusion : IValidatedSqlInclusion
     {
-        private IValidationResult _result;
-
         public IFoundSqlInclusion Inclusion
         {
             get;
             private set;
         }
 
-        public IValidationResult Result => _result;
+        public IValidationStatus Status
+        {
+            get;
+            private set;
+        }
 
-        public bool HasResult => _result != null;
+        public bool IsProcessed => Status.Status == ValidationStatusEnum.Processed;
 
         public event InclusionStatusChangedDelegate InclusionStatusEvent;
 
         public ValidatedSqlInclusion(
-           IFoundSqlInclusion inclusion
+            IFoundSqlInclusion inclusion
             )
         {
             if (inclusion == null)
@@ -33,28 +36,64 @@ namespace Main.Inclusion.Validated
                 throw new ArgumentNullException(nameof(inclusion));
             }
 
-            _result = null;
             Inclusion = inclusion;
+            Status = ValidationStatus.NotStarted();
         }
 
-        public void ResetResult()
+        public void SetStatusNotStarted()
         {
-            _result = null;
+            Status = ValidationStatus.NotStarted();
 
             RaiseInclusionStatusEvent();
         }
 
-        public void SetResult(IValidationResult result)
+        public void SetStatusInProgress(int processedCount, int totalCount)
+        {
+            Status = ValidationStatus.InProgress(processedCount, totalCount, null);
+
+            RaiseInclusionStatusEvent();
+        }
+
+        public void SetStatusInProgress(int processedCount, int totalCount, IValidationResult result)
         {
             if (result == null)
             {
                 throw new ArgumentNullException(nameof(result));
             }
 
-            if(Interlocked.CompareExchange(ref _result, result, null) != null) 
+            Status = ValidationStatus.InProgress(processedCount, totalCount, result);
+
+            RaiseInclusionStatusEvent();
+        }
+
+        public void SetStatusProcessed(IValidationResult result)
+        {
+            if (result == null)
             {
-                throw new InvalidOperationException("double time");
+                throw new ArgumentNullException(nameof(result));
             }
+
+            Status = ValidationStatus.Processed(result);
+
+            RaiseInclusionStatusEvent();
+        }
+
+        public void SetStatusProcessedWithNoResultChanged()
+        {
+            if (Status.Status == ValidationStatusEnum.Processed)
+            {
+                throw new InvalidOperationException("Status is processed, but it shouldn't allowed!");
+            }
+
+            Status = ValidationStatus.Processed(Status.Result);
+
+            RaiseInclusionStatusEvent();
+        }
+
+
+        public void ResetToNotStarted()
+        {
+            Status.ResetToNotStarted();
 
             RaiseInclusionStatusEvent();
         }
@@ -62,7 +101,7 @@ namespace Main.Inclusion.Validated
         public Report GenerateReport(
             )
         {
-            if(!HasResult)
+            if(!IsProcessed)
             {
                 throw new InvalidOperationException("Not processed already");
             }
@@ -71,8 +110,8 @@ namespace Main.Inclusion.Validated
                 Inclusion.Location.Path,
                 Inclusion.Location.StartLinePosition.Line,
                 Inclusion.SqlBody,
-                _result.Result,
-                _result.WarningOrErrorMessage
+                Status.Result.Result,
+                Status.Result.WarningOrErrorMessage
                 );
 
             return

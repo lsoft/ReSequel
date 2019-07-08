@@ -31,16 +31,58 @@ namespace Handler
             //    .DeclareOption(Part3OptionName, "select 3", "select 3,3")
             //    ;
 
-            var generator = dbp.WithGenerator(
+            var generator0 = dbp.WithGenerator(
                 );
 
-            generator
+            generator0
+                .WithQuery(@"
+select
+    {4}
+from table_that_does_not_exists t0
+{0} join table_that_does_not_exists t1 on t0.id {2} t1.id
+{1} join table_that_does_not_exists t2 on t0.id {3} t2.id
+")
+
+                .DeclareOption("0", "left", "right", "full", string.Empty)
+                .DeclareOption("1", "left", "right", "full", string.Empty)
+                .DeclareOption("2", "=", ">", "<", "<=", ">=", "<>")
+                .DeclareOption("3", "=", ">", "<", "<=", ">=", "<>")
+                .DeclareOption("4", "*", "t0.id", "t1.id", "t2.id")
+                ;
+
+             
+            var generator1 = dbp.WithGenerator(
+                );
+
+            generator1
+                .WithQuery(@"
+select
+    {4}
+from X4_TARIF_HEAD t0
+{0} join X4_TARIF_HEAD t1 on t0.id {2} t1.id
+{1} join X4_TARIF_HEAD t2 on t0.id {3} t2.id
+")
+
+                .DeclareOption("0", "left", "right", "full", string.Empty)
+                .DeclareOption("1", "left", "right", "full", string.Empty)
+                .DeclareOption("2", "=", ">", "<", "<=", ">=", "<>")
+                .DeclareOption("3", "=", ">", "<", "<=", ">=", "<>")
+                .DeclareOption("4", "*", "t0.id", "t1.id", "t2.id")
+                ;
+
+
+         
+            /*
+            var generator2 = dbp.WithGenerator(
+                );
+
+            generator2
                 .WithQuery("select 1,1 {0} {1} {2} {3}")
                 .DeclareOption(JoinOptionName, "union", "except")
                 .DeclareOption(Part2OptionName, "select 2,2", "select 2,2")
                 ;
 
-            generator
+            generator2
                 .DeclareOption(JoinOptionName, "except", "union")
                 .DeclareOption(Part3OptionName, "select 3,3", "select 3,3")
                 ;
@@ -89,6 +131,7 @@ INSERT INTO [dbo].[X4_TARIF_HEAD]
             @id_group
 		    )
 ");
+        //*/
         }
     }
 }

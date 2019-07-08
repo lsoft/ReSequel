@@ -1,5 +1,7 @@
+using System;
 using Main.Inclusion.Found;
 using Main.Inclusion.Validated.Result;
+using Main.Inclusion.Validated.Status;
 using Main.Other;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -13,24 +15,30 @@ namespace Main.Inclusion.Validated
             get;
         }
 
-        IValidationResult Result
+        IValidationStatus Status
         {
             get;
         }
 
-        bool HasResult
+        bool IsProcessed
         {
             get;
         }
 
         event InclusionStatusChangedDelegate InclusionStatusEvent;
 
-        void ResetResult(
+        void ResetToNotStarted(
             );
 
-        void SetResult(
-            IValidationResult result
-            );
+        void SetStatusNotStarted();
+
+        void SetStatusInProgress(int processedCount, int totalCount);
+
+        void SetStatusInProgress(int processedCount, int totalCount, IValidationResult result);
+
+        void SetStatusProcessed(IValidationResult result);
+
+        void SetStatusProcessedWithNoResultChanged();
 
         Report GenerateReport(
             );

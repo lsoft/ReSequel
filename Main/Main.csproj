@@ -262,9 +262,12 @@
     <Compile Include="Inclusion\Found\IFoundSqlInclusion.cs" />
     <Compile Include="Inclusion\Validated\InclusionStatusChangedDelegate.cs" />
     <Compile Include="Inclusion\Validated\IValidatedSqlInclusion.cs" />
+    <Compile Include="Inclusion\Validated\Status\IValidationStatus.cs" />
     <Compile Include="Inclusion\Validated\ValidatedSqlInclusion.cs" />
     <Compile Include="Inclusion\Found\FoundSqlInclusionEqualityComparer.cs" />
     <Compile Include="Inclusion\Validated\ValidatedSqlInclusionEqualityComparer.cs" />
+    <Compile Include="Inclusion\Validated\Status\ValidationStatusEnum.cs" />
+    <Compile Include="Inclusion\Validated\Status\ValidationStatus.cs" />
     <Compile Include="Logger\ConsoleProcessLogger.cs" />
     <Compile Include="Logger\DebugProcessLogger.cs" />
     <Compile Include="Logger\ILastMessageProcessLogger.cs" />

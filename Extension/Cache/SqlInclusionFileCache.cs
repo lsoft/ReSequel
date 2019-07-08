@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Main.Inclusion.Validated.Status;
 
 namespace Extension.Cache
 {
@@ -123,7 +124,7 @@ namespace Extension.Cache
                 _cache.CopyTo(array);
             }
 
-            result.AddRange(array.Where(j => !j.HasResult));
+            result.AddRange(array.Where(j => !j.IsProcessed));
         }
 
         public void CleanupProcessedStatus()
@@ -133,8 +134,8 @@ namespace Extension.Cache
             {
                 foreach (var item in _cache)
                 {
-                    changesExists |= (item.Result != null);
-                    item.ResetResult();
+                    changesExists |= (item.Status.Status == ValidationStatusEnum.Processed);
+                    item.ResetToNotStarted();
                 }
             }
 

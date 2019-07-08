@@ -66,7 +66,7 @@ namespace Main.Validator
                 ProcessInParallel(unitProvider);
             }
 
-            var prematurelyStopped = unitProvider.TotalVariantCount > unitProvider.CheckedVariantCount;
+            var prematurelyStopped = shouldBreak();
 
             foreach (var inclusion in inclusions)
             {
@@ -97,8 +97,12 @@ namespace Main.Validator
 
             var before = DateTime.Now;
 
+            var options = new ParallelOptions();
+            options.MaxDegreeOfParallelism = Environment.ProcessorCount;
+
             Parallel.ForEach(
                 unitProvider.RequestNextUnitSync(),
+                options,
                 () =>
                 {
                     Debug.WriteLine("SqlExecutor works in thread {0}", Thread.CurrentThread.ManagedThreadId);

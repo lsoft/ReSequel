@@ -30,6 +30,8 @@ namespace Main.Sql.SqlServer.Executor
         private long _disposed = 0L;
         public int ProcessedUnits => _processedUnits;
 
+        public static int AliveConnectionCount = 0;
+
         public SqlServerExecutor(
             string connectionString,
             ISqlValidatorFactory sqlValidatorFactory
@@ -49,6 +51,9 @@ namespace Main.Sql.SqlServer.Executor
 
             var connection = new SqlConnection(connectionString);
             connection.Open();
+
+
+            Interlocked.Increment(ref AliveConnectionCount);
 
             _connection = connection;
 
@@ -119,6 +124,8 @@ namespace Main.Sql.SqlServer.Executor
             }
 
             _connection?.Dispose();
+
+            Interlocked.Decrement(ref AliveConnectionCount);
         }
     }
 

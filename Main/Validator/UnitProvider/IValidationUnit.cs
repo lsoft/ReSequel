@@ -15,11 +15,11 @@ namespace Main.Validator.UnitProvider
             get;
         }
 
-        IComplexValidationResult Result
+        IValidationResult Result
         {
             get;
         }
 
-        void SetValidationResult(IComplexValidationResult result);
+        void SetValidationResult(IValidationResult result);
     }
 }

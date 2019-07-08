@@ -33,6 +33,7 @@ using Extension.Other;
 using System.Runtime.CompilerServices;
 using Microsoft.VisualStudio.Threading;
 using Extension.ExtensionStatus;
+using Main.Inclusion.Validated.Status;
 
 namespace Extension.Wpf.InclusionList
 {
@@ -504,7 +505,7 @@ namespace Extension.Wpf.InclusionList
 
                 var inclusion = wrapper.Inclusion;
 
-                if (inclusion.Result.CarveResult == null)
+                if (inclusion.Status.Result == null || inclusion.Status.Result.CarveResult == null)
                 {
                     return false;
                 }
@@ -519,12 +520,12 @@ namespace Extension.Wpf.InclusionList
                 }
                 else
                 {
-                    if (inclusion.Result.IsSuccess && !_showGreen)
+                    if (inclusion.Status.IsSuccess && !_showGreen)
                     {
                         return false;
                     }
 
-                    if (!inclusion.Result.IsSuccess && !_showRed)
+                    if (!inclusion.Status.IsSuccess && !_showRed)
                     {
                         return false;
                     }
@@ -532,7 +533,7 @@ namespace Extension.Wpf.InclusionList
 
                 if (_tables != null)
                 {
-                    if (_tables.Any(table => !inclusion.Result.CarveResult.IsTableReferenced(table)))
+                    if (_tables.Any(table => !inclusion.Status.Result.CarveResult.IsTableReferenced(table)))
                     {
                         return false;
                     }
@@ -540,7 +541,7 @@ namespace Extension.Wpf.InclusionList
 
                 if (_columns != null)
                 {
-                    if (_columns.Any(column => !inclusion.Result.CarveResult.IsColumnReferenced(column)))
+                    if (_columns.Any(column => !inclusion.Status.Result.CarveResult.IsColumnReferenced(column)))
                     {
                         return false;
                     }
@@ -709,14 +710,14 @@ namespace Extension.Wpf.InclusionList
         {
             get
             {
-                if (Inclusion.Result == null)
+                if (Inclusion.Status.Result == null || Inclusion.Status.Status != ValidationStatusEnum.Processed)
                 {
                     return
                         string.Empty;
                 }
 
                 return
-                    Inclusion.Result.WarningOrErrorMessage;
+                    Inclusion.Status.Result.WarningOrErrorMessage;
             }
         }
 
@@ -724,22 +725,22 @@ namespace Extension.Wpf.InclusionList
         {
             get
             {
-                if (Inclusion.Result == null)
+                if (Inclusion.Status == null || Inclusion.Status.Status != ValidationStatusEnum.Processed)
                 {
                     return
                         string.Empty;
                 }
 
-                if (Inclusion.Result.CarveResult.TableList.Count == 0)
+                if (Inclusion.Status.Result.CarveResult.TableList.Count == 0)
                 {
                     return
-                        Inclusion.Result.CarveResult.TableNames;
+                        Inclusion.Status.Result.CarveResult.TableNames;
                 }
 
                 return
                     string.Format(
                         "Table references: {0}",
-                        Inclusion.Result.CarveResult.TableNames
+                        Inclusion.Status.Result.CarveResult.TableNames
                         );
             }
         }
@@ -748,22 +749,22 @@ namespace Extension.Wpf.InclusionList
         {
             get
             {
-                if (Inclusion.Result == null)
+                if (Inclusion.Status == null || Inclusion.Status.Status != ValidationStatusEnum.Processed)
                 {
                     return
                         string.Empty;
                 }
 
-                if (Inclusion.Result.CarveResult.ColumnList.Count == 0)
+                if (Inclusion.Status.Result.CarveResult.ColumnList.Count == 0)
                 {
                     return
-                        Inclusion.Result.CarveResult.ColumnNames;
+                        Inclusion.Status.Result.CarveResult.ColumnNames;
                 }
 
                 return
                     string.Format(
                         "Column references: {0}",
-                        Inclusion.Result.CarveResult.ColumnNames
+                        Inclusion.Status.Result.CarveResult.ColumnNames
                         );
             }
         }
@@ -778,13 +779,13 @@ namespace Extension.Wpf.InclusionList
                         Brushes.DarkGray;
                 }
 
-                if (Inclusion.Result == null)
+                if (Inclusion.Status == null || Inclusion.Status.Status != ValidationStatusEnum.Processed)
                 {
                     return
                         Brushes.Yellow;
                 }
 
-                if (Inclusion.Result.IsSuccess)
+                if (Inclusion.Status.Result.IsSuccess)
                 {
                     return
                         Brushes.Green;

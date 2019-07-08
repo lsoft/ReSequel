@@ -61,7 +61,7 @@ namespace Main.Validator.UnitProvider
 
             TotalVariantCount = inclusions.Sum(inclusion => inclusion.Inclusion.FormattedQueriesCount);
 
-            foreach (var inclusion in inclusions)
+            foreach (var inclusion in inclusions.OrderBy(j => j.Inclusion.FormattedQueriesCount)) //put heaviest generators at the end of the list
             {
                 var bag = new InclusionBag(inclusion);
                 _artifacts[inclusion] = bag;
@@ -116,6 +116,8 @@ namespace Main.Validator.UnitProvider
                 var bag = pair.Value;
                 var inclusion = bag.Inclusion;
 
+                inclusion.SetStatusInProgress(0, inclusion.Inclusion.FormattedQueriesCount);
+
                 foreach (var sqlBody in inclusion.Inclusion.FormattedSqlBodies)
                 {
                     if (_shouldBreak())
@@ -133,6 +135,8 @@ namespace Main.Validator.UnitProvider
                     var unit = new ValidationUnit(bag, sqlBody);
                     yield return unit;
                 }
+
+                //bag.FixResultIntoInclusion(_shouldBreak());
             }
         }
     }
