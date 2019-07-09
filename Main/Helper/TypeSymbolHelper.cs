@@ -52,7 +52,19 @@ namespace Main.Helper
             }
 
             var model = compilation.GetSemanticModel(expression.SyntaxTree);
+            if (model == null)
+            {
+                result = null;
+                return false;
+            }
+
             var symbol = ModelExtensions.GetSymbolInfo(model, expression).Symbol;
+
+            if (symbol == null)
+            {
+                result = null;
+                return false;
+            }
 
             var references = symbol.DeclaringSyntaxReferences.ToList();
 

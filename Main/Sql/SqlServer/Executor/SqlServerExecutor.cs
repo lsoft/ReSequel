@@ -86,34 +86,43 @@ namespace Main.Sql.SqlServer.Executor
 
             Interlocked.Increment(ref _processedUnits);
 
-            var result = new ComplexValidationResult();
-
-            using (var sql = new StringReader(unit.SqlBody))
+            try
             {
-                IList<ParseError> errors;
-                var parseResult = (TSqlScript) _parser.Parse(sql, out errors);
+                var result = new ComplexValidationResult();
 
-                if (errors.Count > 0)
+                using (var sql = new StringReader(unit.SqlBody))
                 {
-                    throw new InvalidOperationException(string.Join(Environment.NewLine,
-                        errors.Select(error => string.Format("{0}:{1}: {2}", error.Line, error.Column, error.Message))));
-                }
+                    IList<ParseError> errors;
+                    var parseResult = (TSqlScript) _parser.Parse(sql, out errors);
 
-                var validator = _sqlValidatorFactory.Create(_connection);
-                var visitor = new StatementVisitor(validator);
-
-                foreach (var batch in parseResult.Batches)
-                {
-                    foreach (TSqlStatement statement in batch.Statements)
+                    if (errors.Count > 0)
                     {
-                        var visitorResult = visitor.ProcessNextStatement(statement);
+                        throw new InvalidOperationException(
+                            string.Join(
+                                Environment.NewLine, 
+                                errors.Select(error => string.Format("{0}:{1}: {2}", error.Line, error.Column, error.Message))));
+                    }
 
-                        result.Append(visitorResult);
+                    var validator = _sqlValidatorFactory.Create(_connection);
+                    var visitor = new StatementVisitor(validator);
+
+                    foreach (var batch in parseResult.Batches)
+                    {
+                        foreach (TSqlStatement statement in batch.Statements)
+                        {
+                            var visitorResult = visitor.ProcessNextStatement(statement);
+
+                            result.Append(visitorResult);
+                        }
                     }
                 }
-            }
 
-            unit.SetValidationResult(result);
+                unit.SetValidationResult(result);
+            }
+            catch (Exception excp)
+            {
+                unit.SetValidationResult(new ExceptionValidationResult(unit.SqlBody, excp));
+            }
         }
 
         public void Dispose()

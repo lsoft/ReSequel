@@ -78,42 +78,40 @@ namespace Main.SolutionValidator
 
             _logger.ShowProcessMessage("Scanning for SQL inclusions");
 
-            List<IFoundSqlInclusion> foundInclusionList;
-            using (IWorkspaceWrapper subjectWorkspace = _workspaceFactory.Open(pathToSubjectSolution))
+            try
             {
-                //no need this:
-                //subjectWorkspace.Compile(false);
-                //this solution will be complied document by document
+                List<IFoundSqlInclusion> foundInclusionList;
+                using (IWorkspaceWrapper subjectWorkspace = _workspaceFactory.Open(pathToSubjectSolution))
+                {
+                    //no need this:
+                    //subjectWorkspace.Compile(false);
+                    //this solution will be complied document by document
 
-                var scanner = _scannerFactory.Create(
-                    );
+                    var scanner = _scannerFactory.Create();
 
-                foundInclusionList = scanner.Scan(
-                    subjectWorkspace,
-                    _logger
-                    );
+                    foundInclusionList = scanner.Scan(subjectWorkspace,
+                        _logger);
+                }
+
+                var validationInclusionList = foundInclusionList.ConvertAll(j => (IValidatedSqlInclusion) new ValidatedSqlInclusion(j))
+                    ;
+
+                Progress.SetInclusionCount(validationInclusionList.Count);
+
+                var validator = _validationFactory.Create(Progress);
+
+                validator.Validate(validationInclusionList,
+                    () => false);
+
+                Progress.Finish();
+
+                return
+                    validationInclusionList;
             }
-
-            var validationInclusionList = foundInclusionList
-                .ConvertAll(j => (IValidatedSqlInclusion)new ValidatedSqlInclusion(j))
-                ;
-
-            Progress.SetInclusionCount(validationInclusionList.Count);
-
-            var validator = _validationFactory.Create(
-                Progress
-                );
-
-            validator.Validate(
-                validationInclusionList,
-                () => false
-                );
-
-            Progress.Finish();
-
-            return
-                validationInclusionList;
-
+            catch (Exception excp)
+            {
+                throw;
+            }
         }
     }
 

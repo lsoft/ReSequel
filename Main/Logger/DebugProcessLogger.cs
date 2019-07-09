@@ -4,8 +4,6 @@ namespace Main.Logger
 {
     public class DebugProcessLogger : IProcessLogger
     {
-        private readonly object _locker = new object();
-
         public DebugProcessLogger()
         {
 

@@ -28,7 +28,7 @@ namespace Tests.CompositionRoot
         public override void Load()
         {
             Bind<IProcessLogger>()
-                .To<ConsoleProcessLogger>()
+                .To<DebugProcessLogger>()
                 .InSingletonScope()
                 ;
 
