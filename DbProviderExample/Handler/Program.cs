@@ -160,5 +160,12 @@ INSERT INTO [dbo].[X4_TARIF_HEAD]
 ");
         //*/
         }
+
+        public static void AdditionalMethod(IDBProvider dbProvider)
+        {
+            dbProvider.ExecuteNonQuery(
+                "print 2"
+                );
+        }
     }
 }

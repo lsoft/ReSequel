@@ -90,17 +90,27 @@
 
 
 
-
-
       <Method Name="ExecuteScalar">
         <Argument Type="System.String" ContainsSql="true"/>
       </Method>
 
     </Container>
-    
-    
-    
-    
+
+
+
+
+    <Container Name="LSoft.Server.IDBProvider">
+
+      <Method Name="ExecuteNonQuery">
+        <Argument Type="System.String" ContainsSql="true"/>
+      </Method>
+
+    </Container>
+
+
+
+
+
   </Project>
 
 </Scan>

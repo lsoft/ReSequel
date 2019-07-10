@@ -7,7 +7,14 @@ using System.Threading.Tasks;
 
 namespace LSoft.Server
 {
-    public class DBProvider
+    public interface IDBProvider
+    {
+
+        void ExecuteNonQuery(string q);
+    }
+
+
+    public class DBProvider : IDBProvider
     {
         public string SqlText
         {

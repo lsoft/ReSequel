@@ -59,6 +59,18 @@ namespace Extension.ConfigurationRelated
             _watcher.Path = _path.FolderPath;
             _watcher.Filter = _path.FileName;
             _watcher.Changed += (a, e) => ConfigurationFileChangedEventInvoke();
+            _watcher.Renamed += (a, e) =>
+            {
+                if (string.Compare(_path.FilePath, e.FullPath, StringComparison.InvariantCultureIgnoreCase) != 0)
+                {
+                    //save changes in the file opened in VS is a two step procedure - rename target file to temp filename, and rename other temp file to a target filename
+                    //we need to filter the first, and raise after the second
+                    return;
+                }
+
+                ConfigurationFileChangedEventInvoke();
+
+            };
 
             _watcher.EnableRaisingEvents = true;
         }

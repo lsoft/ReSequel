@@ -143,6 +143,11 @@ namespace Extension.Tagging.Extractor
             var origDocumentId = workspace.GetDocumentIdInCurrentContext(textContainer);
             var origDocument = workspace.CurrentSolution.GetDocument(origDocumentId);
 
+            if (origDocument.FilePath == null)
+            {
+                return result;
+            }
+
             var fileCache = _cache.GetOrCreateFileCache(
                 origDocument.FilePath
                 );
