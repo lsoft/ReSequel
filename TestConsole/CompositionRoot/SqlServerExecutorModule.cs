@@ -3,8 +3,9 @@ using Ninject.Modules;
 using Main;
 using System;
 using Main.Sql;
+using Main.Sql.ConnectionString;
+using SqlServerValidator.Executor;
 using TestConsole.TaskRelated;
-using Main.Sql.SqlServer.Executor;
 
 namespace TestConsole.CompositionRoot
 {
@@ -15,10 +16,18 @@ namespace TestConsole.CompositionRoot
             Bind<IConnectionStringContainer>()
                 .To<ConstantConnectionStringContainer>()
                 .InSingletonScope()
+               .WithConstructorArgument(
+                    "executorType",
+                    SqlExecutorTypeEnum.Sqlite
+                )
                 .WithConstructorArgument(
                     "connectionString",
                     c => c.Kernel.Get<WorkingTaskSqlExecutor>().ConnectionString
                     )
+               .WithConstructorArgument(
+                    "parameters",
+                    string.Empty
+                )
                 ;
 
 

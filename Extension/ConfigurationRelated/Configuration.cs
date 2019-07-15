@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Extension.ConfigurationRelated
 {
-    public partial class Configuration
+    public class Configuration
     {
         public string ScanScheme
         {

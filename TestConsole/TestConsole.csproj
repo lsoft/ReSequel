@@ -282,6 +282,10 @@
       <Project>{78dccd9a-24d0-406b-bcc2-0722140a5ffa}</Project>
       <Name>Main</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SqlServerValidator\SqlServerValidator.csproj">
+      <Project>{bcdb3a5e-aaad-4db4-9ee7-b0c766181a00}</Project>
+      <Name>SqlServerValidator</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="DbProviderTask.xml">

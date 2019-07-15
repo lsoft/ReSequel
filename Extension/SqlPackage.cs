@@ -21,6 +21,8 @@ using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
 using System.ComponentModel.Composition;
+using System.IO;
+using System.Reflection;
 using Extension.Tagging;
 using Ninject;
 using Extension.Cache;
@@ -84,6 +86,8 @@ namespace Extension
             // any Visual Studio service because at this point the package object is created but
             // not sited yet inside Visual Studio environment. The place to do all the other
             // initialization is the Initialize method.
+
+            AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
         }
 
         #region Package Members
@@ -116,5 +120,29 @@ namespace Extension
         }
 
         #endregion
+
+
+        private Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            string path = Assembly.GetExecutingAssembly().Location;
+            path = Path.GetDirectoryName(path);
+
+            var name = args.Name;
+
+            if (name.ToLower().Contains("sqlite"))
+            {
+                var index = name.IndexOf(',');
+                if (index > 0)
+                {
+                    name = name.Substring(0, index);
+                }
+
+                path = Path.Combine(path, name + ".dll");
+                Assembly ret = Assembly.LoadFrom(path);
+                return ret;
+            }
+
+            return null;
+        }
     }
 }

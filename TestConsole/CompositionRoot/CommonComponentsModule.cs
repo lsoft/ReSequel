@@ -5,7 +5,6 @@ using Main;
 using Main.WorkspaceWrapper;
 using System;
 using System.Linq;
-using Main.Sql.SqlServer.Validator.Factory;
 using Main.Inclusion.Scanner;
 
 using TestConsole.TaskRelated;
@@ -17,6 +16,8 @@ using Main.ScanRelated;
 using System.IO;
 using Main.Helper;
 using Main.SolutionValidator;
+using Main.Sql;
+using SqlServerValidator.Validator.Factory;
 
 namespace TestConsole.CompositionRoot
 {

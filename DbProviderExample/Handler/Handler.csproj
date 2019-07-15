@@ -53,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="_example.db" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CoreServices.Common\CoreServices.Common.csproj">

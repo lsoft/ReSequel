@@ -54,6 +54,7 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AsyncRelayCommand.cs" />
     <Compile Include="BaseViewModel.cs" />
     <Compile Include="CommandReference.cs" />
     <Compile Include="IConsumePassword.cs" />

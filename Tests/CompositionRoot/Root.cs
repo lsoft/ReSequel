@@ -21,7 +21,7 @@ namespace Tests.CompositionRoot
             _kernel = new StandardKernel();
         }
 
-        public void BindAll(
+        public void BindCommon(
             )
         {
             var ccm = new CommonComponentsModule(
@@ -29,6 +29,17 @@ namespace Tests.CompositionRoot
             _kernel.Load(ccm);
         }
 
+        public void BindSqlServer()
+        {
+            var ssm = new SqlServerModule();
+            _kernel.Load(ssm);
+        }
+
+        public void BindSqlite()
+        {
+            var slm = new SqliteModule();
+            _kernel.Load(slm);
+        }
 
         public T GetInstance<T>()
         {

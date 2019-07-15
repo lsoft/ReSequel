@@ -1,0 +1,15 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Tests" GeneratedClassName="Sqlite">
+  <Profiles />
+  <Settings>
+    <Setting Name="PathToDatabaseFile" Type="System.String" Scope="User">
+      <Value Profile="(Default)">.</Value>
+    </Setting>
+    <Setting Name="DatabaseFileName" Type="System.String" Scope="User">
+      <Value Profile="(Default)">_test.db</Value>
+    </Setting>
+    <Setting Name="CreateDatabaseScript" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+  </Settings>
+</SettingsFile>

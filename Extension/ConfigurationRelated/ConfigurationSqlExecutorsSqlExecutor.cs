@@ -1,6 +1,6 @@
 namespace Extension.ConfigurationRelated
 {
-    public partial class ConfigurationSqlExecutorsSqlExecutor
+    public class ConfigurationSqlExecutorsSqlExecutor
     {
         public string Name
         {
@@ -20,10 +20,42 @@ namespace Extension.ConfigurationRelated
             set;
         }
 
+        public string Parameters
+        {
+            get;
+            set;
+        }
+
         public bool IsDefault
         {
             get;
             set;
+        }
+
+        public bool TryGetParameter(string parameterName, out string parameterValue)
+        {
+            if (string.IsNullOrEmpty(Parameters))
+            {
+                parameterValue = string.Empty;
+                return false;
+            }
+
+            var pairs = Parameters.Split(';');
+            foreach (var pair in pairs)
+            {
+                var parts = pair.Split('=');
+                if (parts.Length == 2)
+                {
+                    if (parts[0] == parameterName)
+                    {
+                        parameterValue = parts[1];
+                        return true;
+                    }
+                }
+            }
+
+            parameterValue = string.Empty;
+            return false;
         }
     }
 }

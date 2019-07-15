@@ -59,11 +59,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Cache\CacheUpdatedDelegate.cs" />
     <Compile Include="Cache\SqlInclusionCache.cs" />
     <Compile Include="Cache\SqlInclusionCacheBackgroundValidator.cs" />
     <Compile Include="Cache\SqlInclusionFileCache.cs" />
     <Compile Include="Command\ChooseDefaultExecutorCommand.cs" />
+    <Compile Include="CompositionRoot\Modules\SqliteModule.cs" />
+    <Compile Include="CompositionRoot\Modules\SqlServerModule.cs" />
+    <Compile Include="ConfigurationRelated\ConfigurationFileChangedDelegate.cs" />
     <Compile Include="ConfigurationRelated\ConfigurationSolutions.cs" />
+    <Compile Include="ConfigurationRelated\IConfigurationProvider.cs" />
     <Compile Include="ExtensionStatus\ExtensionStatusContainer.cs" />
     <Compile Include="ExtensionStatus\FullyLoaded\FullyLoadedStatusContainer.cs" />
     <Compile Include="ExtensionStatus\FullyLoaded\IFullyLoadedStatusContainer.cs" />
@@ -87,8 +92,8 @@
     <Compile Include="Tagging\SqlQuery\SqlQueryTaggerProvider.cs" />
     <Compile Include="Tagging\Extractor\TimeoutTagExtractor.cs" />
     <Compile Include="Command\InclusionListCommand.cs" />
-    <Compile Include="CompositionRoot\ChildModule.cs" />
-    <Compile Include="CompositionRoot\DefaultModule.cs" />
+    <Compile Include="CompositionRoot\Modules\ChildModule.cs" />
+    <Compile Include="CompositionRoot\Modules\DefaultModule.cs" />
     <Compile Include="CompositionRoot\Root.cs" />
     <Compile Include="Command\EditXmlCommand.cs" />
     <Compile Include="ConfigurationRelated\Configuration.cs" />
@@ -97,6 +102,7 @@
     <Compile Include="ConfigurationRelated\ConfigurationSqlExecutors.cs" />
     <Compile Include="ConfigurationRelated\ConfigurationSqlExecutorsSqlExecutor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tagging\SqlQuery\TagStatusChangedDelegate.cs" />
     <Compile Include="Tagging\Support\IntraTextAdornmentTagger.cs" />
     <Compile Include="Tagging\Support\IntraTextAdornmentTagTransformer.cs" />
     <Compile Include="Tagging\Support\RegexTagger.cs" />
@@ -115,6 +121,7 @@
     <Compile Include="Wpf\InclusionList\InclusionListWindowControl.xaml.cs">
       <DependentUpon>InclusionListWindowControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Wpf\InclusionList\InclusionWrapper.cs" />
     <Compile Include="Wpf\ProvideToolboxControlAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -480,6 +487,14 @@
     <ProjectReference Include="..\Main\Main.csproj">
       <Project>{78DCCD9A-24D0-406B-BCC2-0722140A5FFA}</Project>
       <Name>Main</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SqliteValidator\SqliteValidator.csproj">
+      <Project>{F7B86A18-71F1-4476-BD04-40CEE0D667C0}</Project>
+      <Name>SqliteValidator</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SqlServerValidator\SqlServerValidator.csproj">
+      <Project>{bcdb3a5e-aaad-4db4-9ee7-b0c766181a00}</Project>
+      <Name>SqlServerValidator</Name>
     </ProjectReference>
     <ProjectReference Include="..\WpfHelpers\WpfHelpers.csproj">
       <Project>{CE2249A8-82A0-426F-9211-7CB0065F1A93}</Project>

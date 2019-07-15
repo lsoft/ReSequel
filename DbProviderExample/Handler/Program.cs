@@ -163,9 +163,24 @@ INSERT INTO [dbo].[X4_TARIF_HEAD]
 
         public static void AdditionalMethod(IDBProvider dbProvider)
         {
-            dbProvider.ExecuteNonQuery(
-                "print 2"
-                );
+            dbProvider.ExecuteNonQuery(@"
+print 2
+GO
+print 3
+");
+
+            dbProvider.ExecuteNonQuery(@"
+select 2
+GO
+select 3
+");
+
+            dbProvider.ExecuteNonQuery(@"
+select * from sqlite_sequence
+");
+            
+
+
         }
     }
 }

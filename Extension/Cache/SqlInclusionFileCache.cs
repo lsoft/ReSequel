@@ -11,8 +11,6 @@ using Main.Inclusion.Validated.Status;
 
 namespace Extension.Cache
 {
-    public delegate void CacheUpdatedDelegate();
-
     public class SqlInclusionFileCache
     {
         private readonly HashSet<IValidatedSqlInclusion> _cache = new HashSet<IValidatedSqlInclusion>(ValidatedSqlInclusionEqualityComparer.Instance);

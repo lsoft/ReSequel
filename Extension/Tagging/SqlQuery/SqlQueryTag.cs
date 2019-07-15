@@ -18,8 +18,6 @@ using Microsoft.VisualStudio.Text.Tagging;
 
 namespace Extension.Tagging.SqlQuery
 {
-    public delegate void TagStatusChangedDelegate();
-
     public class SqlQueryTag : ITag
     {
         public IValidatedSqlInclusion Inclusion

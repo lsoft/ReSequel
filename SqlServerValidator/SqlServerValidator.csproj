@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{BCDB3A5E-AAAD-4DB4-9EE7-B0C766181A00}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SqlServerValidator</RootNamespace>
+    <AssemblyName>SqlServerValidator</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>Key.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.SqlServer.TransactSql.ScriptDom, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.SqlServer.TransactSql.ScriptDom.15.0.4200.1\lib\net40\Microsoft.SqlServer.TransactSql.ScriptDom.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Butcher\SqlServerButcher.cs" />
+    <Compile Include="Butcher\SqlServerButcherFactory.cs" />
+    <Compile Include="Executor\SqlServerExecutor.cs" />
+    <Compile Include="Executor\SqlServerExecutorFactory.cs" />
+    <Compile Include="Identifier\SqlServerColumnName.cs" />
+    <Compile Include="Identifier\SqlServerTableName.cs" />
+    <Compile Include="Identifier\SqlServerTableNameHelper.cs" />
+    <Compile Include="Identifier\SqlServerTableVariableName.cs" />
+    <Compile Include="SqlServerHelper.cs" />
+    <Compile Include="SqlVariableStringComparer.cs" />
+    <Compile Include="Validator\DescribeSqlValidator.cs" />
+    <Compile Include="Validator\Factory\DescribeSqlValidatorFactory.cs" />
+    <Compile Include="Validator\Factory\DetectSqlValidatorFactory.cs" />
+    <Compile Include="Validator\Factory\FmtOnlySqlValidatorFactory.cs" />
+    <Compile Include="Validator\FmtOnlySqlValidator.cs" />
+    <Compile Include="Visitor\ButcherVisitor.cs" />
+    <Compile Include="Visitor\Known\IKnownVariable.cs" />
+    <Compile Include="Visitor\Known\KnownTableVariable.cs" />
+    <Compile Include="Visitor\Known\KnownVariable.cs" />
+    <Compile Include="Visitor\StatementVisitor.cs" />
+    <Compile Include="Visitor\TSqlDomHelpers.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Main\Main.csproj">
+      <Project>{78dccd9a-24d0-406b-bcc2-0722140a5ffa}</Project>
+      <Name>Main</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="Key.snk" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

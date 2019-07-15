@@ -9,25 +9,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Main.Sql.ConnectionString;
 
 namespace Extension.ConfigurationRelated
 {
-    public interface IConfigurationProvider
-    {
-        bool TryRead(
-            out Configuration configuration
-            );
-
-        void Save(
-            Configuration configuration
-            );
-
-        event ConfigurationFileChangedDelegate ConfigurationFileChangedEvent;
-    }
-
-    public delegate void ConfigurationFileChangedDelegate(
-        );
-
     internal sealed class ConfigurationProvider : IConnectionStringContainer, IConfigurationProvider, IDisposable
     {
         private readonly ConfigurationFilePath _path;
@@ -75,10 +60,29 @@ namespace Extension.ConfigurationRelated
             _watcher.EnableRaisingEvents = true;
         }
 
+        #region IConnectionStringContainer
+
+        public SqlExecutorTypeEnum ExecutorType
+        {
+            get
+            {
+                if (!TryRead(out var configuration))
+                {
+                    throw new InvalidOperationException("Cannot read configuration");
+                }
+
+                var executor = configuration.SqlExecutors.SqlExecutor.First(j => j.IsDefault);
+
+                Enum.TryParse<SqlExecutorTypeEnum>(executor.Type, true, out var result);
+
+                return
+                    result;
+            }
+        }
+
         public string GetConnectionString()
         {
-            Configuration configuration;
-            if (!TryRead(out configuration))
+            if (!TryRead(out var configuration))
             {
                 throw new InvalidOperationException("Cannot read configuration");
             }
@@ -88,6 +92,21 @@ namespace Extension.ConfigurationRelated
             return
                 executor.ConnectionString;
         }
+
+        public bool TryGetParameter(string parameterName, out string parameterValue)
+        {
+            if (!TryRead(out var configuration))
+            {
+                throw new InvalidOperationException("Cannot read configuration");
+            }
+
+            var executor = configuration.SqlExecutors.SqlExecutor.First(j => j.IsDefault);
+
+            return
+                executor.TryGetParameter(parameterName, out parameterValue);
+        }
+
+        #endregion
 
         public bool TryRead(
             out Configuration configuration

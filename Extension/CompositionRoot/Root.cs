@@ -16,6 +16,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Main.Sql;
 
 namespace Extension.CompositionRoot
 {
@@ -82,6 +83,12 @@ namespace Extension.CompositionRoot
             var childmod = new ChildModule(
                 );
             _kernel.Load(childmod);
+
+            var ssm = new SqlServerModule();
+            _kernel.Load(ssm);
+
+            var slm = new SqliteModule();
+            _kernel.Load(slm);
 
 
             ThreadHelper.ThrowIfNotOnUIThread(nameof(BindAll));

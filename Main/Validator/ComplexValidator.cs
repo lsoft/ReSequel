@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Main.Inclusion.Validated;
+using Main.Inclusion.Validated.Result;
 using Main.Validator.UnitProvider;
 
 namespace Main.Validator
@@ -51,6 +52,18 @@ namespace Main.Validator
             {
                 return;
             }
+
+            //check for sql validator can connect to RDBMS
+            if (!_executorFactory.CheckForConnectionExists(out var errorMessage))
+            {
+                foreach (var inclusion in inclusions)
+                {
+                    inclusion.SetStatusProcessed(ValidationResult.Error(inclusion.Inclusion.SqlBody, inclusion.Inclusion.SqlBody, errorMessage));
+                }
+
+                return;
+            }
+
 
             var unitProvider = new UnitProvider.UnitProvider(
                 inclusions,
