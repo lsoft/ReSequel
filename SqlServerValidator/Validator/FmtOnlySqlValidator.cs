@@ -38,7 +38,7 @@ set fmtonly off
         {
             try
             {
-                var declaratinBlock = BuildVariableDeclarationBlock(
+                var declarationBlock = BuildVariableDeclarationBlock(
                     innerSql
                     );
 
@@ -46,7 +46,7 @@ set fmtonly off
                 {
                     cmd.CommandText = string.Format(
                         FullSql,
-                        declaratinBlock + Environment.NewLine + innerSql
+                        declarationBlock + Environment.NewLine + innerSql
                         );
                     cmd.CommandTimeout = 5;
 

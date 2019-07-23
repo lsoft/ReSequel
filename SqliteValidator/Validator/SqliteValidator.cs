@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.Common;
 using Main.Sql;
+using Microsoft.Data.Sqlite;
 
 namespace SqliteValidator.Validator
 {
@@ -27,6 +28,11 @@ namespace SqliteValidator.Validator
                 using (var command = _connection.CreateCommand())
                 {
                     command.CommandText = mstatement;
+
+                    // temporary workaround this issue: https://github.com/aspnet/EntityFrameworkCore/issues/16647
+                    var lCommand = command as SqliteCommand;
+                    lCommand.AddDummyParameters();
+
                     command.CommandTimeout = 5;
                     command.ExecuteNonQuery();
                 }

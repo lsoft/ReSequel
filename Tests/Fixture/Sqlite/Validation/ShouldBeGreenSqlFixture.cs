@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Data.SqlClient;
+using System.IO;
+using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Tests.Fixture.Sqlite.Validation
@@ -59,6 +61,22 @@ select ifnull(1, 1)
 select 1
 GO
 select ifnull(1, 1)
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+            );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void SelectStatementWithVariable()
+        {
+            var sqlBody = @"
+select 1 where 1 = @a
 ";
 
             var processed = ValidateAgainstSchema(
