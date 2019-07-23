@@ -44,7 +44,7 @@ namespace Main.Inclusion.Validated.Result
             _sqlBody = sqlBody;
             _excp = excp;
 
-            CarveResult = null;
+            CarveResult = new CarveResult();
         }
 
         private string GetFailMessage(

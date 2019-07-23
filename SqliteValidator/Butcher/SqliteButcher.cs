@@ -7,7 +7,7 @@ namespace SqliteValidator.Butcher
     {
         public ICarveResult Carve(string sqlBody)
         {
-            var result = new ComplexCarveResult();
+            var result = new CarveResult();
 
             //no 'legal' way to parse Sqlite statement
 

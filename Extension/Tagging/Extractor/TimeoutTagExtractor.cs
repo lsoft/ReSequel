@@ -24,6 +24,7 @@ using Microsoft.VisualStudio.Text.Tagging;
 using System.Threading.Tasks;
 using Main.Inclusion.Found;
 using Microsoft.VisualStudio.Shell;
+using Ninject.Infrastructure.Disposal;
 
 namespace Extension.Tagging.Extractor
 {
@@ -233,6 +234,85 @@ namespace Extension.Tagging.Extractor
         private void DoWork(
             )
         {
+            while (true)
+            {
+                var freshList = GetFreshDescriptors();
+                if (freshList != null && freshList.Count > 0)
+                {
+                    foreach (var fresh in freshList.OrderBy(j => j.LastChangedDate))
+                    {
+                        ProcessDescriptor(fresh);
+                    }
+                }
+
+                var waitTimeout =
+                    //TimeSpan.FromMilliseconds(-1); //infinity
+                    TimeSpan.FromSeconds(10); //some kind of guarantee that descriptors will be processed even the _changesExistsSignal is lost somehow
+
+                var oldestUnprocessed = GetOldestUnprocessedDescriptor();
+                if (oldestUnprocessed != null)
+                {
+                    waitTimeout = (oldestUnprocessed.LastChangedDate + _timeout) - DateTime.Now;
+                }
+
+                if (waitTimeout > TimeSpan.Zero)
+                {
+                    var waitResult = WaitHandle.WaitAny(
+                        new WaitHandle[]
+                        {
+                            _changesExistsSignal,
+                            _stopSignal
+                        },
+                        waitTimeout
+                    );
+
+                    if (waitResult == 1)
+                    {
+                        //exit signal
+                        return;
+                    }
+
+                    if (waitResult == 0)
+                    {
+                        //new changes exists
+                        //repeat!
+                        continue;
+                    }
+
+                    //wait timeout fires! just repeat this cycle
+                }
+            }
+        }
+
+        private List<DocumentDescriptor> GetFreshDescriptors()
+        {
+            var now = DateTime.Now;
+
+            var result =
+                (from v in _descriptors.Values
+                    where !v.IsProcessed && (v.LastChangedDate + _timeout) < now
+                    select v).ToList();
+
+            return
+                result;
+        }
+
+        private DocumentDescriptor GetOldestUnprocessedDescriptor()
+        {
+            var oldestDescriptor =
+                (from v in _descriptors.Values
+                    where !v.IsProcessed
+                    orderby v.LastChangedDate ascending
+                    select v).FirstOrDefault();
+
+            return
+                oldestDescriptor;
+        }
+
+        /*
+        private void DoWorkOld(
+            )
+        {
             bool? successDescriptorProcess = null;
             while(true)
             {
@@ -299,6 +379,7 @@ namespace Extension.Tagging.Extractor
                 }
             }
         }
+        //*/
 
         private bool ProcessDescriptor(
             DocumentDescriptor descriptor

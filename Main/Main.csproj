@@ -253,7 +253,7 @@
     <Compile Include="Helper\SqlHelper.cs" />
     <Compile Include="Inclusion\Carved\CarvedSqlInclusion.cs" />
     <Compile Include="Inclusion\Carved\ICarvedSqlInclusion.cs" />
-    <Compile Include="Inclusion\Carved\Result\ComplexCarveResult.cs" />
+    <Compile Include="Inclusion\Carved\Result\CarveResult.cs" />
     <Compile Include="Inclusion\Carved\Result\ICarveResult.cs" />
     <Compile Include="Inclusion\Scanner\Generator\Generator.cs" />
     <Compile Include="Inclusion\Scanner\Generator\InternalOption.cs" />

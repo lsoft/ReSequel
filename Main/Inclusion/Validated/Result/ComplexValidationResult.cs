@@ -8,7 +8,7 @@ namespace Main.Inclusion.Validated.Result
     public class ComplexValidationResult : IComplexValidationResult
     {
         private readonly List<IValidationResult> _internalResults;
-        private readonly ComplexCarveResult _carveResult;
+        private readonly CarveResult _carveResult;
 
         public IReadOnlyCollection<IValidationResult> InternalResults => _internalResults;
 
@@ -30,7 +30,7 @@ namespace Main.Inclusion.Validated.Result
             )
         {
             _internalResults = new List<IValidationResult>();
-            _carveResult = new ComplexCarveResult();
+            _carveResult = new CarveResult();
         }
 
         public void Append(

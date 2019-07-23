@@ -89,8 +89,10 @@ namespace Main.SolutionValidator
 
                     var scanner = _scannerFactory.Create();
 
-                    foundInclusionList = scanner.Scan(subjectWorkspace,
-                        _logger);
+                    foundInclusionList = scanner.Scan(
+                        subjectWorkspace,
+                        _logger
+                        );
                 }
 
                 var validationInclusionList = foundInclusionList.ConvertAll(j => (IValidatedSqlInclusion) new ValidatedSqlInclusion(j))
@@ -100,8 +102,10 @@ namespace Main.SolutionValidator
 
                 var validator = _validationFactory.Create(Progress);
 
-                validator.Validate(validationInclusionList,
-                    () => false);
+                validator.Validate(
+                    validationInclusionList,
+                    () => false
+                    );
 
                 Progress.Finish();
 
