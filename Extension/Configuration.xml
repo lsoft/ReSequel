@@ -17,7 +17,7 @@
       <!-- need to specific database due to specific forms of SQLs -->
       <ConnectionString>Data Source=tomato; Initial Catalog=KPPK; Integrated Security=SSPI; Connection Timeout=10; Max Pool Size=50;</ConnectionString>
       <Parameters></Parameters>
-      <IsDefault>false</IsDefault>
+      <IsDefault>true</IsDefault>
     </SqlExecutor>
     <SqlExecutor>
       <Name>Sqlite Database</Name>
@@ -25,7 +25,7 @@
       <!-- need to specific database due to specific forms of SQLs -->
       <ConnectionString>Data Source=F:\projects\git\ReSequel\DbProviderExample\Handler\_example.db;</ConnectionString>
       <Parameters>Password=;CaseSensitive=False</Parameters>
-      <IsDefault>true</IsDefault>
+      <IsDefault>false</IsDefault>
     </SqlExecutor>
   </SqlExecutors>
 

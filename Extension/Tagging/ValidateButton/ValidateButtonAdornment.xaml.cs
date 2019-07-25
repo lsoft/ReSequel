@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.Shell;
 using Ninject;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows;
@@ -25,6 +26,8 @@ namespace Extension.Tagging.ValidateButton
     /// </summary>
     public partial class ValidateButtonAdornment : UserControl
     {
+        private readonly ISolutionNameProvider _solutionNameProvider;
+
         private readonly object _locker = new object();
 
         private SqlQueryTag _tag;
@@ -37,13 +40,21 @@ namespace Extension.Tagging.ValidateButton
         private volatile int _refreshIsInProgress = 0;
 
         public ValidateButtonAdornment(
+            ISolutionNameProvider solutionNameProvider,
             SqlQueryTag tag
             )
         {
+            if (solutionNameProvider == null)
+            {
+                throw new ArgumentNullException(nameof(solutionNameProvider));
+            }
+
             if (tag == null)
             {
                 throw new ArgumentNullException(nameof(tag));
             }
+
+            _solutionNameProvider = solutionNameProvider;
 
             ReplaceTag(tag);
 
@@ -166,7 +177,8 @@ namespace Extension.Tagging.ValidateButton
 
         private void DirectUpdateControl()
         {
-            this.MuteButton.IsEnabled = !_tag.Inclusion.Inclusion.IsMuted;
+            this.MuteEverywhereButton.IsEnabled = !_tag.Inclusion.Inclusion.IsMuted;
+            this.MuteHereButton.IsEnabled = !_tag.Inclusion.Inclusion.IsMuted;
 
             switch (_tag.Inclusion.Status.Status)
             {
@@ -325,7 +337,46 @@ namespace Extension.Tagging.ValidateButton
                 );
         }
 
-        private async void Mute_Click(object sender, RoutedEventArgs e)
+        private async void MuteHere_Click(object sender, RoutedEventArgs e)
+        {
+            var foundInclusion = _tag.Inclusion.Inclusion;
+
+            Document document;
+            if (!foundInclusion.TryGetDocument(out document))
+            {
+                return;
+            }
+
+            var text = await document.GetTextAsync();
+            var lines = text
+                .ToString()
+                .Split(new[] { Environment.NewLine }, StringSplitOptions.None)
+                .ToList()
+                ;
+
+            var origLine = lines[foundInclusion.Start.Line];
+
+            var shift = Array.FindIndex(
+                origLine.ToCharArray(),
+                j => !char.IsSeparator(j)
+                );
+
+            if (shift < 0)
+            {
+                shift = 0;
+            }
+
+            lines.Insert(
+                foundInclusion.Start.Line,
+                new string(' ', shift) + InclusionScanner.MuteAtComment  + "*" + new FileInfo(_solutionNameProvider.SolutionName).Name
+                );
+            var newText = string.Join(Environment.NewLine, lines);
+
+            var newDocument = document.WithText(SourceText.From(newText));
+            var applied = newDocument.Project.Solution.Workspace.TryApplyChanges(newDocument.Project.Solution);
+        }
+
+        private async void MuteEverywhere_Click(object sender, RoutedEventArgs e)
         {
             var foundInclusion = _tag.Inclusion.Inclusion;
 
@@ -356,7 +407,7 @@ namespace Extension.Tagging.ValidateButton
 
             lines.Insert(
                 foundInclusion.Start.Line,
-                new string(' ', shift) + InclusionScanner.MuteComment
+                new string(' ', shift) + InclusionScanner.MuteEverywhereComment
                 );
             var newText = string.Join(Environment.NewLine, lines);
 

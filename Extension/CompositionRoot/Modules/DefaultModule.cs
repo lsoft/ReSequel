@@ -144,7 +144,7 @@ namespace Extension.CompositionRoot
                 ;
 
 
-            Bind<IExtensionStatus, IVsSolutionEventsExt>()
+            Bind<ISolutionNameProvider, IExtensionStatus, IVsSolutionEventsExt>()
                 .To<ExtensionStatusContainer>()
                 .InSingletonScope()
                 ;

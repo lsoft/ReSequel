@@ -36,16 +36,26 @@
                         <Button
                             Content="Ctrl+C"
                             Padding="10,0,10,0"
+                            ToolTip="Copy SQL body to clipboard"
                             Click="CopyToCliboard_Click"
                             />
 
                         <Button
-                            Name="MuteButton"
-                            Content="Mute"
+                            Name="MuteEverywhereButton"
+                            Content="Mute everywhere"
                             Padding="10,0,10,0"
-                            Click="Mute_Click"
+                            ToolTip="Mute this query for all solutions"
+                            Click="MuteEverywhere_Click"
                             />
-                        
+
+                        <Button
+                            Name="MuteHereButton"
+                            Content="Mute here"
+                            Padding="10,0,10,0"
+                            ToolTip="Mute this query only for this solution"
+                            Click="MuteHere_Click"
+                        />
+
                     </StackPanel>
 
                     <TextBlock

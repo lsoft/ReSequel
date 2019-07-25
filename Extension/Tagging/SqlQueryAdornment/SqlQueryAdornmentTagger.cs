@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Extension.Tagging.SqlQuery;
 using Extension.Tagging.Support;
 using Extension.Tagging.ValidateButton;
+using Main.Inclusion.Scanner;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
@@ -101,7 +102,7 @@ namespace Extension.Tagging.SqlQueryAdornment
         protected override ValidateButtonAdornment CreateAdornment(SqlQueryTag tag, SnapshotSpan span)
         {
             return new ValidateButtonAdornment(
-                //SqlPackage.Root.Kernel.Get<ISqlProcessor>(),
+                CompositionRoot.Root.CurrentRoot.Kernel.Get<ISolutionNameProvider>(),
                 tag
                 );
         }
