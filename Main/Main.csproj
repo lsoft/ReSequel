@@ -262,6 +262,7 @@
     <Compile Include="Inclusion\Scanner\InclusionScannerFactory.cs" />
     <Compile Include="Inclusion\Found\FoundSqlInclusion.cs" />
     <Compile Include="Inclusion\Found\IFoundSqlInclusion.cs" />
+    <Compile Include="Inclusion\Scanner\ISolutionNameProvider.cs" />
     <Compile Include="Inclusion\Validated\InclusionStatusChangedDelegate.cs" />
     <Compile Include="Inclusion\Validated\IValidatedSqlInclusion.cs" />
     <Compile Include="Inclusion\Validated\Status\IValidationStatus.cs" />

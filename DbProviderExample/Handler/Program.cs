@@ -120,6 +120,7 @@ from X4_TARIF_HEAD t0
                 );
 
             dbp.PrepareQuery(
+                //ReSequel: MUTE next query at: *NameOfSomeSolution.sln, *DbProviderExample.2017.sln
                 "print 2"
                 );
 

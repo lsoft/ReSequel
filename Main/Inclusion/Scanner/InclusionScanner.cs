@@ -11,15 +11,18 @@ using Microsoft.CodeAnalysis.FindSymbols;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Main.Inclusion.Scanner
 {
     public sealed class InclusionScanner : IInclusionScanner
     {
-        public const string MuteComment = "//ReSequel: MUTE next query";
+        public const string MuteEverywhereComment = "//ReSequel: MUTE next query everywhere";
+        public const string MuteAtComment = "//ReSequel: MUTE next query at: ";
         public const string StringEmptyStatement = "string.Empty";
 
+        private readonly ISolutionNameProvider _solutionNameProvider;
         private readonly Scan _scanScheme;
 
         private readonly IReadOnlyCollection<string> _generatorMethodSet;
@@ -28,14 +31,21 @@ namespace Main.Inclusion.Scanner
         private readonly IReadOnlyCollection<string> _containerPropertySet;
 
         public InclusionScanner(
+            ISolutionNameProvider solutionNameProvider,
             Scan scanScheme
             )
         {
+            if (solutionNameProvider == null)
+            {
+                throw new ArgumentNullException(nameof(solutionNameProvider));
+            }
+
             if (scanScheme == null)
             {
                 throw new ArgumentNullException(nameof(scanScheme));
             }
 
+            _solutionNameProvider = solutionNameProvider;
             _scanScheme = scanScheme;
 
             //make some optimization
@@ -181,19 +191,35 @@ namespace Main.Inclusion.Scanner
             var comments = root
                 .DescendantTrivia()
                 .Where(j => j.Kind() == SyntaxKind.SingleLineCommentTrivia)
-                .Where(j => j.ToString() == MuteComment)
+                .Where(j => j.ToString() == MuteEverywhereComment)
                 .Select(j => j.GetLocation().GetLineSpan().StartLinePosition.Line)
                 .ToHashSet()
                 ;
 
+            var comments2 = (
+                from trivia in root.DescendantTrivia()
+                where trivia.Kind() == SyntaxKind.SingleLineCommentTrivia
+                let triviaString = trivia.ToString()
+                where triviaString.StartsWith(MuteAtComment)
+                let tail = triviaString.Substring(MuteAtComment.Length).Trim()
+                let parts = tail.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries).Select(j => j.Trim())
+                where parts.Any(solutionName => Regex.IsMatch(_solutionNameProvider.SolutionName, solutionName.WildCardToRegular()))
+                select trivia.GetLocation().GetLineSpan().StartLinePosition.Line
+                ).ToHashSet();
+
+            foreach (var comment in comments2)
+            {
+                comments.Add(comment);
+            }
+
             ProcessAssignments(
-                document,
-                model,
-                root,
-                duplicateChecker,
-                comments,
-                ref result
-                );
+              document,
+              model,
+              root,
+              duplicateChecker,
+              comments,
+              ref result
+              );
 
             ProcessInvocations(
                 document,
