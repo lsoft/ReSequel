@@ -84,7 +84,7 @@ namespace Extension.CompositionRoot
                             throw new InvalidOperationException("Cannot read configuration file");
                         }
 
-                        var filePath =  configuration.ScanScheme.GetFullPathToFile();
+                        var filePath =  Root.ScanSchemeFileName.GetFullPathToFile();
 
                         var scan = filePath.ReadXml<Scan>();
 

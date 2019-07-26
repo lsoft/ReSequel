@@ -10,31 +10,6 @@ namespace Extension.ConfigurationRelated
 {
     public class Configuration
     {
-        public string ScanScheme
-        {
-            get;
-            set;
-        }
-
-        public string FullPathToScanScheme
-        {
-            get
-            {
-                return
-                    ScanScheme.GetFullPathToFile();
-            }
-        }
-
-        public bool IsScanSchemeExists
-        {
-            get
-            {
-                return
-                    File.Exists(FullPathToScanScheme);
-            }
-        }
-
-
         public ConfigurationSolutions Solutions
         {
             get;

@@ -1,8 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 
-  <ScanScheme>.\ScanDescription.xml</ScanScheme>
-
   <Solutions>
     <!-- list of wild card (? and *) applied to solution full path -->
     <Solution>*.sln</Solution>

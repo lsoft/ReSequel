@@ -11,22 +11,31 @@ using Ninject.Parameters;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.IO;
 using System.IO.Packaging;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Main.Other;
 using Main.Sql;
 
 namespace Extension.CompositionRoot
 {
     public sealed class Root : IDisposable
     {
+        public const string ConfigurationFileName = "Configuration.xml";
+        public const string ScanSchemeFileName = "ScanDescription.xml";
+
         internal static Root CurrentRoot;
 
         static Root()
         {
             //ThreadHelper.ThrowIfNotOnUIThread(nameof(Root));
+
+            ExtractEmbeddedResource(ConfigurationFileName.GetFullPathToFile(), "Extension." + ConfigurationFileName);
+            ExtractEmbeddedResource(ScanSchemeFileName.GetFullPathToFile(), "Extension." + ScanSchemeFileName);
 
             CurrentRoot = new Root(
                 "Configuration.xml"
@@ -38,7 +47,6 @@ namespace Extension.CompositionRoot
             CurrentRoot.AsyncStart(
                 );
         }
-
 
         private readonly StandardKernel _kernel;
         private readonly string _pathToXmlConfigurationFile;
@@ -158,6 +166,25 @@ namespace Extension.CompositionRoot
         {
             Root.CurrentRoot.Dispose();
         }
+
+
+        private static void ExtractEmbeddedResource(
+            string fullPath,
+            string resourceName
+        )
+        {
+            if (!File.Exists(fullPath))
+            {
+                using (var target = new FileStream(fullPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                using (var source = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
+                {
+                    source.CopyTo(target);
+
+                    target.Flush();
+                }
+            }
+        }
+
     }
 
 }

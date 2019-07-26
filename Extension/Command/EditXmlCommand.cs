@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Extension.CompositionRoot;
 using Extension.ConfigurationRelated;
 using Extension.Other;
+using Main.Other;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Ninject;
@@ -151,11 +152,13 @@ namespace Extension.Command
                 Configuration configuration;
                 if (_configurationProvider.TryRead(out configuration))
                 {
-                    if(configuration.IsScanSchemeExists)
+                    var fullPath = Root.ScanSchemeFileName.GetFullPathToFile();
+
+                    if (File.Exists(fullPath))
                     {
                         VisualStudioHelper.OpenFile(
                             _dte,
-                            configuration.FullPathToScanScheme
+                            fullPath
                             );
                         //VisualStudioHelper.OpenAndNavigate(
                         //    configuration.FullPathToScanScheme,
