@@ -240,6 +240,11 @@ namespace Extension.Tagging.ValidateButton
 
         private void ProcessProcessed()
         {
+            if (_tag == null || _tag.Inclusion == null || _tag.Inclusion.Status == null)
+            {
+                return;
+            }
+
             if (_tag.Inclusion.Status.IsSuccess)
             {
                 ProcessSuccess();
