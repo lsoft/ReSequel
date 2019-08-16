@@ -13,6 +13,11 @@ namespace Tests.CompositionRoot
     {
         public override void Load()
         {
+            Bind<IDuplicateProcessor>()
+                .To<DuplicateProcessor>()
+                .InSingletonScope()
+                ;
+
             Bind<DescribeSqlValidatorFactory>()
                .To<DescribeSqlValidatorFactory>()
                .InSingletonScope()

@@ -59,19 +59,23 @@
     <Compile Include="Identifier\SqlServerTableName.cs" />
     <Compile Include="Identifier\SqlServerTableNameHelper.cs" />
     <Compile Include="Identifier\SqlServerTableVariableName.cs" />
+    <Compile Include="DuplicateProcessor.cs" />
     <Compile Include="SqlServerHelper.cs" />
     <Compile Include="SqlVariableStringComparer.cs" />
+    <Compile Include="UndeclaredDeterminer\UndeclaredParameterDeterminer.cs" />
     <Compile Include="Validator\DescribeSqlValidator.cs" />
     <Compile Include="Validator\Factory\DescribeSqlValidatorFactory.cs" />
     <Compile Include="Validator\Factory\DetectSqlValidatorFactory.cs" />
     <Compile Include="Validator\Factory\FmtOnlySqlValidatorFactory.cs" />
     <Compile Include="Validator\FmtOnlySqlValidator.cs" />
+    <Compile Include="VariableReferenceStringComparer.cs" />
     <Compile Include="Visitor\ButcherVisitor.cs" />
     <Compile Include="Visitor\Known\IKnownVariable.cs" />
     <Compile Include="Visitor\Known\KnownTableVariable.cs" />
     <Compile Include="Visitor\Known\KnownVariable.cs" />
     <Compile Include="Visitor\StatementVisitor.cs" />
     <Compile Include="Visitor\TSqlDomHelpers.cs" />
+    <Compile Include="Visitor\VariableRef\VariableRef.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Main\Main.csproj">

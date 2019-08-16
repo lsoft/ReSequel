@@ -1,11 +1,10 @@
 ﻿using Main.Sql;
-using Main.Validator;
 using Ninject.Modules;
 using SqliteValidator.Butcher;
 using SqliteValidator.Executor;
 using SqliteValidator.Validator;
 
-namespace Extension.CompositionRoot
+namespace Extension.CompositionRoot.Modules
 {
     internal sealed class SqliteModule : NinjectModule
     {

@@ -66,28 +66,6 @@ insert into     	    #temp8 (id0 , id1) values (1, 1)
 
             Assert.IsTrue(report.IsSuccess, report.FailMessage);
         }
-
-        [TestMethod]
-        public void GroupByCaseStatement()
-        {
-            var sqlBody = @"
-select
-    case when TestTable0.id in (@mobileType0, @mobileType1) then 1 else 0 end isMobile
-from dbo.TestTable0
-GROUP BY 
-	case when TestTable0.id in (@mobileType0, @mobileType1) then 1 else 0 end
-
-";
-
-            var processed = ValidateAgainstSchema(
-                sqlBody
-            );
-
-            var report = processed.GenerateReport();
-
-            Assert.IsTrue(report.IsSuccess, report.FailMessage);
-        }
-
     }
 
 }

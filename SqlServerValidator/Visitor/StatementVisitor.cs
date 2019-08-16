@@ -16,6 +16,7 @@ namespace SqlServerValidator.Visitor
         public const string SqlServerTempTablePrefix2 = "#";
 
         private readonly ISqlValidator _sqlValidator;
+        private readonly IDuplicateProcessor _duplicateProcessor;
         private readonly List<IKnownVariable> _knownVariables;
 
         private ButcherVisitor _butcher;
@@ -31,20 +32,28 @@ namespace SqlServerValidator.Visitor
             }
 
             this._sqlValidator = visitor._sqlValidator; //of course, validate against same RDBMS
+            this._duplicateProcessor = visitor._duplicateProcessor; //we also need duplicaProcessor
             this._knownVariables = visitor._knownVariables; //share same known vars container!
             this._butcher = visitor._butcher; //share same butcher!
         }
 
         public StatementVisitor(
-            ISqlValidator sqlValidator
+            ISqlValidator sqlValidator,
+            IDuplicateProcessor duplicateProcessor
             )
         {
+            if (duplicateProcessor == null)
+            {
+                throw new ArgumentNullException(nameof(duplicateProcessor));
+            }
+
             if (sqlValidator == null)
             {
                 throw new ArgumentNullException(nameof(sqlValidator));
             }
 
             _sqlValidator = sqlValidator;
+            _duplicateProcessor = duplicateProcessor;
             _knownVariables = new List<IKnownVariable>();
         }
 
@@ -122,7 +131,8 @@ namespace SqlServerValidator.Visitor
                 throw new ArgumentNullException(nameof(statement));
             }
 
-            var sql = statement.FixDuplicates(
+            var sql = _duplicateProcessor.DetermineDuplicates(
+                statement,
                 _knownVariables
                 );
 

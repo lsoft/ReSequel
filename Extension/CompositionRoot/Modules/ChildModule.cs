@@ -1,12 +1,11 @@
-﻿using System.IO;
-using Main.Other;
-using Main.Sql;
+﻿using Main.Other;
 using Main.Progress;
+using Main.Sql;
 using Main.Validator;
 using Main.WorkspaceWrapper;
 using Ninject.Modules;
 
-namespace Extension.CompositionRoot
+namespace Extension.CompositionRoot.Modules
 {
     internal sealed class ChildModule : NinjectModule
     {

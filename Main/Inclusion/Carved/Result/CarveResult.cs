@@ -4,6 +4,7 @@ using Main.Sql.Identifier;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Main.Sql.VariableRef;
 
 namespace Main.Inclusion.Carved.Result
 {
@@ -14,6 +15,7 @@ namespace Main.Inclusion.Carved.Result
         private readonly List<ITableName> _tableList;
         private readonly List<ITableName> _tempTableList;
         private readonly List<ITableName> _tableVariableList;
+        private readonly List<IVariableRef> _variableReferenceList;
 
         private bool _isStarReferenced;
         private readonly List<IColumnName> _columnList;
@@ -27,6 +29,8 @@ namespace Main.Inclusion.Carved.Result
         public IReadOnlyList<ITableName> TempTableList => _tempTableList;
 
         public IReadOnlyList<ITableName> TableVariableList => _tableVariableList;
+
+        public IReadOnlyCollection<IVariableRef> VariableReferenceList => _variableReferenceList;
 
         /// <summary>
         /// did * used in select queries?
@@ -75,6 +79,7 @@ namespace Main.Inclusion.Carved.Result
             _tableList = new List<ITableName>();
             _tempTableList = new List<ITableName>();
             _tableVariableList = new List<ITableName>();
+            _variableReferenceList = new List<IVariableRef>();
 
             _isStarReferenced = false;
             _columnList = new List<IColumnName>();
@@ -103,6 +108,16 @@ namespace Main.Inclusion.Carved.Result
                 _columnList.Any(j => j.IsSame(columnName));
         }
 
+        public bool IsVariableReferenced(string variableName)
+        {
+            if (variableName == null)
+            {
+                throw new ArgumentNullException(nameof(variableName));
+            }
+
+            return
+                _variableReferenceList.Any(j => j.IsSame(variableName));
+        }
 
         public void Append(
             ICarveResult result
@@ -118,6 +133,7 @@ namespace Main.Inclusion.Carved.Result
             _tableList.AddRange(result.TableList);
             _tempTableList.AddRange(result.TempTableList);
             _tableVariableList.AddRange(result.TableVariableList);
+            _variableReferenceList.AddRange(result.VariableReferenceList);
 
             _isStarReferenced |= result.IsStarReferenced;
             _columnList.AddRange(result.ColumnList);

@@ -1,30 +1,22 @@
-﻿using EnvDTE;
+﻿using System;
 using Extension.Cache;
 using Extension.ConfigurationRelated;
 using Extension.ExtensionStatus;
-using Main.Other;
-using Extension.Tagging;
+using Extension.ExtensionStatus.FullyLoaded;
 using Extension.Tagging.Extractor;
-using Main;
 using Main.Helper;
 using Main.Inclusion.Scanner;
 using Main.Logger;
+using Main.Other;
 using Main.ScanRelated;
 using Main.SolutionValidator;
-using Main.Sql;
+using Main.Sql.ConnectionString;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.TextManager.Interop;
 using Ninject;
-using Ninject.Extensions.Factory;
 using Ninject.Modules;
 
-using System;
-using System.IO;
-using Extension.ExtensionStatus.FullyLoaded;
-using Main.Sql.ConnectionString;
-
-namespace Extension.CompositionRoot
+namespace Extension.CompositionRoot.Modules
 {
     public class DefaultModule : NinjectModule
     {

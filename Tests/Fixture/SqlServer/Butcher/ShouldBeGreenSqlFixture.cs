@@ -73,6 +73,7 @@ namespace Tests.Fixture.SqlServer.Butcher
             Assert.AreEqual(1, carveResult.TableList.Count);
             Assert.AreEqual(0, carveResult.TempTableList.Count);
             Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
 
             Assert.IsTrue(carveResult.IsTableReferenced(table0));
             Assert.IsTrue(carveResult.IsTableReferenced(table1));
@@ -104,6 +105,8 @@ while(exists (select * from information_schema.tables where table_name = 'testta
             Assert.AreEqual(1, carveResult.TableList.Count);
             Assert.AreEqual(0, carveResult.TempTableList.Count);
             Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+
             Assert.IsTrue(carveResult.IsTableReferenced("information_schema.tables"));
 
             Assert.AreEqual(2, carveResult.ColumnList.Count);
@@ -135,6 +138,8 @@ end
             Assert.AreEqual(3, carveResult.TableList.Count);
             Assert.AreEqual(0, carveResult.TempTableList.Count);
             Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+
             Assert.IsTrue(carveResult.IsTableReferenced("information_schema.tables"));
             Assert.IsTrue(carveResult.IsTableReferenced("dbo.TestTable1"));
             Assert.IsTrue(carveResult.IsTableReferenced("dbo.TestTable2"));
@@ -162,6 +167,8 @@ declare @t table (id1 int, id2 int)
             Assert.AreEqual(1, carveResult.TableList.Count);
             Assert.AreEqual(0, carveResult.TempTableList.Count);
             Assert.AreEqual(1, carveResult.TableVariableList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+
             Assert.IsTrue(carveResult.IsTableReferenced("@t"));
 
             Assert.AreEqual(2, carveResult.ColumnList.Count);
@@ -185,6 +192,8 @@ create table #TempTable (id1 int, id2 int, id3 int)
             Assert.AreEqual(1, carveResult.TableList.Count);
             Assert.AreEqual(1, carveResult.TempTableList.Count);
             Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+
             Assert.IsTrue(carveResult.IsTableReferenced("#TempTable"));
 
             Assert.AreEqual(3, carveResult.ColumnList.Count);
@@ -209,6 +218,8 @@ create table RealTable (id1 int, id2 int, id3 int, [id4] int)
             Assert.AreEqual(1, carveResult.TableList.Count);
             Assert.AreEqual(0, carveResult.TempTableList.Count);
             Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+
             Assert.IsTrue(carveResult.IsTableReferenced("RealTable"));
 
             Assert.AreEqual(4, carveResult.ColumnList.Count);
@@ -234,6 +245,8 @@ drop table TestTable0, TestTable1
             Assert.AreEqual(2, carveResult.TableList.Count);
             Assert.AreEqual(0, carveResult.TempTableList.Count);
             Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+
             Assert.IsTrue(carveResult.IsTableReferenced("dbo.TestTable0"));
             Assert.IsTrue(carveResult.IsTableReferenced("TestTable1"));
 
@@ -256,6 +269,8 @@ alter table TestTable0 add newId bigint null
             Assert.AreEqual(1, carveResult.TableList.Count);
             Assert.AreEqual(0, carveResult.TempTableList.Count);
             Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+
             Assert.IsTrue(carveResult.IsTableReferenced("dbo.TestTable0"));
 
             Assert.AreEqual(1, carveResult.ColumnList.Count);
@@ -278,6 +293,8 @@ alter table TestTable0 alter column id bigint null
             Assert.AreEqual(1, carveResult.TableList.Count);
             Assert.AreEqual(0, carveResult.TempTableList.Count);
             Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+
             Assert.IsTrue(carveResult.IsTableReferenced("dbo.TestTable0"));
 
             Assert.AreEqual(1, carveResult.ColumnList.Count);
@@ -302,10 +319,43 @@ from information_schema.tables
             Assert.AreEqual(1, carveResult.TableList.Count);
             Assert.AreEqual(0, carveResult.TempTableList.Count);
             Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+
             Assert.IsTrue(carveResult.IsTableReferenced("information_schema.tables"));
 
             Assert.AreEqual(1, carveResult.ColumnList.Count);
             Assert.IsTrue(carveResult.IsStarReferenced);
+        }
+
+        [TestMethod]
+        public void SelectWithVariableReferencesStatement()
+        {
+            const string sqlBody = @"
+select
+    @a
+from information_schema.tables 
+where
+	TABLE_CATALOG = @b
+";
+
+            var carveResult = Carve(
+                sqlBody
+                );
+
+            Assert.IsNotNull(carveResult);
+
+            Assert.AreEqual(1, carveResult.TableList.Count);
+            Assert.AreEqual(0, carveResult.TempTableList.Count);
+            Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(2, carveResult.VariableReferenceList.Count);
+
+            Assert.IsTrue(carveResult.IsTableReferenced("information_schema.tables"));
+            Assert.IsTrue(carveResult.IsVariableReferenced("@a"));
+            Assert.IsTrue(carveResult.IsVariableReferenced("@b"));
+
+
+            Assert.AreEqual(1, carveResult.ColumnList.Count);
+            Assert.IsFalse(carveResult.IsStarReferenced);
         }
 
     }

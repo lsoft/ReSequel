@@ -15,6 +15,7 @@ namespace SqlServerValidator.Executor
     public class SqlServerExecutor : ISqlExecutor
     {
         private readonly ISqlValidatorFactory _sqlValidatorFactory;
+        private readonly IDuplicateProcessor _duplicateProcessor;
         private readonly SqlConnection _connection;
 
         private readonly TSql140Parser _parser;
@@ -31,9 +32,15 @@ namespace SqlServerValidator.Executor
 
         public SqlServerExecutor(
             string connectionString,
-            ISqlValidatorFactory sqlValidatorFactory
+            ISqlValidatorFactory sqlValidatorFactory,
+            IDuplicateProcessor duplicateProcessor
             )
         {
+            if (duplicateProcessor == null)
+            {
+                throw new ArgumentNullException(nameof(duplicateProcessor));
+            }
+
             if (connectionString == null)
             {
                 throw new ArgumentNullException(nameof(connectionString));
@@ -45,8 +52,9 @@ namespace SqlServerValidator.Executor
             }
 
             _sqlValidatorFactory = sqlValidatorFactory;
+            _duplicateProcessor = duplicateProcessor;
 
-            var connection = CreateAndConnect(connectionString);
+            var connection = SqlServerHelper.CreateAndConnect(connectionString);
 
 
             Interlocked.Increment(ref AliveConnectionCount);
@@ -57,15 +65,6 @@ namespace SqlServerValidator.Executor
                 false
                 );
         }
-
-        public static SqlConnection CreateAndConnect(string connectionString)
-        {
-            var connection = new SqlConnection(connectionString);
-            connection.Open();
-
-            return connection;
-        }
-
 
         public void Execute(
             IUnitProvider unitProvider
@@ -109,7 +108,7 @@ namespace SqlServerValidator.Executor
                     }
 
                     var validator = _sqlValidatorFactory.Create(_connection);
-                    var visitor = new StatementVisitor(validator);
+                    var visitor = new StatementVisitor(validator, _duplicateProcessor);
 
                     foreach (var batch in parseResult.Batches)
                     {

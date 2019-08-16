@@ -8,14 +8,21 @@ namespace SqlServerValidator.Executor
     {
         private readonly IConnectionStringContainer _connectionStringContainer;
         private readonly ISqlValidatorFactory _sqlValidatorFactory;
+        private readonly IDuplicateProcessor _duplicateProcessor;
 
         public SqlExecutorTypeEnum Type => SqlExecutorTypeEnum.SqlServer;
 
         public SqlServerExecutorFactory(
             IConnectionStringContainer connectionStringContainer,
-            ISqlValidatorFactory sqlValidatorFactory
+            ISqlValidatorFactory sqlValidatorFactory,
+            IDuplicateProcessor duplicateProcessor
             )
         {
+            if (duplicateProcessor == null)
+            {
+                throw new ArgumentNullException(nameof(duplicateProcessor));
+            }
+
             if (connectionStringContainer == null)
             {
                 throw new ArgumentNullException(nameof(connectionStringContainer));
@@ -28,6 +35,7 @@ namespace SqlServerValidator.Executor
 
             _connectionStringContainer = connectionStringContainer;
             _sqlValidatorFactory = sqlValidatorFactory;
+            _duplicateProcessor = duplicateProcessor;
         }
 
 
@@ -37,7 +45,8 @@ namespace SqlServerValidator.Executor
             return
                 new SqlServerExecutor(
                     _connectionStringContainer.GetConnectionString(),
-                    _sqlValidatorFactory
+                    _sqlValidatorFactory,
+                    _duplicateProcessor
                     );
         }
 
@@ -45,7 +54,7 @@ namespace SqlServerValidator.Executor
         {
             try
             {
-                using (SqlServerExecutor.CreateAndConnect(_connectionStringContainer.GetConnectionString()))
+                using (SqlServerHelper.CreateAndConnect(_connectionStringContainer.GetConnectionString()))
                 {
 
                 }

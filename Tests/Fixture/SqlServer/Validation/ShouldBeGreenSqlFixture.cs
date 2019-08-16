@@ -839,5 +839,127 @@ from dbo.TestTable0 t0
 
             Assert.IsTrue(report.IsSuccess, report.FailMessage);
         }
+
+        [TestMethod]
+        public void DeclarationStatement()
+        {
+            var sqlBody = @"
+declare @a int;
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void DeclarationTableStatement()
+        {
+            var sqlBody = @"
+DECLARE @tid table (id BIGINT)
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void GroupByCaseStatement()
+        {
+            var sqlBody = @"
+select
+    case when TestTable0.id in (@mobileType0, @mobileType1) then 1 else 0 end isMobile
+from dbo.TestTable0
+GROUP BY 
+	case when TestTable0.id in (@mobileType0, @mobileType1) then 1 else 0 end
+
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void DateAddStatement()
+        {
+            var sqlBody = @"
+SELECT 
+	DATEADD(day, @deadline, 1)
+FROM dbo.TestTable0
+WHERE
+	getdate() < DATEADD(day, @deadline, 1)
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void ComplexTest6()
+        {
+            var sqlBody = @"
+DECLARE @version INT = 1
+
+INSERT INTO dbo.TestTable3
+    (name, additional, custom_column, database_version)
+VALUES
+	(@binary, @binary, @version, @version)
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+
+        [TestMethod]
+        public void ComplexTest7()
+        {
+            var sqlBody = @"
+SELECT
+    1, 2
+FROM dbo.TestTable3
+WHERE
+    getdate() < dateadd(day, @a, @b)
+UNION ALL
+SELECT
+    1, 2
+FROM dbo.TestTable3
+WHERE
+    getdate() < dateadd(day, @a, @b)
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
     }
 }

@@ -12,7 +12,7 @@ namespace Tests {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.9.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.2.0.0")]
     internal sealed partial class TestSettings : global::System.Configuration.ApplicationSettingsBase {
         
         private static TestSettings defaultInstance = ((TestSettings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new TestSettings())));
@@ -97,7 +97,13 @@ namespace Tests {
             "\t[name] [varchar](100) NOT NULL,\r\n\t[additional] [varchar](100) NULL,\r\n CONSTRAIN" +
             "T [PK_TestTable2] PRIMARY KEY CLUSTERED \r\n(\r\n\t[id] ASC\r\n)WITH (PAD_INDEX = OFF, " +
             "STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_" +
-            "PAGE_LOCKS = ON) ON [PRIMARY]\r\n) ON [PRIMARY]\r\nGO\r\n\r\nuse [master]\r\nGO")]
+            "PAGE_LOCKS = ON) ON [PRIMARY]\r\n) ON [PRIMARY]\r\nGO\r\n\r\n\r\nCREATE TABLE [dbo].[TestT" +
+            "able3](\r\n\t[id] [int] NOT NULL,\r\n\t[name] [varbinary](max) NOT NULL,\r\n\t[additional" +
+            "] [varbinary](max) NULL,\r\n\t[custom_column] [int] NOT NULL,\r\n\t[database_version] " +
+            "[int] NOT NULL,\r\n CONSTRAINT [PK_TestTable3] PRIMARY KEY CLUSTERED \r\n(\r\n\t[id] AS" +
+            "C\r\n)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, A" +
+            "LLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]\r\n) ON [PRIMARY]\r\nGO\r\n\r\n" +
+            "\r\nuse [master]\r\nGO")]
         public string CreateDatabaseScript {
             get {
                 return ((string)(this["CreateDatabaseScript"]));

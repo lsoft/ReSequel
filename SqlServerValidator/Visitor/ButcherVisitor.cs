@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using Main.Inclusion.Carved.Result;
 using Main.Sql.Identifier;
+using Main.Sql.VariableRef;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using SqlServerValidator.Identifier;
 
@@ -22,11 +23,18 @@ namespace SqlServerValidator.Visitor
         /// </summary>
         private List<IColumnName> _columnList = new List<IColumnName>();
 
+        /// <summary>
+        /// NO duplicates allowed
+        /// </summary>
+        private Dictionary<string, IVariableRef2> _variableReferenceList = new Dictionary<string, IVariableRef2>(SqlVariableStringComparer.Instance);
+
         public IReadOnlyList<ITableName> TableList => _tableList;
 
         public IReadOnlyList<ITableName> TempTableList => _tableList.FindAll(j => j.IsTempTable);
 
         public IReadOnlyList<ITableName> TableVariableList => _tableList.FindAll(j => j.IsTableVariable);
+
+        public IReadOnlyCollection<IVariableRef> VariableReferenceList => _variableReferenceList.Values;
 
         /// <summary>
         /// did * used in select queries?
@@ -92,6 +100,16 @@ namespace SqlServerValidator.Visitor
                 _columnList.Any(j => j.IsSame(columnName));
         }
 
+        public bool IsVariableReferenced(string variableName)
+        {
+            if (variableName == null)
+            {
+                throw new ArgumentNullException(nameof(variableName));
+            }
+
+            return
+                _variableReferenceList.ContainsKey(variableName);
+        }
 
         public override void ExplicitVisit(AutomaticTuningDropIndexOption node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(AutomaticTuningCreateIndexOption node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
@@ -725,7 +743,6 @@ namespace SqlServerValidator.Visitor
         public override void ExplicitVisit(LiteralRange node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(StatementWithCtesAndXmlNamespaces node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(ValueExpression node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
-        public override void ExplicitVisit(VariableReference node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(UserDefinedTypePropertyAccess node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(OptionValue node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(FullTextPredicate node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
@@ -848,7 +865,6 @@ namespace SqlServerValidator.Visitor
         public override void ExplicitVisit(TryParseCall node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(RightFunctionCall node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(GoToStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
-        public override void ExplicitVisit(DeclareVariableStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(PartitionFunctionCall node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(IdentifierAtomicBlockOption node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(AtomicBlockOption node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
@@ -1037,6 +1053,8 @@ namespace SqlServerValidator.Visitor
         public override void ExplicitVisit(SelectStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(ColumnReferenceExpression node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(Microsoft.SqlServer.TransactSql.ScriptDom.Identifier node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
+        public override void ExplicitVisit(DeclareVariableStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
+
         //*/
 
         public override void ExplicitVisit(SelectStarExpression node)
@@ -1183,6 +1201,18 @@ namespace SqlServerValidator.Visitor
             node.AcceptChildren(this);
         }
 
+        public override void ExplicitVisit(VariableReference node)
+        {
+            var variableName = node.Name;
+            if (!_variableReferenceList.ContainsKey(variableName))
+            {
+                _variableReferenceList[variableName] = new SqlServerValidator.Visitor.VariableRef.VariableRef(variableName);
+            }
+
+            _variableReferenceList[variableName].IncrementReferenceCount();
+
+            node.AcceptChildren(this);
+        }
     }
 
 }

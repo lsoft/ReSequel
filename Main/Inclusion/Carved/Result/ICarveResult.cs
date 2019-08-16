@@ -3,6 +3,7 @@ using Main.Sql.Identifier;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Main.Sql.VariableRef;
 
 namespace Main.Inclusion.Carved.Result
 {
@@ -19,6 +20,11 @@ namespace Main.Inclusion.Carved.Result
         }
 
         IReadOnlyList<ITableName> TableVariableList
+        {
+            get;
+        }
+
+        IReadOnlyCollection<IVariableRef> VariableReferenceList
         {
             get;
         }
@@ -49,5 +55,7 @@ namespace Main.Inclusion.Carved.Result
         bool IsTableReferenced(string tableName);
 
         bool IsColumnReferenced(string columnName);
+
+        bool IsVariableReferenced(string variableName);
     }
 }

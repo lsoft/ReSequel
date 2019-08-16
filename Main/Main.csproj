@@ -271,6 +271,7 @@
     <Compile Include="Inclusion\Validated\ValidatedSqlInclusionEqualityComparer.cs" />
     <Compile Include="Inclusion\Validated\Status\ValidationStatusEnum.cs" />
     <Compile Include="Inclusion\Validated\Status\ValidationStatus.cs" />
+    <Compile Include="Sql\ChooseSqlExecutorFactory.cs" />
     <Compile Include="Sql\ISqlButcher.cs" />
     <Compile Include="Sql\ISqlButcherFactory.cs" />
     <Compile Include="Logger\ConsoleProcessLogger.cs" />
@@ -294,6 +295,8 @@
     <Compile Include="SolutionValidator\DefaultSolutionValidator.cs" />
     <Compile Include="Sql\ConnectionString\ConstantConnectionStringContainer.cs" />
     <Compile Include="Sql\Identifier\IColumnName.cs" />
+    <Compile Include="Sql\VariableRef\IVariableRef.cs" />
+    <Compile Include="Sql\VariableRef\IVariableRef2.cs" />
     <Compile Include="Validator\UnitProvider\ValidationUnit.cs" />
     <Compile Include="Validator\UnitProvider\Bag\IInclusionBag.cs" />
     <Compile Include="Validator\UnitProvider\Bag\InclusionBag.cs" />

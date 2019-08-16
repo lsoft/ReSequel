@@ -2,6 +2,7 @@ using System;
 using System.Data.Common;
 using System.Text;
 using Main.Sql;
+using SqlServerValidator.UndeclaredDeterminer;
 
 namespace SqlServerValidator.Validator
 {
@@ -76,28 +77,17 @@ set fmtonly off
 
             var result = new StringBuilder();
 
-            using (var command = _connection.CreateCommand())
+            using (var determiner = new UndeclaredParameterDeterminer(_connection))
             {
-                var sql = string.Format(
-                    @"execute sp_describe_undeclared_parameters @tsql = N'{0}'",
-                    innerSql.Replace("'", "''")
-                    );
-
-                command.CommandText = sql;
-                command.CommandTimeout = 10;
-
-                using (var reader = command.ExecuteReader())
+                if (determiner.TryToDetermineTypes(innerSql, out var dict))
                 {
-                    while (reader.Read())
+                    foreach (var pair in dict)
                     {
-                        var name = (string)reader["name"];
-                        var type = (string)reader["suggested_system_type_name"];
+                        var name = pair.Key;
+                        var type = pair.Value;
 
-                        type = FilterType(type);
-
-                        result.AppendLine( string.Format("declare {0} {1}", name, type) );
+                        result.AppendLine(string.Format("declare {0} {1}", name, type));
                     }
-
                 }
             }
 
@@ -105,28 +95,5 @@ set fmtonly off
                 result.ToString();
         }
 
-        private string FilterType(
-            string type
-            )
-        {
-            if (StringComparer.InvariantCultureIgnoreCase.Compare(type, "ntext") == 0)
-            {
-                return
-                    "varchar(10)";
-            }
-            if (StringComparer.InvariantCultureIgnoreCase.Compare(type, "text") == 0)
-            {
-                return
-                    "varchar(10)";
-            }
-            if (StringComparer.InvariantCultureIgnoreCase.Compare(type, "image") == 0)
-            {
-                return
-                    "varbinary(10)";
-            }
-
-            return
-                type;
-        }
     }
 }
