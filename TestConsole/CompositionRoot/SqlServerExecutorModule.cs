@@ -6,6 +6,7 @@ using Main.Sql;
 using Main.Sql.ConnectionString;
 using SqlServerValidator.Executor;
 using TestConsole.TaskRelated;
+using SqlServerValidator;
 
 namespace TestConsole.CompositionRoot
 {
@@ -28,6 +29,12 @@ namespace TestConsole.CompositionRoot
                     "parameters",
                     string.Empty
                 )
+                ;
+
+
+            Bind<IDuplicateProcessor>()
+                .To<DuplicateProcessor>()
+                //not a singleton
                 ;
 
 

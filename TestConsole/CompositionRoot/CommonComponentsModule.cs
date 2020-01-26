@@ -23,26 +23,22 @@ namespace TestConsole.CompositionRoot
 {
     internal sealed class CommonComponentsModule : NinjectModule
     {
+        private readonly WorkingTask _task;
         private readonly WorkingTaskSqlExecutor _sqlExecutor;
         private readonly string _pathToXmlScanSchema;
 
         public CommonComponentsModule(
-            WorkingTaskSqlExecutor sqlExecutor,
-            string pathToXmlScanSchema
+            WorkingTask task
             )
         {
-            if (sqlExecutor == null)
+            if (task == null)
             {
-                throw new ArgumentNullException(nameof(sqlExecutor));
+                throw new ArgumentNullException(nameof(task));
             }
 
-            if (pathToXmlScanSchema == null)
-            {
-                throw new ArgumentNullException(nameof(pathToXmlScanSchema));
-            }
-
-            _sqlExecutor = sqlExecutor;
-            _pathToXmlScanSchema = pathToXmlScanSchema;
+            _task = task;
+            _sqlExecutor = task.SqlExecutor;
+            _pathToXmlScanSchema = task.ScanScheme;
         }
 
 
@@ -103,6 +99,13 @@ namespace TestConsole.CompositionRoot
                 .InSingletonScope()
                 ;
 
+            Bind<ISolutionNameProvider>()
+                .To<ConsoleSolutionNameProvider>()
+                .WithConstructorArgument(
+                    typeof(string),
+                    new FileInfo(_task.TargetSolution).Name
+                );
+
             Bind<Scan>()
                 .ToMethod(
                     c =>
@@ -137,7 +140,29 @@ namespace TestConsole.CompositionRoot
                 //.InSingletonScope()
                 //not a singleton
                 ;
+
         }
     }
+
+    public class ConsoleSolutionNameProvider : ISolutionNameProvider
+    {
+        public string SolutionName
+        {
+            get;
+        }
+
+        public ConsoleSolutionNameProvider(
+            string solutionName
+            )
+        {
+            if (solutionName == null)
+            {
+                throw new ArgumentNullException(nameof(solutionName));
+            }
+
+            SolutionName = solutionName;
+        }
+    }
+
 
 }

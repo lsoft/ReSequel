@@ -35,8 +35,7 @@ namespace TestConsole.CompositionRoot
             )
         {
             var ccm = new CommonComponentsModule(
-                _task.SqlExecutor,
-                _task.ScanScheme
+                _task
                 );
             _kernel.Load(ccm);
 
