@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 
 namespace Main.Logger
 {
@@ -25,7 +26,7 @@ namespace Main.Logger
         {
             message = DateTime.Now.ToString("yyyy.MM.dd HH:mm:ss.fff") + "    " + message + "... ";
 
-            Console.WriteLine(message);
+            Debug.WriteLine(message);
         }
 
 

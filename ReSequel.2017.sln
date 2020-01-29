@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.27729.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Main", "Main\Main.csproj", "{78DCCD9A-24D0-406B-BCC2-0722140A5FFA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestConsole", "TestConsole\TestConsole.csproj", "{DCCB98D1-3602-45A0-9F6E-2E304E9627B6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReSequel", "ReSequel\TestConsole.csproj", "{DCCB98D1-3602-45A0-9F6E-2E304E9627B6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{24410C46-95A0-4AE2-9FF0-2AC5903234FD}"
 EndProject

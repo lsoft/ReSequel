@@ -134,7 +134,7 @@ namespace Main.Inclusion.Scanner
 
             var after = DateTime.Now;
             var diff = after - before;
-            Console.WriteLine(diff);
+            processLogger.ShowProcessMessage(diff.ToString());
 
             return
                 result.ToList();

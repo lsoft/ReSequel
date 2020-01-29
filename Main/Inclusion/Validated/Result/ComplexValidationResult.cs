@@ -12,7 +12,19 @@ namespace Main.Inclusion.Validated.Result
 
         public IReadOnlyCollection<IValidationResult> InternalResults => _internalResults;
 
-        public ValidationResultEnum Result => InternalResults.Min(j => j.Result);
+        public ValidationResultEnum Result
+        {
+            get
+            {
+                //if (InternalResults.Count == 0)
+                //{
+                //    Console.WriteLine(FullSqlBody);
+                //    Console.WriteLine("aaaa");
+                //}
+
+                return InternalResults.Min(j => j.Result);
+            }
+        }
 
         public bool IsSuccess => InternalResults.All(j => j.IsSuccess);
 

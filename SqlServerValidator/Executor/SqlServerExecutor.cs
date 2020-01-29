@@ -110,6 +110,7 @@ namespace SqlServerValidator.Executor
                     var validator = _sqlValidatorFactory.Create(_connection);
                     var visitor = new StatementVisitor(validator, _duplicateProcessor);
 
+                    var statementCount = 0;
                     foreach (var batch in parseResult.Batches)
                     {
                         foreach (TSqlStatement statement in batch.Statements)
@@ -117,7 +118,18 @@ namespace SqlServerValidator.Executor
                             var visitorResult = visitor.ProcessNextStatement(statement);
 
                             result.Append(visitorResult);
+                            statementCount++;
                         }
+                    }
+
+                    if (statementCount == 0)
+                    {
+                        //Console.WriteLine("bbb");
+                        //Console.WriteLine(unit.SqlBody);
+
+                        result.Append(
+                            ValidationResult.Success(unit.SqlBody, unit.SqlBody)
+                            );
                     }
                 }
 
