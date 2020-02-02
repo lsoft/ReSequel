@@ -37,12 +37,26 @@ namespace Main.Other
             }
         }
 
+        public bool IsFailed
+        {
+            get
+            {
+                return
+                    !IsSuccess;
+            }
+        }
+        public bool IsMuted
+        {
+            get;
+        }
+
         public Report(
             string filePath, 
             int lineNumber,
             string sqlQuery,
             ValidationResultEnum result,
-            string failMessage
+            string failMessage,
+            bool isMuted
             )
         {
             if (filePath == null)
@@ -65,6 +79,7 @@ namespace Main.Other
             SqlQuery = sqlQuery;
             Result = result;
             FailMessage = failMessage;
+            IsMuted = isMuted;
         }
     }
 

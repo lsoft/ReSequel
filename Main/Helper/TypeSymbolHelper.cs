@@ -98,14 +98,30 @@ namespace Main.Helper
 
             var defNode = references[0].GetSyntax();
 
-            var valueClause = defNode.DescendantNodes().OfType<EqualsValueClauseSyntax>().FirstOrDefault();
-            if (valueClause != null)
+            var svList = new List<string>();
+            var evcsList = defNode.DescendantNodes().OfType<EqualsValueClauseSyntax>().ToList();
+
+            if (evcsList.Count == 0)
             {
-                return TryGetStringValue(compilation, document, valueClause.Value, out result);
+                result = null;
+                return false;
             }
 
-            result = null;
-            return false;
+            foreach (var evcs in evcsList)
+            {
+                var svResult = TryGetStringValue(compilation, document, evcs.Value, out var stringValue);
+                if (!svResult)
+                {
+                    result = null;
+                    return false;
+                }
+
+                svList.Add(stringValue);
+            }
+
+            result = string.Join(" ", svList);
+
+            return true;
         }
 
 

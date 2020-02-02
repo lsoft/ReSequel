@@ -111,7 +111,8 @@ namespace Main.Inclusion.Validated
                 Inclusion.Location.StartLinePosition.Line,
                 Inclusion.SqlBody,
                 Status.Result.Result,
-                Status.Result.WarningOrErrorMessage
+                Status.Result.WarningOrErrorMessage,
+                Inclusion.IsMuted
                 );
 
             return

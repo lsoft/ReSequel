@@ -58,27 +58,23 @@ namespace ReSequel
                     task.TargetSolution
                     );
 
-                //make results: checking reports
-                var results = processedInclusions.ConvertAll(j => j.GenerateReport());
-
                 solutionValidator.Progress.UpdateMessage();
 
-                var faileds = results.FindAll(j => !j.IsSuccess);
+                //make results: checking reports
+                var reports = processedInclusions.ConvertAll(j => j.GenerateReport());
 
-                foreach (var failed in faileds)
+                //take only failed and NOT muted
+                var failedReports = reports.FindAll(j => j.IsFailed && !j.IsMuted);
+
+                foreach (var failedReport in failedReports)
                 {
-                    if (failed.IsSuccess)
-                    {
-                        continue;
-                    }
-
                     Console.ForegroundColor = ConsoleColor.DarkRed;
 
-                    Console.WriteLine("{0} : [{1}]", failed.FilePath, failed.LineNumber);
-                    Console.WriteLine("    " + failed.SqlQuery);
+                    Console.WriteLine("{0} : [{1}]", failedReport.FilePath, failedReport.LineNumber);
+                    Console.WriteLine("    " + failedReport.SqlQuery);
 
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine(failed.FailMessage);
+                    Console.WriteLine(failedReport.FailMessage);
 
                     Console.WriteLine();
 
@@ -86,11 +82,11 @@ namespace ReSequel
                 }
 
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Failed count: {faileds.Count}" );
+                Console.WriteLine($"Failed count: {failedReports.Count}" );
                 Console.WriteLine();
                 Console.ResetColor();
 
-                return faileds.Count() > 0 ? 1 : 0;
+                return failedReports.Count() > 0 ? 1 : 0;
             }
         }
     }

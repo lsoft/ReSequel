@@ -159,7 +159,41 @@ INSERT INTO [dbo].[X4_TARIF_HEAD]
             @id_group
 		    )
 ");
-        //*/
+
+            var q3 = MakeSqlBody1();
+            dbp.PrepareQuery(q3);
+
+            var q4 = MakeSqlBody2();
+            dbp.PrepareQuery(q4);
+
+            var q5 = MakeSqlBody3();
+            dbp.PrepareQuery(q5);
+
+            //*/
+        }
+
+        public static string MakeSqlBody1()
+        {
+            return string.Format("select {0}", "1");
+
+            //string p1 = "select ";
+            //string p2 = "1";
+            ////string p2 = string.Format("{0} from X4_TARIF_HEAD", "id");
+            //return p1 + p2;
+        }
+
+        public static string MakeSqlBody2()
+        {
+            string p1 = "select ";
+            string p2 = string.Format("{0} from X4_TARIF_HEAD", "id");
+            return p1 + p2;
+        }
+
+        public static string MakeSqlBody3()
+        {
+            string p1 = "select ";
+            string p2 = "* from X4_TARIF_HEAD";
+            return p1 + p2;
         }
 
         public static void AdditionalMethod(IDBProvider dbProvider)
