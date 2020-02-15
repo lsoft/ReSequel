@@ -63,8 +63,14 @@ namespace ReSequel
                 //make results: checking reports
                 var reports = processedInclusions.ConvertAll(j => j.GenerateReport());
 
+                //take only succeeded and NOT muted
+                var succeededReports = reports.FindAll(j => !j.IsFailed && !j.IsMuted);
+
                 //take only failed and NOT muted
                 var failedReports = reports.FindAll(j => j.IsFailed && !j.IsMuted);
+
+                //take only NOT muted
+                var mutedReports = reports.FindAll(j => j.IsMuted);
 
                 foreach (var failedReport in failedReports)
                 {
@@ -81,12 +87,23 @@ namespace ReSequel
                     Console.ResetColor();
                 }
 
+                Console.ResetColor();
+                Console.WriteLine($"Total count: {reports.Count}");
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"Succeeded count: {succeededReports.Count}");
+
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"Failed count: {failedReports.Count}" );
+
+                Console.ResetColor();
+                Console.WriteLine($"Muted count: {mutedReports.Count}");
+
+
                 Console.WriteLine();
                 Console.ResetColor();
 
-                return failedReports.Count() > 0 ? 1 : 0;
+                return failedReports.Count > 0 ? 1 : 0;
             }
         }
     }
