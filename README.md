@@ -1,5 +1,5 @@
 # ReSequel
-Visual Studio 2017, 2019 Extension for validation SQL queries in the source code
+Visual Studio 2019 Extension for validation SQL queries in the source code
 
 ![alt text](https://github.com/lsoft/ReSequel/blob/master/demo0.png)
 

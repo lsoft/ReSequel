@@ -147,7 +147,7 @@ namespace Main.Helper
                 }
             }
 
-            if (target.BaseType != null && !SymbolEqualityComparer.Default.Equals(target.BaseType, target))
+            if (target.BaseType != null && target.BaseType != target)
             {
                 if (CanBeCastedTo(target.BaseType, subjectTypeFullName))
                 {
