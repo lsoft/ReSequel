@@ -37,9 +37,6 @@
     <AssemblyOriginatorKeyFile>Key.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.SqlServer.TransactSql.ScriptDom, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.SqlServer.TransactSql.ScriptDom.15.0.4200.1\lib\net40\Microsoft.SqlServer.TransactSql.ScriptDom.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -86,7 +83,11 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="Key.snk" />
-    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SqlServer.TransactSql.ScriptDom">
+      <Version>150.4897.1</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

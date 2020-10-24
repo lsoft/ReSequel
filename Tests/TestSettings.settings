@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="ConnectionString" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Data Source=tomato; Initial Catalog={0}; Integrated Security=true; Connection Timeout=1000; Max Pool Size=50;</Value>
+      <Value Profile="(Default)">Data Source=.; Initial Catalog={0}; Integrated Security=true; Connection Timeout=1000; Max Pool Size=50;</Value>
     </Setting>
     <Setting Name="DatabaseName" Type="System.String" Scope="User">
       <Value Profile="(Default)">__resequel_TestScopeDatabase_FeelFreeToDeleteIt</Value>
@@ -14,6 +14,7 @@ GO
 
 if exists( select * from sys.databases where name = '{0}' )
 begin
+	alter database {0} set single_user with rollback immediate
 	DROP DATABASE {0}
 end
 GO
@@ -199,7 +200,8 @@ GO
 
 
 use [master]
-GO</Value>
+GO
+</Value>
     </Setting>
   </Settings>
 </SettingsFile>
