@@ -61,13 +61,16 @@ namespace Main.WorkspaceWrapper
 
         private void Workspace_WorkspaceFailed(object sender, WorkspaceDiagnosticEventArgs e)
         {
-            throw new InvalidOperationException(
-                string.Format(
-                    "This instance of MSBuild cannnot open the workspace: {0} {1}",
-                    e.Diagnostic.Kind,
-                    e.Diagnostic.Message
-                    )
-                );
+            if (e.Diagnostic.Kind == WorkspaceDiagnosticKind.Failure)
+            {
+                throw new InvalidOperationException(
+                    string.Format(
+                        "This instance of MSBuild cannnot open the workspace: {0} {1}",
+                        e.Diagnostic.Kind,
+                        e.Diagnostic.Message
+                        )
+                    );
+            }
         }
 
         public IWorkspaceWrapper CreateWorkspace(
