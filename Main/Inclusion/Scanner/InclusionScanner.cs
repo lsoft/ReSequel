@@ -544,7 +544,7 @@ namespace Main.Inclusion.Scanner
                 .ToList()
                 ;
 
-            var dict0 = new Dictionary<ISymbol, List<MemberAccessExpressionSyntax>>();
+            var dict0 = new Dictionary<ISymbol, List<MemberAccessExpressionSyntax>>(SymbolEqualityComparer.Default);
             foreach (var member in members)
             {
                 var e = member.Expression as IdentifierNameSyntax;
@@ -577,7 +577,7 @@ namespace Main.Inclusion.Scanner
                 dict0[symbol].Add(member);
             }
 
-            var dict1 = new Dictionary<ISymbol, List<StatementSyntax>>();
+            var dict1 = new Dictionary<ISymbol, List<StatementSyntax>>(SymbolEqualityComparer.Default);
             foreach (var pair in dict0)
             {
                 var symbol = pair.Key;

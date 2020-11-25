@@ -25,8 +25,8 @@ namespace Tests {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=.; Initial Catalog={0}; Integrated Security=true; Connection Timeout=" +
-            "1000; Max Pool Size=50;")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=tomato; Initial Catalog={0}; Integrated Security=true; Connection Tim" +
+            "eout=10; Max Pool Size=50;")]
         public string ConnectionString {
             get {
                 return ((string)(this["ConnectionString"]));
