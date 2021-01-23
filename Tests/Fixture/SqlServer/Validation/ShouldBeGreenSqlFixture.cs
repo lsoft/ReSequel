@@ -537,8 +537,6 @@ where
     id = @id and name = @name
 
 ";
-            //select @@identity as ident
-
 
             var processed = ValidateAgainstSchema(
                 sqlBody
@@ -959,6 +957,38 @@ WHERE
             var report = processed.GenerateReport();
 
             Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void CorrectVariableDeclaration()
+        {
+            const string sqlBody = @"
+declare @a int, @b varchar(10);
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void IncorrectVariableDeclaration()
+        {
+            const string sqlBody = @"
+declare @a int @b varchar(10);
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
         }
 
     }

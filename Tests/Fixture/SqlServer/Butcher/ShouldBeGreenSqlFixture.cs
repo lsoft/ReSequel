@@ -1,4 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Linq;
 
 namespace Tests.Fixture.SqlServer.Butcher
 {
@@ -114,6 +115,7 @@ while(exists (select * from information_schema.tables where table_name = 'testta
             Assert.IsTrue(carveResult.IsStarReferenced);
 
         }
+
 
         [TestMethod]
         public void IfElseStatement()
@@ -357,6 +359,84 @@ where
             Assert.AreEqual(1, carveResult.ColumnList.Count);
             Assert.IsFalse(carveResult.IsStarReferenced);
         }
+
+        [TestMethod]
+        public void SelectWithVariableAndSetReferencesStatement()
+        {
+            const string sqlBody = @"
+select
+    @a = @b
+from information_schema.tables 
+where
+	TABLE_CATALOG = @c
+";
+
+            var carveResult = Carve(
+                sqlBody
+                );
+
+            Assert.IsNotNull(carveResult);
+
+            Assert.AreEqual(1, carveResult.TableList.Count);
+            Assert.AreEqual(0, carveResult.TempTableList.Count);
+            Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(3, carveResult.VariableReferenceList.Count);
+
+            Assert.IsTrue(carveResult.IsTableReferenced("information_schema.tables"));
+            Assert.IsTrue(carveResult.IsVariableReferenced("@a"));
+            Assert.IsTrue(carveResult.IsVariableReferenced("@b"));
+            Assert.IsTrue(carveResult.IsVariableReferenced("@c"));
+
+
+            Assert.AreEqual(1, carveResult.ColumnList.Count);
+            Assert.IsFalse(carveResult.IsStarReferenced);
+        }
+
+        [TestMethod]
+        public void DeclareVariableStatement()
+        {
+            const string sqlBody = @"
+declare @a int, @b varchar(10);
+";
+
+            var carveResult = Carve(
+                sqlBody
+                );
+
+            Assert.IsNotNull(carveResult);
+
+            Assert.AreEqual(0, carveResult.TableList.Count);
+            Assert.AreEqual(0, carveResult.TempTableList.Count);
+            Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(0, carveResult.ColumnList.Count);
+            Assert.AreEqual(2, carveResult.VariableReferenceList.Count);
+
+            Assert.IsTrue(carveResult.IsVariableReferenced("@a"));
+            Assert.IsTrue(carveResult.IsVariableReferenced("@b"));
+        }
+
+        [TestMethod]
+        public void SetVariableStatement()
+        {
+            const string sqlBody = @"
+set @a = 1
+";
+
+            var carveResult = Carve(
+                sqlBody
+                );
+
+            Assert.IsNotNull(carveResult);
+
+            Assert.AreEqual(0, carveResult.TableList.Count);
+            Assert.AreEqual(0, carveResult.TempTableList.Count);
+            Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(0, carveResult.ColumnList.Count);
+            Assert.AreEqual(1, carveResult.VariableReferenceList.Count);
+
+            Assert.IsTrue(carveResult.IsVariableReferenced("@a"));
+        }
+
 
     }
 }

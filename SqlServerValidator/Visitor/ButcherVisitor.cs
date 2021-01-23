@@ -384,7 +384,6 @@ namespace SqlServerValidator.Visitor
         public override void ExplicitVisit(DropStatisticsStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(MoveToDropIndexOption node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(CursorId node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
-        public override void ExplicitVisit(SetVariableStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(CursorOption node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(CursorDefinition node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(DeclareCursorStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
@@ -889,7 +888,6 @@ namespace SqlServerValidator.Visitor
         public override void ExplicitVisit(ParameterlessCall node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(CreateRuleStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(OverClause node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
-        public override void ExplicitVisit(DeclareVariableElement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(SaveTransactionStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(ParseCall node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(UpdateSpecification node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
@@ -1053,7 +1051,21 @@ namespace SqlServerValidator.Visitor
         public override void ExplicitVisit(SelectStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(ColumnReferenceExpression node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(Microsoft.SqlServer.TransactSql.ScriptDom.Identifier node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
+
+
+        #region no need to modify, because its child nodes do the work as it should
+
         public override void ExplicitVisit(DeclareVariableStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
+
+        public override void ExplicitVisit(SetVariableStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
+
+        #endregion
+
+        public override void ExplicitVisit(DeclareVariableElement node)
+        {
+            AppendNewVariableReference(node.VariableName.Value);
+        }
+
 
         //*/
 
@@ -1203,15 +1215,23 @@ namespace SqlServerValidator.Visitor
 
         public override void ExplicitVisit(VariableReference node)
         {
-            var variableName = node.Name;
+            AppendNewVariableReference(node.Name);
+
+            node.AcceptChildren(this);
+        }
+
+
+
+
+
+        private void AppendNewVariableReference(string variableName)
+        {
             if (!_variableReferenceList.ContainsKey(variableName))
             {
                 _variableReferenceList[variableName] = new SqlServerValidator.Visitor.VariableRef.VariableRef(variableName);
             }
 
             _variableReferenceList[variableName].IncrementReferenceCount();
-
-            node.AcceptChildren(this);
         }
     }
 
