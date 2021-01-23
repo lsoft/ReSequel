@@ -233,7 +233,7 @@
       <Version>4.4.1</Version>
     </PackageReference>
     <PackageReference Include="Extended.Wpf.Toolkit">
-      <Version>4.0.1</Version>
+      <Version>4.0.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis">
       <Version>3.8.0</Version>
