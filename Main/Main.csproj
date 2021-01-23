@@ -179,7 +179,7 @@
     <PackageReference Include="Microsoft.Composition">
       <Version>1.0.31</Version>
     </PackageReference>
-    <PackageReference Include="Microsoft.SqlServer.TransactSql.ScriptDom">
+    <PackageReference Include="Microsoft.SqlServer.DacFx">
       <Version>150.4897.1</Version>
     </PackageReference>
     <PackageReference Include="SQLitePCLRaw.bundle_green">
