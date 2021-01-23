@@ -21,7 +21,7 @@ namespace SqlServerValidator.Butcher
                 throw new ArgumentNullException(nameof(sqlBody));
             }
 
-            var parser = new TSql140Parser(
+            var parser = new TSql150Parser(
                 false
                 );
 

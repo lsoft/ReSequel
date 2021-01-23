@@ -18,7 +18,7 @@ namespace SqlServerValidator.Executor
         private readonly IDuplicateProcessor _duplicateProcessor;
         private readonly SqlConnection _connection;
 
-        private readonly TSql140Parser _parser;
+        private readonly TSql150Parser _parser;
 
         private int _processedUnits;
 
@@ -61,7 +61,7 @@ namespace SqlServerValidator.Executor
 
             _connection = connection;
 
-            _parser = new TSql140Parser(
+            _parser = new TSql150Parser(
                 false
                 );
         }
