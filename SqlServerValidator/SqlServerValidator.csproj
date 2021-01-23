@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Identifier\SqlServerIndexName.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Butcher\SqlServerButcher.cs" />
     <Compile Include="Butcher\SqlServerButcherFactory.cs" />
@@ -67,6 +68,7 @@
     <Compile Include="Validator\FmtOnlySqlValidator.cs" />
     <Compile Include="VariableReferenceStringComparer.cs" />
     <Compile Include="Visitor\ButcherVisitor.cs" />
+    <Compile Include="Visitor\DatabaseObjectChecker.cs" />
     <Compile Include="Visitor\Known\IKnownVariable.cs" />
     <Compile Include="Visitor\Known\KnownTableVariable.cs" />
     <Compile Include="Visitor\Known\KnownVariable.cs" />

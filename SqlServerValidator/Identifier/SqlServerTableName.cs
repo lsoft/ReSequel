@@ -8,6 +8,7 @@ using SqlServerValidator.Visitor;
 
 namespace SqlServerValidator.Identifier
 {
+
     [DebuggerDisplay("{FullTableName}")]
     public class SqlServerTableName : ITableName
     {
@@ -68,37 +69,6 @@ namespace SqlServerValidator.Identifier
 
             FullTableName = objectName.ToSourceSqlString();
         }
-
-        //public SqlServerTableName(
-        //    params string[] nameParts
-        //    )
-        //{
-        //    if (nameParts == null)
-        //    {
-        //        throw new ArgumentNullException(nameof(nameParts));
-        //    }
-
-        //    if(nameParts.Length == 0)
-        //    {
-        //        throw new ArgumentException(nameof(nameParts));
-        //    }
-
-        //    _mine = new List<string>();
-
-        //    foreach (var part in nameParts.Reverse())
-        //    {
-        //        if(!string.IsNullOrWhiteSpace(part))
-        //        {
-        //            _mine.Add(part.RemoveParentheses());
-        //        }
-        //    }
-
-        //    FullTableName = string.Join(
-        //        ".",
-        //        nameParts.Where(j => !string.IsNullOrWhiteSpace(j))
-        //        );
-
-        //}
 
         public bool IsSame(
             string otherTableName

@@ -33,7 +33,7 @@ namespace SqlServerValidator.Identifier
         {
             if (string.IsNullOrWhiteSpace(otherColumnName))
             {
-                throw new ArgumentException("message", nameof(otherColumnName));
+                throw new ArgumentException("Incoming column name is empty or null", nameof(otherColumnName));
             }
 
             if (otherColumnName == "*")
@@ -49,13 +49,11 @@ namespace SqlServerValidator.Identifier
 
             if (!otherColumnName.IsCorrectWildcard())
             {
-                throw new ArgumentException("Invalid wild card: " + otherColumnName);
+                throw new ArgumentException("Invalid wildcard: " + otherColumnName);
             }
 
             var foreign = otherColumnName.RemoveParentheses();
 
-            //return
-            //    StringComparer.InvariantCultureIgnoreCase.Compare(_mine, foreign) == 0;
             var r = Regex.IsMatch(_mine, foreign.WildCardToRegular(), RegexOptions.IgnoreCase);
 
             return

@@ -81,6 +81,7 @@
     <Compile Include="Inclusion\Validated\Status\ValidationStatusEnum.cs" />
     <Compile Include="Inclusion\Validated\Status\ValidationStatus.cs" />
     <Compile Include="Sql\ChooseSqlExecutorFactory.cs" />
+    <Compile Include="Sql\Identifier\IIndexName.cs" />
     <Compile Include="Sql\ISqlButcher.cs" />
     <Compile Include="Sql\ISqlButcherFactory.cs" />
     <Compile Include="Logger\ConsoleProcessLogger.cs" />

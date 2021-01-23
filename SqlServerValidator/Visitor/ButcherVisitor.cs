@@ -24,11 +24,21 @@ namespace SqlServerValidator.Visitor
         private List<IColumnName> _columnList = new List<IColumnName>();
 
         /// <summary>
+        /// duplicates allowed
+        /// </summary>
+        private List<IIndexName> _indexList = new List<IIndexName>();
+
+        /// <summary>
         /// NO duplicates allowed
         /// </summary>
         private Dictionary<string, IVariableRef2> _variableReferenceList = new Dictionary<string, IVariableRef2>(SqlVariableStringComparer.Instance);
 
         public IReadOnlyList<ITableName> TableList => _tableList;
+
+        public IReadOnlyList<IColumnName> ColumnList => _columnList;
+
+        public IReadOnlyList<IIndexName> IndexList => _indexList;
+
 
         public IReadOnlyList<ITableName> TempTableList => _tableList.FindAll(j => j.IsTempTable);
 
@@ -44,8 +54,6 @@ namespace SqlServerValidator.Visitor
             get;
             private set;
         }
-
-        public IReadOnlyList<IColumnName> ColumnList => _columnList;
 
         public string TableNames
         {
@@ -77,6 +85,20 @@ namespace SqlServerValidator.Visitor
             }
         }
 
+        public string IndexNames
+        {
+            get
+            {
+                if (_indexList.Count == 0)
+                {
+                    return
+                        "No index references";
+                }
+
+                return
+                    string.Join(" , ", _indexList.Select(j => j.CombinedIndexName).Distinct());
+            }
+        }
 
         public bool IsTableReferenced(string tableName)
         {
@@ -110,6 +132,23 @@ namespace SqlServerValidator.Visitor
             return
                 _variableReferenceList.ContainsKey(variableName);
         }
+
+        public bool IsIndexReferenced(string tableName, string indexName)
+        {
+            if (tableName is null)
+            {
+                throw new ArgumentNullException(nameof(tableName));
+            }
+
+            if (indexName == null)
+            {
+                throw new ArgumentNullException(nameof(indexName));
+            }
+
+            return
+                _indexList.Any(i => i.IsSame(tableName, indexName));
+        }
+
 
         public override void ExplicitVisit(AutomaticTuningDropIndexOption node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(AutomaticTuningCreateIndexOption node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
@@ -321,7 +360,6 @@ namespace SqlServerValidator.Visitor
         public override void ExplicitVisit(DropClusteredConstraintStateOption node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(DropClusteredConstraintOption node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(LowPriorityLockWaitTableSwitchOption node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
-        public override void ExplicitVisit(CreateIndexStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(QueueStateOption node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(QueueValueOption node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(CreateSelectiveXmlIndexStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
@@ -402,10 +440,8 @@ namespace SqlServerValidator.Visitor
         public override void ExplicitVisit(FileStreamOnDropIndexOption node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(OpenCursorStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(CryptoMechanism node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
-        public override void ExplicitVisit(DropIndexClause node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(BackwardsCompatibleDropIndexClause node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(DropIndexClauseBase node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
-        public override void ExplicitVisit(DropIndexStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(DropChildObjectsStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(DropDatabaseStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(DropObjectsStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
@@ -1059,7 +1095,42 @@ namespace SqlServerValidator.Visitor
 
         public override void ExplicitVisit(SetVariableStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
 
+        public override void ExplicitVisit(DropIndexStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
+
         #endregion
+
+
+        public override void ExplicitVisit(CreateIndexStatement node)
+        {
+            var table = new SqlServerTableName(node.OnName);
+            _tableList.Add(table);
+
+            var index = new SqlServerIndexName(table, node.Name.Value);
+            _indexList.Add(index);
+
+            foreach (var ncolumn in node.Columns)
+            {
+                var column = new SqlServerColumnName(ncolumn.Column.MultiPartIdentifier.ToSqlString());
+                _columnList.Add(column);
+            }
+            foreach (var ncolumn in node.IncludeColumns)
+            {
+                var column = new SqlServerColumnName(ncolumn.MultiPartIdentifier.ToSqlString());
+                _columnList.Add(column);
+            }
+        }
+
+
+
+        public override void ExplicitVisit(DropIndexClause node)
+        {
+            var table = new SqlServerTableName(node.Object);
+            _tableList.Add(table);
+
+            var index = new SqlServerIndexName(table, node.Index.Value);
+            _indexList.Add(index);
+        }
+
 
         public override void ExplicitVisit(DeclareVariableElement node)
         {

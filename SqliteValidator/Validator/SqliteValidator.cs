@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.Common;
+using System.Diagnostics;
 using Main.Sql;
 using Microsoft.Data.Sqlite;
 
@@ -15,6 +16,44 @@ namespace SqliteValidator.Validator
         {
             _connection = connection ?? throw new ArgumentNullException(nameof(connection));
         }
+
+        public bool TryCalculateRowCount(string sql, out int rowRead)
+        {
+            if (sql is null)
+            {
+                throw new ArgumentNullException(nameof(sql));
+            }
+
+            rowRead = 0;
+
+            try
+            {
+                using (var cmd = _connection.CreateCommand())
+                {
+                    cmd.CommandText = sql;
+                    cmd.CommandTimeout = 5;
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            rowRead++;
+                        }
+                    }
+
+                    return true;
+                }
+            }
+            catch (Exception excp)
+            {
+                Debug.WriteLine(excp.Message);
+                Debug.WriteLine(excp.StackTrace);
+            }
+
+            rowRead = 0;
+            return false;
+        }
+
 
         public bool TryCheckSql(
             string innerSql, 

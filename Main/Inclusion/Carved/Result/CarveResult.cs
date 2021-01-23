@@ -20,6 +20,7 @@ namespace Main.Inclusion.Carved.Result
         private bool _isStarReferenced;
         private readonly List<IColumnName> _columnList;
 
+        private readonly List<IIndexName> _indexList;
 
 
         public IReadOnlyCollection<ICarveResult> Results => _results;
@@ -32,12 +33,15 @@ namespace Main.Inclusion.Carved.Result
 
         public IReadOnlyCollection<IVariableRef> VariableReferenceList => _variableReferenceList;
 
+
         /// <summary>
         /// did * used in select queries?
         /// </summary>
         public bool IsStarReferenced => _isStarReferenced;
 
         public IReadOnlyList<IColumnName> ColumnList => _columnList;
+
+        public IReadOnlyList<IIndexName> IndexList => _indexList;
 
         public string TableNames
         {
@@ -69,6 +73,20 @@ namespace Main.Inclusion.Carved.Result
             }
         }
 
+        public string IndexNames
+        {
+            get
+            {
+                if (_indexList.Count == 0)
+                {
+                    return
+                        "No index references";
+                }
+
+                return
+                    string.Join(" , ", _indexList.Select(j => j.CombinedIndexName).Distinct());
+            }
+        }
 
 
         public CarveResult(
@@ -83,6 +101,8 @@ namespace Main.Inclusion.Carved.Result
 
             _isStarReferenced = false;
             _columnList = new List<IColumnName>();
+
+            _indexList = new List<IIndexName>();
         }
 
 
@@ -119,6 +139,23 @@ namespace Main.Inclusion.Carved.Result
                 _variableReferenceList.Any(j => j.IsSame(variableName));
         }
 
+        public bool IsIndexReferenced(string tableName, string indexName)
+        {
+            if (tableName is null)
+            {
+                throw new ArgumentNullException(nameof(tableName));
+            }
+
+            if (indexName == null)
+            {
+                throw new ArgumentNullException(nameof(indexName));
+            }
+
+            return
+                _indexList.Any(i => i.IsSame(tableName, indexName));
+        }
+
+
         public void Append(
             ICarveResult result
             )
@@ -137,6 +174,8 @@ namespace Main.Inclusion.Carved.Result
 
             _isStarReferenced |= result.IsStarReferenced;
             _columnList.AddRange(result.ColumnList);
+
+            _indexList.AddRange(result.IndexList);
         }
 
     }

@@ -311,7 +311,7 @@ drop table
         public void CorrectCreateTableStatement()
         {
             var sqlBody = @"
-CREATE TABLE[dbo].[TestTable1]
+CREATE TABLE[dbo].[TestTableX]
 (
     [id][int] NOT NULL,
     [name] [varchar] (100) NOT NULL,
@@ -332,6 +332,37 @@ CREATE TABLE[dbo].[TestTable1]
             var report = processed.GenerateReport();
 
             Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+
+        /// <summary>
+        /// Duplicate table!
+        /// </summary>
+        [TestMethod]
+        public void IncorrectCreateTableStatement()
+        {
+            var sqlBody = @"
+CREATE TABLE[dbo].[TestTable1]
+(
+    [id][int] NOT NULL,
+    [name] [varchar] (100) NOT NULL,
+    [additional] [varchar] (100) NULL,
+
+    CONSTRAINT[PK_TestTable1] PRIMARY KEY CLUSTERED
+    (
+       [id] ASC
+    ) WITH(PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+
+) ON [PRIMARY]
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
         }
 
         [TestMethod]
@@ -763,7 +794,7 @@ create table #droptable (id int)
 
 create nonclustered index ix_temp_1 on #droptable (id)
 
-drop table #droptable;select
+drop table #droptable;select --please do not change this formatting
 	1 as i
 ";
 
@@ -991,5 +1022,135 @@ declare @a int @b varchar(10);
             Assert.IsFalse(report.IsSuccess, report.FailMessage);
         }
 
+        [TestMethod]
+        public void CorrectCreateIndexStatement()
+        {
+            const string sqlBody = @"
+CREATE NONCLUSTERED INDEX [TestTable1_Index0] ON [dbo].[TestTable1]
+(
+	[name] ASC
+)
+INCLUDE([additional])
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void IncorrectCreateIndexStatement1()
+        {
+            const string sqlBody = @"
+CREATE NONCLUSTERED INDEX [TestTable1_Index0] ON [dbo].[TestTable1]
+(
+	[unknown_column] ASC
+)
+INCLUDE([additional])
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void IncorrectCreateIndexStatement2()
+        {
+            const string sqlBody = @"
+CREATE NONCLUSTERED INDEX [TestTable1_Index0] ON [dbo].[TestTable1]
+(
+	[name] ASC
+)
+INCLUDE([unknown_column])
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
+        }
+
+        /// <summary>
+        /// we are trying to create a duplicate index!
+        /// </summary>
+        [TestMethod]
+        public void IncorrectCreateIndexStatement3()
+        {
+            const string sqlBody = @"
+CREATE NONCLUSTERED INDEX [TestTable0_Index0] ON [dbo].[TestTable0]
+(
+	[name] ASC
+)
+INCLUDE([additional])
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void CorrectDropIndexStatement()
+        {
+            const string sqlBody = @"
+DROP INDEX [TestTable0_Index0] ON dbo.TestTable0
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void IncorrectDropIndexStatement1()
+        {
+            const string sqlBody = @"
+DROP INDEX [TestTable0_Index0] ON UnknownTable
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void IncorrectDropIndexStatement2()
+        {
+            const string sqlBody = @"
+DROP INDEX [UnknownIndex] ON dbo.TestTable0
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
+        }
     }
 }

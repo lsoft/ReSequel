@@ -124,9 +124,6 @@ namespace SqlServerValidator.Executor
 
                     if (statementCount == 0)
                     {
-                        //Console.WriteLine("bbb");
-                        //Console.WriteLine(unit.SqlBody);
-
                         result.Append(
                             ValidationResult.Success(unit.SqlBody, unit.SqlBody)
                             );
