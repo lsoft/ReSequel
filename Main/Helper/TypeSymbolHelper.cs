@@ -88,12 +88,39 @@ namespace Main.Helper
                 return false;
             }
 
-            var globalLocations = globalReferences[0].Locations.ToList();
-
-            if (globalLocations.Count != 1)
+            if (DetermineSymbolIsConstant(symbol))
             {
-                result = null;
-                return false;
+                //this symbol is compile-time constant value
+                //we do not need to perform additional checks
+                
+                var globalDefinitionLocations = globalReferences[0].Definition.Locations.ToList();
+
+                if (globalDefinitionLocations.Count != 1)
+                {
+                    //something strange happened!
+                    result = null;
+                    return false;
+                }
+            }
+            else
+            {
+                //it's not a constant
+                //so we need to perform additional checks to guard ReSequel from the bugs like this:
+                //string q0 = "fake body";
+                //q0 = "print 0";
+                //dbp.PrepareQuery(q0);
+                //in this case ReSequel will check "fake body" instead of "print 0"
+                //we should stop analysis in that cases, so we check the references for
+                //current symbol (aka q0), and, if reference count > 1, we stop
+
+                var globalLocations = globalReferences[0].Locations.ToList();
+
+                if (globalLocations.Count != 1)
+                {
+                    result = null;
+                    return false;
+                }
+
             }
 
             var defNode = references[0].GetSyntax();
@@ -122,6 +149,23 @@ namespace Main.Helper
             result = string.Join(" ", svList);
 
             return true;
+        }
+
+        private static bool DetermineSymbolIsConstant(
+            ISymbol symbol
+            )
+        {
+            if (symbol.Kind == SymbolKind.Field && ((IFieldSymbol) symbol).HasConstantValue)
+            {
+                return true;
+            }
+
+            if (symbol.Kind == SymbolKind.Local && ((ILocalSymbol)symbol).HasConstantValue)
+            {
+                return true;
+            }
+            
+            return false;
         }
 
 

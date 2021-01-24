@@ -50,6 +50,7 @@
     <Compile Include="SomeHandler2.cs" />
     <Compile Include="SomeHandler4.cs" />
     <Compile Include="SomeHandler3.cs" />
+    <Compile Include="SomeHandler6.cs" />
     <Compile Include="SomeHandler5.cs" />
   </ItemGroup>
   <ItemGroup>
