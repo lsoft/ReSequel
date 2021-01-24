@@ -36,7 +36,7 @@ namespace Extension.Command
         /// <summary>
         /// VS Package that provides this command, not null.
         /// </summary>
-        private readonly AsyncPackage package;
+        private readonly AsyncPackage _package;
         private readonly EnvDTE.DTE _dte;
         private readonly ConfigurationFilePath _path;
         private readonly IConfigurationProvider _configurationProvider;
@@ -55,24 +55,33 @@ namespace Extension.Command
             IConfigurationProvider configurationProvider
             )
         {
-            if (dte == null)
+            if (package is null)
+            {
+                throw new ArgumentNullException(nameof(package));
+            }
+
+            if (commandService is null)
+            {
+                throw new ArgumentNullException(nameof(commandService));
+            }
+
+            if (dte is null)
             {
                 throw new ArgumentNullException(nameof(dte));
             }
 
-            if (path == null)
+            if (path is null)
             {
                 throw new ArgumentNullException(nameof(path));
             }
 
-            if (configurationProvider == null)
+            if (configurationProvider is null)
             {
                 throw new ArgumentNullException(nameof(configurationProvider));
             }
 
-            this.package = package ?? throw new ArgumentNullException(nameof(package));
+            this._package = package;
             this._dte = dte;
-            commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
 
             _path = path;
             _configurationProvider = configurationProvider;
@@ -98,7 +107,7 @@ namespace Extension.Command
         {
             get
             {
-                return this.package;
+                return this._package;
             }
         }
 
@@ -148,27 +157,6 @@ namespace Extension.Command
                     _dte,
                     _path.FilePath
                     );
-
-                Configuration configuration;
-                if (_configurationProvider.TryRead(out configuration))
-                {
-                    var fullPath = Root.ScanSchemeFileName.GetFullPathToFile();
-
-                    if (File.Exists(fullPath))
-                    {
-                        VisualStudioHelper.OpenFile(
-                            _dte,
-                            fullPath
-                            );
-                        //VisualStudioHelper.OpenAndNavigate(
-                        //    configuration.FullPathToScanScheme,
-                        //    0,
-                        //    0,
-                        //    0,
-                        //    0
-                        //    );
-                    }
-                }
             }
         }
     }

@@ -1,5 +1,6 @@
 using System;
 using System.Data.Common;
+using System.Diagnostics;
 using Main.Sql;
 
 namespace SqlServerValidator.Validator
@@ -28,6 +29,42 @@ sp_describe_first_result_set @tsql = N'
             _connection = connection;
         }
 
+        public bool TryCalculateRowCount(string sql, out int rowRead)
+        {
+            if (sql is null)
+            {
+                throw new ArgumentNullException(nameof(sql));
+            }
+
+            rowRead = 0;
+
+            try
+            {
+                using (var cmd = _connection.CreateCommand())
+                {
+                    cmd.CommandText = sql;
+                    cmd.CommandTimeout = 5;
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            rowRead++;
+                        }
+                    }
+
+                    return true;
+                }
+            }
+            catch (Exception excp)
+            {
+                Debug.WriteLine(excp.Message);
+                Debug.WriteLine(excp.StackTrace);
+            }
+
+            rowRead = 0;
+            return false;
+        }
 
         public bool TryCheckSql(
             string innerSql,
@@ -53,7 +90,7 @@ sp_describe_first_result_set @tsql = N'
             }
             catch (Exception excp)
             {
-                errorMessage = excp.Message;// + Environment.NewLine + excp.StackTrace;
+                errorMessage = excp.Message;
             }
 
             return false;

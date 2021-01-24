@@ -24,20 +24,26 @@ namespace Main.Inclusion.Carved.Result
             get;
         }
 
+
+        IReadOnlyList<IColumnName> ColumnList
+        {
+            get;
+        }
+
+        IReadOnlyList<IIndexName> IndexList
+        {
+            get;
+        }
+
         IReadOnlyCollection<IVariableRef> VariableReferenceList
         {
             get;
         }
 
         /// <summary>
-        /// did * used in select queries?
+        /// did * used in the select queries?
         /// </summary>
         bool IsStarReferenced
-        {
-            get;
-        }
-
-        IReadOnlyList<IColumnName> ColumnList
         {
             get;
         }
@@ -52,10 +58,17 @@ namespace Main.Inclusion.Carved.Result
             get;
         }
 
+        string IndexNames
+        {
+            get;
+        }
+
         bool IsTableReferenced(string tableName);
 
         bool IsColumnReferenced(string columnName);
 
         bool IsVariableReferenced(string variableName);
+
+        bool IsIndexReferenced(string tableName, string indexName);
     }
 }

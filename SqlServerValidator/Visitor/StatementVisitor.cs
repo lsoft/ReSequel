@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Main.Inclusion.Validated.Result;
 using Main.Sql;
+using Main.Sql.Identifier;
+using Microsoft.Build.Framework;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using SqlServerValidator.Visitor.Known;
 
@@ -32,7 +34,7 @@ namespace SqlServerValidator.Visitor
             }
 
             this._sqlValidator = visitor._sqlValidator; //of course, validate against same RDBMS
-            this._duplicateProcessor = visitor._duplicateProcessor; //we also need duplicaProcessor
+            this._duplicateProcessor = visitor._duplicateProcessor; //we also need duplicateProcessor
             this._knownVariables = visitor._knownVariables; //share same known vars container!
             this._butcher = visitor._butcher; //share same butcher!
         }
@@ -94,9 +96,6 @@ namespace SqlServerValidator.Visitor
 
             try
             {
-                //var visitor = new ButcherVisitor();
-                //statement.Accept(visitor);
-
                 var tempTableList = _butcher.TempTableList;
                 if (tempTableList.Count > 0)
                 {
@@ -136,17 +135,13 @@ namespace SqlServerValidator.Visitor
                 _knownVariables
                 );
 
-            var result = ExecuteDefaultProcessing(
-                sql
-                );
-
+            var result = ExecuteDefaultProcessing(sql);
             if (!result.IsSuccess)
             {
                 result = result.WithNewFullSqlBody(statement.ToSourceSqlString());
             }
 
-            return
-                result;
+            return result;
         }
 
         private IModifiedValidationResult ExecuteDefaultProcessing(
@@ -163,8 +158,7 @@ namespace SqlServerValidator.Visitor
 
             IModifiedValidationResult result;
 
-            string errorMessage;
-            if (_sqlValidator.TryCheckSql(declarations + Environment.NewLine + statementSql, out errorMessage))
+            if (_sqlValidator.TryCheckSql(declarations + Environment.NewLine + statementSql, out var errorMessage))
             {
                 result = ValidationResult.Success(statementSql, statementSql);
             }
@@ -177,223 +171,64 @@ namespace SqlServerValidator.Visitor
                 result;
         }
 
-        //public IValidationResult2 Visit(SqlAlterFunctionStatement statement)
-        //{
-        //    //return new NotImplementedValidationResult(statement);
-        //}
-
-
-        public override void ExplicitVisit(QuerySpecification node)
-        {
-            IModifiedValidationResult tempTableVisitReturn;
-            if (TryToFoundTempTableReference(node, out tempTableVisitReturn))
-            {
-                this._result = tempTableVisitReturn;
-                return;
-            }
-
-            this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
-        }
-
-        public override void ExplicitVisit(IfStatement node)
-        {
-            var statementSql = node.ToSourceSqlString();
-
-            var predicateVisitor = new StatementVisitor(this);
-            //var predicateVisitorResult = predicateVisitor.ProcessNextStatement(node.Predicate);
-            node.Predicate.Accept(predicateVisitor);
-            if (predicateVisitor._result != null && !predicateVisitor._result.IsSuccess)
-            {
-                this._result = predicateVisitor._result.WithNewFullSqlBody(statementSql);
-                return;
-            }
-
-            //BooleanExpression predicate = node.Predicate;
-
-            //var sqlBody = predicate.FixDuplicates(
-            //    _knownVariables
-            //    )
-            //    .Trim('(', ')', ' ')
-            //    ;
-
-            ////sqlBody = string.Format(
-            ////    "if {0} print 1;",
-            ////    sqlBody
-            ////    );
-
-            //var conditionResult = ExecuteDefaultProcessing(
-            //    sqlBody
-            //    );
-            //if (!conditionResult.IsSuccess)
-            //{
-            //    this.Result = conditionResult.WithNewFullSqlBody(statementSql);
-            //    return;
-            //}
-
-            var trueStatement = node.ThenStatement;
-            var falseStatement = node.ElseStatement;
-
-            var trueVisitor = new StatementVisitor(this);
-            //var trueVisitorResult = trueVisitor.ProcessNextStatement(node.Predicate);
-            trueStatement.Accept(trueVisitor);
-            if (!trueVisitor._result.IsSuccess || falseStatement == null)
-            {
-                this._result = trueVisitor._result.WithNewFullSqlBody(statementSql);
-                return;
-            }
-
-            //this._knownVariables.AddRange(trueVisitor._knownVariables);
-
-            var falseVisitor = new StatementVisitor(this);
-            //var falseVisitorResult = falseVisitor.ProcessNextStatement(node.Predicate);
-            falseStatement.Accept(falseVisitor);
-            if (!falseVisitor._result.IsSuccess)
-            {
-                this._result = falseVisitor._result.WithNewFullSqlBody(statementSql);
-                return;
-            }
-
-            this._result = ValidationResult.Success(statementSql, statementSql);
-
-
-            //this.Result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
-        }
-
-        public override void ExplicitVisit(ReturnStatement node)
-        {
-            this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
-        }
-
-        public override void ExplicitVisit(RaiseErrorStatement node)
-        {
-            this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
-        }
-
-        public override void ExplicitVisit(SetErrorLevelStatement node)
-        {
-            this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
-        }
-
-        public override void ExplicitVisit(SetIdentityInsertStatement node)
-        {
-            this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
-        }
-
-        public override void ExplicitVisit(SetTextSizeStatement node)
-        {
-            this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
-        }
+        #region cursor related
 
         public override void ExplicitVisit(OpenCursorStatement node)
         {
             this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
         }
 
         public override void ExplicitVisit(FetchCursorStatement node)
         {
             this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
         }
 
         public override void ExplicitVisit(CloseCursorStatement node)
         {
             this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
         }
 
         public override void ExplicitVisit(DeallocateCursorStatement node)
         {
             this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
         }
 
-        public override void ExplicitVisit(PredicateSetStatement node)
-        {
-            this._result = ExecuteDefaultProcessing(node);
+        #endregion
 
-            //node.AcceptChildren(this);
-        }
-
-        public override void ExplicitVisit(PrintStatement node)
-        {
-            this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
-        }
+        #region transaction related
 
         public override void ExplicitVisit(SetTransactionIsolationLevelStatement node)
         {
             this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
         }
 
         public override void ExplicitVisit(CommitTransactionStatement node)
         {
             this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
         }
 
         public override void ExplicitVisit(RollbackTransactionStatement node)
         {
             this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
         }
 
         public override void ExplicitVisit(BeginTransactionStatement node)
         {
             this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
         }
+
+        #endregion
+
+        #region variable related
 
         public override void ExplicitVisit(SetVariableStatement node)
         {
             this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
-        }
-
-        public override void ExplicitVisit(MergeStatement node)
-        {
-            IModifiedValidationResult tempTableVisitReturn;
-            if (TryToFoundTempTableReference(node, out tempTableVisitReturn))
-            {
-                this._result = tempTableVisitReturn;
-                return;
-            }
-
-            this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
         }
 
         public override void ExplicitVisit(DeclareVariableStatement node)
         {
             this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
 
             if (this._result.IsSuccess)
             {
@@ -405,32 +240,95 @@ namespace SqlServerValidator.Visitor
             }
         }
 
+        #endregion
+
+        #region index related
+
         public override void ExplicitVisit(AlterIndexStatement node)
         {
-            this._result = ExecuteDefaultProcessing(node);
+            var checkForTableOrViewResult = CheckForTableOrViewStatus(node.ToSourceSqlString(), true);
+            if (!checkForTableOrViewResult.IsSuccess)
+            {
+                this._result = checkForTableOrViewResult;
+                return;
+            }
 
-            //node.AcceptChildren(this);
+            var checkForIndexResult = CheckForIndexStatus(node.ToSourceSqlString(), true);
+            if (!checkForIndexResult.IsSuccess)
+            {
+                this._result = checkForIndexResult;
+                return;
+            }
+
+            this._result = ExecuteDefaultProcessing(node);
         }
 
         public override void ExplicitVisit(AlterTableAlterIndexStatement node)
         {
             this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
         }
 
         public override void ExplicitVisit(CreateIndexStatement node)
         {
-            this._result = ExecuteDefaultProcessing(node);
+            var checkForTableOrViewResult = CheckForTableOrViewStatus(node.ToSourceSqlString(), true);
+            if (!checkForTableOrViewResult.IsSuccess)
+            {
+                this._result = checkForTableOrViewResult;
+                return;
+            }
 
-            //node.AcceptChildren(this);
+            var checkForIndexResult = CheckForIndexStatus(node.ToSourceSqlString(), false);
+            if (!checkForIndexResult.IsSuccess)
+            {
+                this._result = checkForIndexResult;
+                return;
+            }
+
+            var checkForColumnResult = CheckForColumnStatus(node.ToSourceSqlString(), true);
+            if (!checkForColumnResult.IsSuccess)
+            {
+                this._result = checkForColumnResult;
+                return;
+            }
+
+            this._result = ExecuteDefaultProcessing(node);
         }
+
+        public override void ExplicitVisit(DropIndexStatement node)
+        {
+            IModifiedValidationResult tempTableVisitReturn;
+            if (TryToFoundTempTableReference(node, out tempTableVisitReturn))
+            {
+                this._result = tempTableVisitReturn;
+                return;
+            }
+
+
+            var checkForTableOrViewResult = CheckForTableOrViewStatus(node.ToSourceSqlString(), true);
+            if (!checkForTableOrViewResult.IsSuccess)
+            {
+                this._result = checkForTableOrViewResult;
+                return;
+            }
+            var checkForIndexResult = CheckForIndexStatus(node.ToSourceSqlString(), true);
+            if (!checkForIndexResult.IsSuccess)
+            {
+                this._result = checkForIndexResult;
+                return;
+            }
+
+
+            this._result = ExecuteDefaultProcessing(node);
+        }
+
+
+        #endregion
+
+        #region tables and table variables
 
         public override void ExplicitVisit(DeclareTableVariableStatement node)
         {
             this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
 
             if (this._result.IsSuccess)
             {
@@ -444,31 +342,43 @@ namespace SqlServerValidator.Visitor
 
         public override void ExplicitVisit(TruncateTableStatement node)
         {
-            this._result = ExecuteDefaultProcessing(node);
+            var checkForTableOrViewResult = CheckForTableOrViewStatus(node.ToSourceSqlString(), true);
+            if (!checkForTableOrViewResult.IsSuccess)
+            {
+                this._result = checkForTableOrViewResult;
+                return;
+            }
 
-            //node.AcceptChildren(this);
+            this._result = ExecuteDefaultProcessing(node);
         }
 
         public override void ExplicitVisit(CreateTableStatement node)
         {
+            var checkForTableOrViewResult = CheckForTableOrViewStatus(node.ToSourceSqlString(), false);
+            if (!checkForTableOrViewResult.IsSuccess)
+            {
+                this._result = checkForTableOrViewResult;
+                return;
+            }
+
             this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
-        }
-
-        public override void ExplicitVisit(ExecuteStatement node)
-        {
-            this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
         }
 
         public override void ExplicitVisit(DropTableStatement node)
         {
-            this._result = ExecuteDefaultProcessing(node);
+            var checkForTableOrViewResult = CheckForTableOrViewStatus(node.ToSourceSqlString(), true);
+            if (!checkForTableOrViewResult.IsSuccess)
+            {
+                this._result = checkForTableOrViewResult;
+                return;
+            }
 
-            //node.AcceptChildren(this);
+            this._result = ExecuteDefaultProcessing(node);
         }
+
+        #endregion
+
+        #region CRUD
 
         public override void ExplicitVisit(DeleteStatement node)
         {
@@ -480,8 +390,6 @@ namespace SqlServerValidator.Visitor
             }
 
             this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
         }
 
         public override void ExplicitVisit(InsertStatement node)
@@ -494,8 +402,6 @@ namespace SqlServerValidator.Visitor
             }
 
             this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
         }
 
         public override void ExplicitVisit(UpdateStatement node)
@@ -508,8 +414,6 @@ namespace SqlServerValidator.Visitor
             }
 
             this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
         }
 
         public override void ExplicitVisit(SelectStatement node)
@@ -522,9 +426,113 @@ namespace SqlServerValidator.Visitor
             }
 
             this._result = ExecuteDefaultProcessing(node);
-
-            //node.AcceptChildren(this);
         }
+
+        #endregion
+
+        #region unsorted
+
+        public override void ExplicitVisit(QuerySpecification node)
+        {
+            IModifiedValidationResult tempTableVisitReturn;
+            if (TryToFoundTempTableReference(node, out tempTableVisitReturn))
+            {
+                this._result = tempTableVisitReturn;
+                return;
+            }
+
+            this._result = ExecuteDefaultProcessing(node);
+        }
+
+        public override void ExplicitVisit(IfStatement node)
+        {
+            var statementSql = node.ToSourceSqlString();
+
+            var predicateVisitor = new StatementVisitor(this);
+            node.Predicate.Accept(predicateVisitor);
+            if (predicateVisitor._result != null && !predicateVisitor._result.IsSuccess)
+            {
+                this._result = predicateVisitor._result.WithNewFullSqlBody(statementSql);
+                return;
+            }
+
+            var trueStatement = node.ThenStatement;
+            var falseStatement = node.ElseStatement;
+
+            var trueVisitor = new StatementVisitor(this);
+            trueStatement.Accept(trueVisitor);
+            if (!trueVisitor._result.IsSuccess || falseStatement == null)
+            {
+                this._result = trueVisitor._result.WithNewFullSqlBody(statementSql);
+                return;
+            }
+
+
+            var falseVisitor = new StatementVisitor(this);
+            falseStatement.Accept(falseVisitor);
+            if (!falseVisitor._result.IsSuccess)
+            {
+                this._result = falseVisitor._result.WithNewFullSqlBody(statementSql);
+                return;
+            }
+
+            this._result = ValidationResult.Success(statementSql, statementSql);
+        }
+
+        public override void ExplicitVisit(ReturnStatement node)
+        {
+            this._result = ExecuteDefaultProcessing(node);
+        }
+
+        public override void ExplicitVisit(RaiseErrorStatement node)
+        {
+            this._result = ExecuteDefaultProcessing(node);
+        }
+
+        public override void ExplicitVisit(SetErrorLevelStatement node)
+        {
+            this._result = ExecuteDefaultProcessing(node);
+        }
+
+        public override void ExplicitVisit(SetIdentityInsertStatement node)
+        {
+            this._result = ExecuteDefaultProcessing(node);
+        }
+
+        public override void ExplicitVisit(SetTextSizeStatement node)
+        {
+            this._result = ExecuteDefaultProcessing(node);
+        }
+
+
+        public override void ExplicitVisit(PredicateSetStatement node)
+        {
+            this._result = ExecuteDefaultProcessing(node);
+        }
+
+        public override void ExplicitVisit(PrintStatement node)
+        {
+            this._result = ExecuteDefaultProcessing(node);
+        }
+
+        public override void ExplicitVisit(MergeStatement node)
+        {
+            IModifiedValidationResult tempTableVisitReturn;
+            if (TryToFoundTempTableReference(node, out tempTableVisitReturn))
+            {
+                this._result = tempTableVisitReturn;
+                return;
+            }
+
+            this._result = ExecuteDefaultProcessing(node);
+        }
+
+        public override void ExplicitVisit(ExecuteStatement node)
+        {
+            this._result = ExecuteDefaultProcessing(node);
+        }
+
+        #endregion
 
         public override void ExplicitVisit(AutomaticTuningDropIndexOption node) { node.AcceptChildren(this); }
         public override void ExplicitVisit(AutomaticTuningCreateIndexOption node) { node.AcceptChildren(this); }
@@ -813,7 +821,6 @@ namespace SqlServerValidator.Visitor
         public override void ExplicitVisit(DropIndexClause node) { node.AcceptChildren(this); }
         public override void ExplicitVisit(BackwardsCompatibleDropIndexClause node) { node.AcceptChildren(this); }
         public override void ExplicitVisit(DropIndexClauseBase node) { node.AcceptChildren(this); }
-        public override void ExplicitVisit(DropIndexStatement node) { node.AcceptChildren(this); }
         public override void ExplicitVisit(DropChildObjectsStatement node) { node.AcceptChildren(this); }
         public override void ExplicitVisit(DropDatabaseStatement node) { node.AcceptChildren(this); }
         public override void ExplicitVisit(DropObjectsStatement node) { node.AcceptChildren(this); }
@@ -1450,5 +1457,99 @@ namespace SqlServerValidator.Visitor
         public override void ExplicitVisit(ExecuteOption node) { node.AcceptChildren(this); }
         public override void ExplicitVisit(AlterTableStatement node) { node.AcceptChildren(this); }
 
+
+
+        #region DDL related
+
+        private IModifiedValidationResult CheckForTableOrViewStatus(string sql, bool shouldExists)
+        {
+            if (sql is null)
+            {
+                throw new ArgumentNullException(nameof(sql));
+            }
+
+            var doc = new DatabaseObjectChecker(_sqlValidator);
+
+            foreach (var table in _butcher.TableList)
+            {
+                if (table.IsTempTable || table.IsTableVariable)
+                {
+                    continue;
+                }
+
+                var result = doc.CheckForTableOrViewStatus(table, shouldExists);
+
+                if (!result.IsSuccess)
+                {
+                    return result.WithNewFullSqlBody(sql);
+                }
+            }
+
+            return ValidationResult.Success(sql, sql);
+        }
+
+        private IModifiedValidationResult CheckForIndexStatus(string sql, bool shouldExists)
+        {
+            if (sql is null)
+            {
+                throw new ArgumentNullException(nameof(sql));
+            }
+
+            var doc = new DatabaseObjectChecker(_sqlValidator);
+
+            foreach (var index in _butcher.IndexList)
+            {
+                if (index.ParentTable.IsTempTable || index.ParentTable.IsTableVariable)
+                {
+                    //we can't check indexes for temp tables, so skip it
+                    continue;
+                }
+
+                var result = doc.CheckForIndexStatus(index, shouldExists);
+
+                if (!result.IsSuccess)
+                {
+                    return result.WithNewFullSqlBody(sql);
+                }
+            }
+
+            return ValidationResult.Success(sql, sql);
+        }
+
+        private IModifiedValidationResult CheckForColumnStatus(
+            string sql, 
+            bool shouldExists
+            )
+        {
+            if (sql is null)
+            {
+                throw new ArgumentNullException(nameof(sql));
+            }
+
+            var table = _butcher.TableList.FirstOrDefault();
+            if (table is null)
+            {
+                throw new InvalidOperationException($"More than one table referenced by this statement!");
+            }
+
+            if (table.IsRegularTable)
+            {
+                var doc = new DatabaseObjectChecker(_sqlValidator);
+
+                foreach (var column in _butcher.ColumnList)
+                {
+                    var result = doc.CheckForColumnStatus(table, column, shouldExists);
+
+                    if (!result.IsSuccess)
+                    {
+                        return result.WithNewFullSqlBody(sql);
+                    }
+                }
+            }
+
+            return ValidationResult.Success(sql, sql);
+        }
+
+        #endregion
     }
 }

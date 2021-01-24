@@ -1,8 +1,14 @@
 namespace Main.Sql.Identifier
 {
+
     public interface ITableName
     {
         string FullTableName
+        {
+            get;
+        }
+
+        bool IsRegularTable
         {
             get;
         }

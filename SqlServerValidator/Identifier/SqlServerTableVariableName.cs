@@ -16,6 +16,15 @@ namespace SqlServerValidator.Identifier
             get;
         }
 
+        public bool IsRegularTable
+        {
+            get
+            {
+                return
+                    false;
+            }
+        }
+
         public bool IsTempTable
         {
             get

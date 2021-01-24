@@ -128,6 +128,7 @@ namespace Main.ScanRelated
                             _generatorDictionary = new Dictionary<string, ScanProjectGenerator>();
                             return;
                         }
+
                         _generatorDictionary = (
                             from project in Projects
                             where project != null && project.Generators != null
