@@ -364,7 +364,6 @@ namespace SqlServerValidator.Visitor
         public override void ExplicitVisit(QueueValueOption node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(CreateSelectiveXmlIndexStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(CreateXmlIndexStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
-        public override void ExplicitVisit(AlterIndexStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(PartitionSpecifier node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(IndexType node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(IndexStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
@@ -408,7 +407,6 @@ namespace SqlServerValidator.Visitor
         public override void ExplicitVisit(SetErrorLevelStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(SetIdentityInsertStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(SetTextSizeStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
-        public override void ExplicitVisit(TruncateTableStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(SetTransactionIsolationLevelStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(SetFipsFlaggerCommand node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(GeneralSetCommand node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
@@ -1138,8 +1136,6 @@ namespace SqlServerValidator.Visitor
         }
 
 
-        //*/
-
         public override void ExplicitVisit(SelectStarExpression node)
         {
             IsStarReferenced = true;
@@ -1149,7 +1145,6 @@ namespace SqlServerValidator.Visitor
                     "*"
                     )
                 );
-            //Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString());
 
             node.AcceptChildren(this);
         }
@@ -1253,12 +1248,6 @@ namespace SqlServerValidator.Visitor
 
             _tableList.Add(tableName);
 
-            //_columnList.Add(
-            //    new SqlServerColumnName(
-            //        node.ColumnIdentifier.Value
-            //        )
-            //    );
-
             node.AcceptChildren(this);
         }
 
@@ -1290,6 +1279,26 @@ namespace SqlServerValidator.Visitor
 
             node.AcceptChildren(this);
         }
+
+        public override void ExplicitVisit(AlterIndexStatement node)
+        {
+            var table = new SqlServerTableName(node.OnName);
+            _tableList.Add(table);
+
+            var index = new SqlServerIndexName(table, node.Name.Value);
+            _indexList.Add(index);
+
+            node.AcceptChildren(this);
+        }
+
+        public override void ExplicitVisit(TruncateTableStatement node)
+        {
+            var table = new SqlServerTableName(node.TableName);
+            _tableList.Add(table);
+
+            node.AcceptChildren(this);
+        }
+
 
 
 

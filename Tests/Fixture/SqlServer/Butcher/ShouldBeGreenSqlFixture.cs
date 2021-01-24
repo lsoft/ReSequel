@@ -515,5 +515,52 @@ INCLUDE([additional])
             Assert.IsTrue(carveResult.IsIndexReferenced("TestTable1", "TestTable1_Index0"));
         }
 
+
+        [TestMethod]
+        public void AlterIndexStatement()
+        {
+            const string sqlBody = @"
+ALTER INDEX [TestTable0_Index0] ON [dbo].[TestTable0] DISABLE
+";
+
+            var carveResult = Carve(
+                sqlBody
+                );
+
+            Assert.IsNotNull(carveResult);
+
+            Assert.AreEqual(1, carveResult.TableList.Count);
+            Assert.AreEqual(0, carveResult.TempTableList.Count);
+            Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(0, carveResult.ColumnList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+            Assert.AreEqual(1, carveResult.IndexList.Count);
+
+            Assert.IsTrue(carveResult.IsTableReferenced("[dbo].[TestTable0]"));
+            Assert.IsTrue(carveResult.IsIndexReferenced("[dbo].[TestTable0]", "TestTable0_Index0"));
+        }
+
+        [TestMethod]
+        public void TruncateTableStatement()
+        {
+            const string sqlBody = @"
+truncate table [dbo].[TestTable0]
+";
+
+            var carveResult = Carve(
+                sqlBody
+                );
+
+            Assert.IsNotNull(carveResult);
+
+            Assert.AreEqual(1, carveResult.TableList.Count);
+            Assert.AreEqual(0, carveResult.TempTableList.Count);
+            Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(0, carveResult.ColumnList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+            Assert.AreEqual(0, carveResult.IndexList.Count);
+
+            Assert.IsTrue(carveResult.IsTableReferenced("[dbo].[TestTable0]"));
+        }
     }
 }

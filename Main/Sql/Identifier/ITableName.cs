@@ -8,6 +8,11 @@ namespace Main.Sql.Identifier
             get;
         }
 
+        bool IsRegularTable
+        {
+            get;
+        }
+
         bool IsTempTable
         {
             get;

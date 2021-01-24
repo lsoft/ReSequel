@@ -2,6 +2,7 @@
 using Main.Sql;
 using Main.Sql.Identifier;
 using Microsoft.CodeAnalysis.Host.Mef;
+using SqlServerValidator.Identifier;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -121,7 +122,8 @@ WHERE
         internal IModifiedValidationResult CheckForColumnStatus(
             ITableName table,
             IColumnName column,
-            bool shouldExists)
+            bool shouldExists
+            )
         {
             if (table is null)
             {
@@ -133,7 +135,48 @@ WHERE
                 throw new ArgumentNullException(nameof(column));
             }
 
-            throw new NotImplementedException("not implemented yet");
+            const string CheckForColumnExistsSql = @"
+with united_objects (object_id, type)
+as
+(
+	select object_id, type from sys.objects
+	union all
+	select object_id, type from sys.system_objects
+),
+united_columns (object_id, name)
+as
+(
+	select object_id, name from sys.all_columns
+	union all
+	select object_id, name from sys.system_columns
+) 
+select
+	1
+from united_columns [columns]
+join united_objects [table] on [columns].object_id = [table].object_id
+WHERE 
+	[table].object_id = OBJECT_ID(N'{0}') 
+	AND [table].type in (N'U', N'V')
+	AND [columns].name = N'{1}'
+
+";
+            var tableAndColumnName = $"{table.FullTableName}.{column.ColumnName}";
+
+
+            var checkResult = _sqlValidator.TryCalculateRowCount(string.Format(CheckForColumnExistsSql, table.FullTableName, column.ColumnName.RemoveParentheses()), out var rowRead);
+            var isExists = (checkResult && rowRead > 0);
+            if (isExists != shouldExists)
+            {
+                return ValidationResult.Error(
+                    tableAndColumnName,
+                    tableAndColumnName,
+                    isExists
+                        ? $"Column {tableAndColumnName} already exists!"
+                        : $"Column {tableAndColumnName} does not found!"
+                    );
+            }
+
+            return ValidationResult.Success(tableAndColumnName, tableAndColumnName);
         }
     }
 }

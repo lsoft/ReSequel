@@ -307,6 +307,25 @@ drop table
             Assert.IsTrue(report.IsSuccess, report.FailMessage);
         }
 
+
+        [TestMethod]
+        public void IncorrectDropTableStatement()
+        {
+            var sqlBody = @"
+drop table
+    UnknownTable
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
+        }
+
+
         [TestMethod]
         public void CorrectCreateTableStatement()
         {
@@ -787,6 +806,38 @@ ALTER INDEX [TestTable0_Index0] ON [dbo].[TestTable0] REBUILD
         }
 
         [TestMethod]
+        public void IncorrectAlterIndex1()
+        {
+            var sqlBody = @"
+ALTER INDEX [TestTable0_Index0] ON UnknownTable REBUILD
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void IncorrectAlterIndex2()
+        {
+            var sqlBody = @"
+ALTER INDEX [UnknownIndex] ON [dbo].[TestTable0] DISABLE
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
         public void CreateConfigureDropTempTable1()
         {
             var sqlBody = @"
@@ -1152,5 +1203,38 @@ DROP INDEX [UnknownIndex] ON dbo.TestTable0
 
             Assert.IsFalse(report.IsSuccess, report.FailMessage);
         }
+
+        [TestMethod]
+        public void CorrectTruncateTableStatement()
+        {
+            const string sqlBody = @"
+truncate table dbo.TestTable0
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void IncorrectTruncateTableStatement()
+        {
+            const string sqlBody = @"
+truncate table UnknownTable
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
+        }
+
     }
 }

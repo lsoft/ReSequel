@@ -19,6 +19,15 @@ namespace SqlServerValidator.Identifier
             get;
         }
 
+        public bool IsRegularTable
+        {
+            get
+            {
+                return
+                    !IsTempTable && !IsTableVariable;
+            }
+        }
+
         public bool IsTempTable
         {
             get
@@ -34,8 +43,6 @@ namespace SqlServerValidator.Identifier
             {
                 return
                     false;
-                //return
-                //    FullTableName.IsItTableVariable();
             }
         }
 
