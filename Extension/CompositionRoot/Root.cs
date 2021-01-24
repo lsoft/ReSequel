@@ -36,7 +36,6 @@ namespace Extension.CompositionRoot
             //ThreadHelper.ThrowIfNotOnUIThread(nameof(Root));
 
             ExtractEmbeddedResource(ConfigurationFileName.GetFullPathToFile(), "Extension." + ConfigurationFileName);
-            ExtractEmbeddedResource(ScanSchemeFileName.GetFullPathToFile(), "Extension." + ScanSchemeFileName);
 
             CurrentRoot = new Root(
                 "Configuration.xml"
@@ -169,7 +168,7 @@ namespace Extension.CompositionRoot
         }
 
 
-        private static void ExtractEmbeddedResource(
+        public static void ExtractEmbeddedResource(
             string fullPath,
             string resourceName
         )

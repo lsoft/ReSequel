@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Extension.Cache;
 using Extension.ConfigurationRelated;
 using Extension.ExtensionStatus;
@@ -68,17 +69,31 @@ namespace Extension.CompositionRoot.Modules
                 .ToMethod(
                     c =>
                     {
-                        var configurationProvider = c.Kernel.Get<IConfigurationProvider>();
+                        var solutionNameProvider = c.Kernel.Get<ISolutionNameProvider>();
 
-                        ConfigurationRelated.Configuration configuration;
-                        if (!configurationProvider.TryRead(out configuration))
+                        if (string.IsNullOrWhiteSpace(solutionNameProvider.SolutionName))
+                        {
+                            //no open solution found, so return empty Scan
+                            return new Scan();
+                        }
+
+                        var configurationProvider = c.Kernel.Get<IConfigurationProvider>();
+                        if (!configurationProvider.TryRead(out _))
                         {
                             throw new InvalidOperationException("Cannot read configuration file");
                         }
 
-                        var filePath =  Root.ScanSchemeFileName.GetFullPathToFile();
+                        var solutionNamePath = new FileInfo(solutionNameProvider.SolutionName);
+                        var solutionFolder = solutionNamePath.Directory.FullName;
+                        var scanFilePath = Path.Combine(solutionFolder, Root.ScanSchemeFileName);
 
-                        var scan = filePath.ReadXml<Scan>();
+                        if (!File.Exists(scanFilePath))
+                        {
+                            //if scan file does not exists for this solution, we create it with default one
+                            Root.ExtractEmbeddedResource(scanFilePath, "Extension." + Root.ScanSchemeFileName);
+                        }
+
+                        var scan = scanFilePath.ReadXml<Scan>();
 
                         return
                             scan;

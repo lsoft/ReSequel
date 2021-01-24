@@ -1,7 +1,7 @@
 ﻿Rules how to use solution-wide scanner
 
-1) Scanner requires ALL items (tables, columns) to be exists in the query.
-2) Every item is a wild card (? means only ONE any symbol, * means from zero to infinity any symbols).
+1) Scanner requires ALL items (tables, columns) to exists in the query.
+2) Every item is a wild card (? means only ONE any symbol, * means from ZERO to infinity any symbols).
 3) Every wild card should contains at least one regular char, so wild cards '**', '??', '?*' etc are not allowed.
 4) For column names wild card '*' IS ALLOWED and means 'Require using a star in a select query'. But it's better to check an appropriate checkbox.
 5) For table names parenthesis [] does not have any influence on the results. You may or may not put your table name wild cards in these parenthesis.
@@ -12,7 +12,7 @@
 10) Rules 7,8,9 are applied for server name and database name as usual.
 11) Symbol case (upper case, lower case) does not have any influence on the results.
 12) Scanner is able to find a temp table (create table #t (id int), wild card: #t), and table variable (declare @t table (id int), wild card: @t)
-13) Scanner DOES NOT process UNSAVED changes! Please save all changes before process.
+13) Scanner DOES NOT process UNSAVED changes! Please save all changes before process your solution.
 14) While scanner is working, please DO NOT:
  - compile solution
  - open\close solution
@@ -24,6 +24,7 @@
 Examples
 
 Suppose you have a query: select id from [dbo].[raw_data]
+
 These table name wild cards will find this table:
 	[dbo].[raw_data]
 	[DBO].[RAW_DATA]
