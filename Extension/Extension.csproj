@@ -189,10 +189,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Configuration.xml">
+    <EmbeddedResource Include="Configuration.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
+    </EmbeddedResource>
     <Content Include="Resources\CommandImages.png" />
     <Content Include="Resources\SqlPackage.ico" />
     <Content Include="SolutionWideScannerReadme.txt">
@@ -203,10 +202,9 @@
       <ResourceName>Menus.ctmenu</ResourceName>
       <SubType>Designer</SubType>
     </VSCTCompile>
-    <Content Include="ScanDescription.xml">
+    <EmbeddedResource Include="ScanDescription.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Page Include="Tagging\ValidateButton\ValidateButtonAdornment.xaml">

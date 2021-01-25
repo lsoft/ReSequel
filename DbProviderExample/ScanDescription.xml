@@ -1,7 +1,44 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Scan>
 
+  <Project Name=".Net Framework">
+    <Container Name="System.Data.SqlClient.SqlCommand">
+
+      <Property Name="CommandText"/>
+
+    </Container>
+  </Project>
+  
   <Project Name="CoreServices.Common">
+
+
+
+
+    <Generator Name="LSoft.Server.Generator">
+
+      <Method Name="WithQuery" ContainsSql="true">
+      </Method>
+
+      <Method Name="DeclareOption" ContainsOptions="true">
+      </Method>
+      
+    </Generator>
+
+
+
+    <Container Name="LSoft.Server.DBProviderExtension">
+
+      <Method Name="ExecuteExtension">
+        <!--<Argument Type="LSoft.Server.DBProvider" />-->
+        <Argument Type="System.Int32" />
+        <Argument Type="System.String" ContainsSql="true"/>
+        <Argument Type="System.Int32" />
+      </Method>
+      
+    </Container>
+
+
+
     <Container Name="LSoft.Server.DBProvider">
 
       <Property Name="SqlText"/>
@@ -17,7 +54,7 @@
 
       <Method Name="PrepareQuery">
         <Argument Type="System.String" ContainsSql="true"/>
-        <Argument Type="System.Int" />
+        <Argument Type="System.Int32" />
       </Method>
 
       <Method Name="PrepareQuery">
@@ -26,8 +63,6 @@
         <!-- System.Object means object or any of its inheritors -->
       </Method>
 
-      
-
 
       <Method Name="ExecuteQuery">
         <Argument Type="System.String" ContainsSql="true"/>
@@ -66,8 +101,6 @@
         <Argument Type="System.Object" />
         <!-- System.Object means object or any of its inheritors -->
       </Method>
-
-
 
 
 
@@ -76,6 +109,20 @@
       </Method>
 
     </Container>
+
+
+
+    <Container Name="LSoft.Server.IDBProvider">
+
+      <Method Name="ExecuteNonQuery">
+        <Argument Type="System.String" ContainsSql="true"/>
+      </Method>
+
+    </Container>
+
+
+
+
   </Project>
 
 </Scan>
