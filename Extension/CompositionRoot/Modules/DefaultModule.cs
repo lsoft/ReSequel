@@ -84,19 +84,28 @@ namespace Extension.CompositionRoot.Modules
                         }
 
                         var solutionNamePath = new FileInfo(solutionNameProvider.SolutionName);
+                        var solutionFileName = solutionNamePath.Name;
+                        var solutionFileNameWithoutExtension =
+                            solutionNamePath.Extension.Length > 0
+                                ? solutionFileName.Substring(0, solutionFileName.Length - solutionNamePath.Extension.Length)
+                                : solutionFileName;
                         var solutionFolder = solutionNamePath.Directory.FullName;
-                        var scanFilePath = Path.Combine(solutionFolder, Root.ScanSchemeFileName);
+                        var specificScanFilePath = Path.Combine(solutionFolder, $"{solutionFileNameWithoutExtension}.{Root.ScanSchemeFileName}");
+                        var generalScanFilePath = Path.Combine(solutionFolder, Root.ScanSchemeFileName);
 
-                        if (!File.Exists(scanFilePath))
+                        if (File.Exists(specificScanFilePath))
                         {
-                            //if scan file does not exists for this solution, we create it with default one
-                            Root.ExtractEmbeddedResource(scanFilePath, "Extension." + Root.ScanSchemeFileName);
+                            return specificScanFilePath.ReadXml<Scan>();
                         }
 
-                        var scan = scanFilePath.ReadXml<Scan>();
+                        if (!File.Exists(generalScanFilePath))
+                        {
+                            //if scan file does not exists for this solution, we create it with default one
+                            Root.ExtractEmbeddedResource(generalScanFilePath, "Extension." + Root.ScanSchemeFileName);
+                        }
 
-                        return
-                            scan;
+                        var scan = generalScanFilePath.ReadXml<Scan>();
+                        return scan;
                     })
                 .InTransientScope()
                 ;

@@ -259,7 +259,17 @@ namespace Extension.Tagging.ValidateButton
         {
             this.ErrorMessageLabel.Foreground = Brushes.Red;
 
-            if (_tag.Inclusion.Status.Result.CarveResult != null)
+            if (_tag.Inclusion.Status.Result is null)
+            {
+                //this happened few times for unknown reason
+                this.ErrorMessageLabel.Text =
+                    string.Format(
+                        "{1}{0}{0}{2}",
+                        Environment.NewLine,
+                        "Unknown error",
+                        _tag.Inclusion.Inclusion.SqlBody);
+            }
+            else if (_tag.Inclusion.Status.Result.CarveResult != null)
             {
                 this.ErrorMessageLabel.Text =
                     string.Format(
