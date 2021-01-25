@@ -81,17 +81,20 @@ namespace Tests {
             "varchar](100) NULL,\r\n CONSTRAINT [PK_TestTable1] PRIMARY KEY CLUSTERED \r\n(\r\n\t[id" +
             "] ASC\r\n)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OF" +
             "F, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]\r\n) ON [PRIMARY]\r\nGO" +
-            "\r\n\r\nCREATE TABLE [dbo].[TestTable2](\r\n\t[id] [int] NOT NULL,\r\n\t[name] [varchar](1" +
-            "00) NOT NULL,\r\n\t[additional] [varchar](100) NULL,\r\n CONSTRAINT [PK_TestTable2] P" +
-            "RIMARY KEY CLUSTERED \r\n(\r\n\t[id] ASC\r\n)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMP" +
-            "UTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON" +
-            " [PRIMARY]\r\n) ON [PRIMARY]\r\nGO\r\n\r\n\r\nCREATE TABLE [dbo].[TestTable3](\r\n\t[id] [int" +
-            "] NOT NULL,\r\n\t[name] [varbinary](max) NOT NULL,\r\n\t[additional] [varbinary](max) " +
-            "NULL,\r\n\t[custom_column] [int] NOT NULL,\r\n\t[database_version] [int] NOT NULL,\r\n C" +
-            "ONSTRAINT [PK_TestTable3] PRIMARY KEY CLUSTERED \r\n(\r\n\t[id] ASC\r\n)WITH (PAD_INDEX" +
-            " = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON" +
-            ", ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]\r\n) ON [PRIMARY]\r\nGO\r\n\r\n\r\nuse [master]\r\nGO\r" +
-            "\n")]
+            "\r\n\r\n\r\nCREATE NONCLUSTERED INDEX [TestTable1_Index0] ON [dbo].[TestTable1]\r\n(\r\n\t[" +
+            "name] ASC\r\n)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB " +
+            "= OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS" +
+            " = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]\r\nGO\r\n\r\n\r\nCREATE TABLE [db" +
+            "o].[TestTable2](\r\n\t[id] [int] NOT NULL,\r\n\t[name] [varchar](100) NOT NULL,\r\n\t[add" +
+            "itional] [varchar](100) NULL,\r\n CONSTRAINT [PK_TestTable2] PRIMARY KEY CLUSTERED" +
+            " \r\n(\r\n\t[id] ASC\r\n)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DU" +
+            "P_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]\r\n) ON [PR" +
+            "IMARY]\r\nGO\r\n\r\n\r\nCREATE TABLE [dbo].[TestTable3](\r\n\t[id] [int] NOT NULL,\r\n\t[name]" +
+            " [varbinary](max) NOT NULL,\r\n\t[additional] [varbinary](max) NULL,\r\n\t[custom_colu" +
+            "mn] [int] NOT NULL,\r\n\t[database_version] [int] NOT NULL,\r\n CONSTRAINT [PK_TestTa" +
+            "ble3] PRIMARY KEY CLUSTERED \r\n(\r\n\t[id] ASC\r\n)WITH (PAD_INDEX = OFF, STATISTICS_N" +
+            "ORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS =" +
+            " ON) ON [PRIMARY]\r\n) ON [PRIMARY]\r\nGO\r\n\r\nuse [master]GO")]
         public string CreateDatabaseScript {
             get {
                 return ((string)(this["CreateDatabaseScript"]));

@@ -639,11 +639,9 @@ namespace SqlServerValidator.Visitor
         public override void ExplicitVisit(DataModificationTableReference node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(TableReferenceWithAliasAndColumns node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(TableReferenceWithAlias node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
-        public override void ExplicitVisit(TableReference node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(SelectSetVariable node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(OrderByClause node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(SelectElement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
-        public override void ExplicitVisit(FromClause node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(QueryParenthesisExpression node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(QueryExpression node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(OdbcQualifiedJoinTableReference node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
@@ -745,7 +743,6 @@ namespace SqlServerValidator.Visitor
         public override void ExplicitVisit(DropPartitionSchemeStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(DropPartitionFunctionStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(VariableMethodCallTableReference node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
-        public override void ExplicitVisit(VariableTableReference node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(BinaryQueryExpression node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(DropAssemblyStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(CreateLoginSource node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
@@ -850,7 +847,6 @@ namespace SqlServerValidator.Visitor
         public override void ExplicitVisit(ColumnMasterKeyPathParameter node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(SqlDataTypeReference node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(ColumnMasterKeyStoreProviderNameParameter node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
-        public override void ExplicitVisit(IndexTableHint node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(DataTypeSequenceOption node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(TableHint node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(ScalarExpressionSequenceOption node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
@@ -1095,6 +1091,8 @@ namespace SqlServerValidator.Visitor
 
         public override void ExplicitVisit(DropIndexStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
 
+        public override void ExplicitVisit(TableReference node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
+
         #endregion
 
 
@@ -1175,6 +1173,17 @@ namespace SqlServerValidator.Visitor
             node.AcceptChildren(this);
         }
 
+
+        public override void ExplicitVisit(VariableTableReference node)
+        {
+            var tableName = new SqlServerTableVariableName(
+                node.Variable.Name
+                );
+
+            _tableList.Add(tableName);
+
+            //uncomment this line will result in error!!! table variable will be added to variable list!  node.AcceptChildren(this);
+        }
 
         public override void ExplicitVisit(NamedTableReference node)
         {
@@ -1300,6 +1309,32 @@ namespace SqlServerValidator.Visitor
         }
 
 
+        public override void ExplicitVisit(FromClause node)
+        {
+            //foreach (var tableReference in node.TableReferences)
+            //{
+            //    this.ExplicitVisit(tableReference);
+            //    //tableReference.AcceptChildren(this);
+            //}
+
+            Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString());
+            node.AcceptChildren(this);
+        }
+
+
+        public override void ExplicitVisit(IndexTableHint node)
+        {
+            foreach (var indexReference in node.IndexValues)
+            {
+                var index = new SqlServerIndexName(
+                    _tableList.Last(),
+                    indexReference.ToSourceSqlString()
+                    );
+                _indexList.Add(index);
+            }
+
+            node.AcceptChildren(this);
+        }
 
 
 

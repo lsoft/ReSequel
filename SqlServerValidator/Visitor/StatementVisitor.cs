@@ -389,6 +389,27 @@ namespace SqlServerValidator.Visitor
                 return;
             }
 
+            var checkForTableOrViewResult = CheckForTableOrViewStatus(node.ToSourceSqlString(), true);
+            if (!checkForTableOrViewResult.IsSuccess)
+            {
+                this._result = checkForTableOrViewResult;
+                return;
+            }
+
+            var checkForIndexResult = CheckForIndexStatus(node.ToSourceSqlString(), true);
+            if (!checkForIndexResult.IsSuccess)
+            {
+                this._result = checkForIndexResult;
+                return;
+            }
+
+            var checkForColumnResult = CheckForColumnStatus(node.ToSourceSqlString(), true);
+            if (!checkForColumnResult.IsSuccess)
+            {
+                this._result = checkForColumnResult;
+                return;
+            }
+
             this._result = ExecuteDefaultProcessing(node);
         }
 
@@ -398,6 +419,27 @@ namespace SqlServerValidator.Visitor
             if (TryToFoundTempTableReference(node, out tempTableVisitReturn))
             {
                 this._result = tempTableVisitReturn;
+                return;
+            }
+
+            var checkForTableOrViewResult = CheckForTableOrViewStatus(node.ToSourceSqlString(), true);
+            if (!checkForTableOrViewResult.IsSuccess)
+            {
+                this._result = checkForTableOrViewResult;
+                return;
+            }
+
+            var checkForIndexResult = CheckForIndexStatus(node.ToSourceSqlString(), true);
+            if (!checkForIndexResult.IsSuccess)
+            {
+                this._result = checkForIndexResult;
+                return;
+            }
+
+            var checkForColumnResult = CheckForColumnStatus(node.ToSourceSqlString(), true);
+            if (!checkForColumnResult.IsSuccess)
+            {
+                this._result = checkForColumnResult;
                 return;
             }
 
@@ -413,6 +455,27 @@ namespace SqlServerValidator.Visitor
                 return;
             }
 
+            var checkForTableOrViewResult = CheckForTableOrViewStatus(node.ToSourceSqlString(), true);
+            if (!checkForTableOrViewResult.IsSuccess)
+            {
+                this._result = checkForTableOrViewResult;
+                return;
+            }
+
+            var checkForIndexResult = CheckForIndexStatus(node.ToSourceSqlString(), true);
+            if (!checkForIndexResult.IsSuccess)
+            {
+                this._result = checkForIndexResult;
+                return;
+            }
+
+            var checkForColumnResult = CheckForColumnStatus(node.ToSourceSqlString(), true);
+            if (!checkForColumnResult.IsSuccess)
+            {
+                this._result = checkForColumnResult;
+                return;
+            }
+
             this._result = ExecuteDefaultProcessing(node);
         }
 
@@ -422,6 +485,27 @@ namespace SqlServerValidator.Visitor
             if (TryToFoundTempTableReference(node, out tempTableVisitReturn))
             {
                 this._result = tempTableVisitReturn;
+                return;
+            }
+
+            var checkForTableOrViewResult = CheckForTableOrViewStatus(node.ToSourceSqlString(), true);
+            if (!checkForTableOrViewResult.IsSuccess)
+            {
+                this._result = checkForTableOrViewResult;
+                return;
+            }
+
+            var checkForIndexResult = CheckForIndexStatus(node.ToSourceSqlString(), true);
+            if (!checkForIndexResult.IsSuccess)
+            {
+                this._result = checkForIndexResult;
+                return;
+            }
+
+            var checkForColumnResult = CheckForColumnStatus(node.ToSourceSqlString(), true);
+            if (!checkForColumnResult.IsSuccess)
+            {
+                this._result = checkForColumnResult;
                 return;
             }
 
@@ -1526,24 +1610,51 @@ namespace SqlServerValidator.Visitor
                 throw new ArgumentNullException(nameof(sql));
             }
 
-            var table = _butcher.TableList.FirstOrDefault();
-            if (table is null)
+            if (_butcher.ColumnList.Count == 0)
             {
-                throw new InvalidOperationException($"More than one table referenced by this statement!");
+                return ValidationResult.Success(sql, sql);
             }
 
-            if (table.IsRegularTable)
+            if (_butcher.TableList.Count == 0)
             {
-                var doc = new DatabaseObjectChecker(_sqlValidator);
+                //probably we cannot have column reference for the statement without table (or view)
+                //so in this case we have an error.
+                throw new InvalidOperationException($"No tables referenced by this statement!");
+            }
+            if (_butcher.TableList.Count > 1)
+            {
+                //it's impossible to detect column's table in certain situations
+                //without a full analysis of table structures, e.g.:
+                //select ColumnFromTable0, ColumnFromTable1 from Table0, Table1 where KeyFromTable0 = KeyFromTable1
+                //so in the cases when the statement references 2 or more tables, we skip column existence checking.
+                //looks like it's not a huge disadvantage because 'default processing' is able to detect this problems
+                //in most cases
+                return ValidationResult.Success(sql, sql);
+            }
 
-                foreach (var column in _butcher.ColumnList)
+            var table = _butcher.TableList.First();
+            
+            if (!table.IsRegularTable)
+            {
+                //we can't check columns for temp table or table variable
+                //so - skip this checks
+                return ValidationResult.Success(sql, sql);
+            }
+
+            var doc = new DatabaseObjectChecker(_sqlValidator);
+
+            foreach (var column in _butcher.ColumnList)
+            {
+                if (column.IsStar)
                 {
-                    var result = doc.CheckForColumnStatus(table, column, shouldExists);
+                    continue;
+                }
 
-                    if (!result.IsSuccess)
-                    {
-                        return result.WithNewFullSqlBody(sql);
-                    }
+                var result = doc.CheckForColumnStatus(table, column, shouldExists);
+
+                if (!result.IsSuccess)
+                {
+                    return result.WithNewFullSqlBody(sql);
                 }
             }
 

@@ -16,6 +16,14 @@ namespace SqlServerValidator.Identifier
             get;
         }
 
+        public bool IsStar
+        {
+            get
+            {
+                return ColumnName == "*";
+            }
+        }
+
         public SqlServerColumnName(
             string columnName
             )

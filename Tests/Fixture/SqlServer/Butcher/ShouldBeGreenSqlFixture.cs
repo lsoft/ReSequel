@@ -562,5 +562,92 @@ truncate table [dbo].[TestTable0]
 
             Assert.IsTrue(carveResult.IsTableReferenced("[dbo].[TestTable0]"));
         }
+
+        [TestMethod]
+        public void SelectWithIndexStatement1()
+        {
+            const string sqlBody = @"
+select
+	t0.id
+from dbo.TestTable0 t0 with(index=TestTable0_Index0)
+join dbo.TestTable1 t1 with(index=TestTable1_Index0) on t0.id = t1.id
+";
+
+            var carveResult = Carve(
+                sqlBody
+                );
+
+            Assert.IsNotNull(carveResult);
+
+            Assert.AreEqual(2, carveResult.TableList.Count);
+            Assert.AreEqual(0, carveResult.TempTableList.Count);
+            Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(3, carveResult.ColumnList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+            Assert.AreEqual(2, carveResult.IndexList.Count);
+
+            Assert.IsTrue(carveResult.IsTableReferenced("[dbo].[TestTable0]"));
+            Assert.IsTrue(carveResult.IsTableReferenced("[dbo].[TestTable1]"));
+            Assert.IsTrue(carveResult.IsColumnReferenced("id"));
+            Assert.IsTrue(carveResult.IsIndexReferenced("[dbo].[TestTable0]", "TestTable0_Index0"));
+            Assert.IsTrue(carveResult.IsIndexReferenced("[dbo].[TestTable1]", "TestTable1_Index0"));
+        }
+
+        [TestMethod]
+        public void SelectWithIndexStatement2()
+        {
+            const string sqlBody = @"
+select
+    t0.id
+from dbo.TestTable0 t0 with(index=TestTable0_Index0), dbo.TestTable1 t1 with(index=TestTable1_Index0)
+where
+	t0.id = t1.id
+";
+
+            var carveResult = Carve(
+                sqlBody
+                );
+
+            Assert.IsNotNull(carveResult);
+
+            Assert.AreEqual(2, carveResult.TableList.Count);
+            Assert.AreEqual(0, carveResult.TempTableList.Count);
+            Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(3, carveResult.ColumnList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+            Assert.AreEqual(2, carveResult.IndexList.Count);
+
+            Assert.IsTrue(carveResult.IsTableReferenced("[dbo].[TestTable0]"));
+            Assert.IsTrue(carveResult.IsTableReferenced("[dbo].[TestTable1]"));
+            Assert.IsTrue(carveResult.IsColumnReferenced("id"));
+            Assert.IsTrue(carveResult.IsIndexReferenced("[dbo].[TestTable0]", "TestTable0_Index0"));
+            Assert.IsTrue(carveResult.IsIndexReferenced("[dbo].[TestTable1]", "TestTable1_Index0"));
+        }
+
+        [TestMethod]
+        public void SelectFromTableVariableStatement()
+        {
+            const string sqlBody = @"
+select id, [name] from @t
+";
+
+            var carveResult = Carve(
+                sqlBody
+                );
+
+            Assert.IsNotNull(carveResult);
+
+            Assert.AreEqual(1, carveResult.TableList.Count);
+            Assert.AreEqual(0, carveResult.TempTableList.Count);
+            Assert.AreEqual(1, carveResult.TableVariableList.Count);
+            Assert.AreEqual(2, carveResult.ColumnList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+            Assert.AreEqual(0, carveResult.IndexList.Count);
+
+            Assert.IsTrue(carveResult.IsTableReferenced("@t"));
+            Assert.IsTrue(carveResult.IsColumnReferenced("id"));
+            Assert.IsTrue(carveResult.IsColumnReferenced("name"));
+        }
+
     }
 }

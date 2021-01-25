@@ -12,6 +12,11 @@ namespace Main.Sql.Identifier
             get;
         }
 
+        bool IsStar
+        {
+            get;
+        }
+
         bool IsSame(
             string otherColumnName
             );

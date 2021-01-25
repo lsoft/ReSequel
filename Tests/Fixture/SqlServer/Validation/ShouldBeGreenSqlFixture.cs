@@ -979,7 +979,7 @@ GROUP BY
             var sqlBody = @"
 SELECT 
 	DATEADD(day, @deadline, 1)
-FROM dbo.TestTable0
+FROM dbo.TestTable1
 WHERE
 	getdate() < DATEADD(day, @deadline, 1)
 ";
@@ -1021,13 +1021,13 @@ VALUES
             var sqlBody = @"
 SELECT
     1, 2
-FROM dbo.TestTable3
+FROM dbo.TestTable1
 WHERE
     getdate() < dateadd(day, @a, @b)
 UNION ALL
 SELECT
     1, 2
-FROM dbo.TestTable3
+FROM dbo.TestTable1
 WHERE
     getdate() < dateadd(day, @a, @b)
 ";
@@ -1077,7 +1077,7 @@ declare @a int @b varchar(10);
         public void CorrectCreateIndexStatement()
         {
             const string sqlBody = @"
-CREATE NONCLUSTERED INDEX [TestTable1_Index0] ON [dbo].[TestTable1]
+CREATE NONCLUSTERED INDEX [TestTable1_NewIndex] ON [dbo].[TestTable1]
 (
 	[name] ASC
 )
@@ -1236,5 +1236,312 @@ truncate table UnknownTable
             Assert.IsFalse(report.IsSuccess, report.FailMessage);
         }
 
+
+        [TestMethod]
+        public void CorrectSelectJoinWithIndexStatement()
+        {
+            const string sqlBody = @"
+select
+	t0.id
+from dbo.TestTable0 t0 with(index=TestTable0_Index0)
+join dbo.TestTable1 t1 with(index=TestTable1_Index0) on t0.id = t1.id
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void IncorrectSelectJoinWithIndexStatement1()
+        {
+            const string sqlBody = @"
+select
+	t0.id
+from dbo.TestTable0 t0 with(index=UnknownIndex)
+join dbo.TestTable1 t1 with(index=TestTable1_Index0) on t0.id = t1.id
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void IncorrectSelectJoinWithIndexStatement2()
+        {
+            const string sqlBody = @"
+select
+	t0.id
+from dbo.TestTable0 t0 with(index=TestTable0_Index0)
+join dbo.TestTable1 t1 with(index=Unknown) on t0.id = t1.id
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
+        }
+
+        /// <summary>
+        /// indexes are switched!
+        /// </summary>
+        [TestMethod]
+        public void IncorrectSelectJoinWithIndexStatement3()
+        {
+            const string sqlBody = @"
+select
+	t0.id
+from dbo.TestTable0 t0 with(index=TestTable1_Index0)
+join dbo.TestTable1 t1 with(index=TestTable0_Index0) on t0.id = t1.id
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
+        }
+
+
+        [TestMethod]
+        public void CorrectSelectFromFromWithIndexStatement()
+        {
+            const string sqlBody = @"
+select
+    t0.id
+from dbo.TestTable0 t0 with(index=TestTable0_Index0), dbo.TestTable1 t1 with(index=TestTable1_Index0)
+where
+	t0.id = t1.id
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void IncorrectSelectFromFromWithIndexStatement1()
+        {
+            const string sqlBody = @"
+select
+    t0.id
+from dbo.TestTable0 t0 with(index=UnknownIndex), dbo.TestTable1 t1 with(index=TestTable1_Index0)
+where
+	t0.id = t1.id
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void IncorrectSelectFromFromWithIndexStatement2()
+        {
+            const string sqlBody = @"
+select
+    t0.id
+from dbo.TestTable0 t0 with(index=TestTable0_Index0), dbo.TestTable1 t1 with(index=UnknownIndex)
+where
+	t0.id = t1.id
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
+        }
+
+        /// <summary>
+        /// indexes are switched!
+        /// </summary>
+        [TestMethod]
+        public void IncorrectSelectFromFromWithIndexStatement3()
+        {
+            const string sqlBody = @"
+select
+    t0.id
+from dbo.TestTable0 t0 with(index=TestTable1_Index0), dbo.TestTable1 t1 with(index=TestTable0_Index0)
+where
+	t0.id = t1.id
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void IncorrectUpdateStatement1()
+        {
+            const string sqlBody = @"
+update UnknownTable
+set
+    name = '1'
+where
+	id = 1
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
+        }
+
+
+        [TestMethod]
+        public void IncorrectUpdateStatement2()
+        {
+            const string sqlBody = @"
+update TestTable0
+set
+    unknown_column = '1'
+where
+	name = 1
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
+        }
+
+
+        [TestMethod]
+        public void IncorrectUpdateStatement3()
+        {
+            const string sqlBody = @"
+update TestTable0
+set
+    name = '1'
+where
+	unknown_column = 1
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void IncorrectUpdateStatement4()
+        {
+            const string sqlBody = @"
+
+update TestTable0
+set
+	name = '1'
+from TestTable0 t0 with (index = UnknownIndex)
+join TestTable1 t1 on t0.id = t1.id
+where
+	t0.id = 12 
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void IncorrectDeleteStatement1()
+        {
+            const string sqlBody = @"
+
+delete from UnknownTable
+where
+    id = 1
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void IncorrectDeleteStatement2()
+        {
+            const string sqlBody = @"
+
+delete from TestTable0
+where
+    unknown_column = 1
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void IncorrectDeleteStatement3()
+        {
+            const string sqlBody = @"
+
+delete from TestTable0
+from TestTable0 t0 with (index = 123)
+join TestTable1 t1 on t0.id = t1.id
+where
+	t0.id = 12 
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsFalse(report.IsSuccess, report.FailMessage);
+        }
     }
 }
