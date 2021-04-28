@@ -1,8 +1,4 @@
-﻿using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-using System;
-
-namespace Extension.CompositionRoot
+﻿namespace Extension.CompositionRoot
 {
     //public sealed class MessageBox
     //{

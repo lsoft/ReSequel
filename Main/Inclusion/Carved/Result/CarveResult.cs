@@ -16,12 +16,13 @@ namespace Main.Inclusion.Carved.Result
         private readonly List<ITableName> _tempTableList;
         private readonly List<ITableName> _tableVariableList;
         private readonly List<IVariableRef> _variableReferenceList;
+        private readonly List<ITableName> _cteList;
 
         private bool _isStarReferenced;
         private readonly List<IColumnName> _columnList;
 
         private readonly List<IIndexName> _indexList;
-
+        private readonly List<IFunctionName> _functionList;
 
         public IReadOnlyCollection<ICarveResult> Results => _results;
 
@@ -30,6 +31,8 @@ namespace Main.Inclusion.Carved.Result
         public IReadOnlyList<ITableName> TempTableList => _tempTableList;
 
         public IReadOnlyList<ITableName> TableVariableList => _tableVariableList;
+
+        public IReadOnlyList<ITableName> CteList => _cteList;
 
         public IReadOnlyCollection<IVariableRef> VariableReferenceList => _variableReferenceList;
 
@@ -42,6 +45,8 @@ namespace Main.Inclusion.Carved.Result
         public IReadOnlyList<IColumnName> ColumnList => _columnList;
 
         public IReadOnlyList<IIndexName> IndexList => _indexList;
+
+        public IReadOnlyList<IFunctionName> FunctionList => _functionList;
 
         public string TableNames
         {
@@ -89,6 +94,22 @@ namespace Main.Inclusion.Carved.Result
         }
 
 
+        public string FunctionNames
+        {
+            get
+            {
+                if (_indexList.Count == 0)
+                {
+                    return
+                        "No function references";
+                }
+
+                return
+                    string.Join(" , ", _functionList.Select(j => j.FullFunctionName).Distinct());
+            }
+        }
+
+
         public CarveResult(
             )
         {
@@ -98,11 +119,13 @@ namespace Main.Inclusion.Carved.Result
             _tempTableList = new List<ITableName>();
             _tableVariableList = new List<ITableName>();
             _variableReferenceList = new List<IVariableRef>();
+            _cteList = new List<ITableName>();
 
             _isStarReferenced = false;
             _columnList = new List<IColumnName>();
 
             _indexList = new List<IIndexName>();
+            _functionList = new List<IFunctionName>();
         }
 
 
@@ -117,7 +140,7 @@ namespace Main.Inclusion.Carved.Result
                 _tableList.Any(j => j.IsSame(tableName));
         }
 
-        public bool IsColumnReferenced(string columnName)
+        public bool IsColumnReferenced(string columnName, bool isAlias = false)
         {
             if (columnName == null)
             {
@@ -125,7 +148,7 @@ namespace Main.Inclusion.Carved.Result
             }
 
             return
-                _columnList.Any(j => j.IsSame(columnName));
+                _columnList.Any(j => j.IsSame(columnName, isAlias));
         }
 
         public bool IsVariableReferenced(string variableName)
@@ -155,6 +178,17 @@ namespace Main.Inclusion.Carved.Result
                 _indexList.Any(i => i.IsSame(tableName, indexName));
         }
 
+        public bool IsFunctionReferenced(string fullFunctionName)
+        {
+            if (fullFunctionName is null)
+            {
+                throw new ArgumentNullException(nameof(fullFunctionName));
+            }
+
+            return
+                _functionList.Any(i => i.IsSame(fullFunctionName));
+        }
+
 
         public void Append(
             ICarveResult result
@@ -171,11 +205,13 @@ namespace Main.Inclusion.Carved.Result
             _tempTableList.AddRange(result.TempTableList);
             _tableVariableList.AddRange(result.TableVariableList);
             _variableReferenceList.AddRange(result.VariableReferenceList);
+            _cteList.AddRange(result.CteList);
 
             _isStarReferenced |= result.IsStarReferenced;
             _columnList.AddRange(result.ColumnList);
 
             _indexList.AddRange(result.IndexList);
+            _functionList.AddRange(result.FunctionList);
         }
 
     }

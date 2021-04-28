@@ -1,6 +1,5 @@
 using Microsoft.Build.Locator;
 using System;
-using System.Linq;
 using System.Threading;
 
 namespace Main.Other

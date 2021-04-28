@@ -1,9 +1,9 @@
 using System;
 using System.Threading;
 using Ninject;
-using ReSequel.TaskRelated;
+using Extension.TaskRelated;
 
-namespace ReSequel.CompositionRoot
+namespace Extension.CompositionRoot
 {
     internal sealed class Root : IDisposable
     {

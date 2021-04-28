@@ -10,7 +10,6 @@
 //***************************************************************************
 
 using Microsoft.VisualStudio.Text;
-using System.Threading.Tasks;
 
 namespace Extension.Tagging.SqlQuery
 {

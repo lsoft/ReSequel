@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Input;
-using System.Windows.Threading;
 
 namespace WpfHelpers
 {
@@ -11,11 +10,6 @@ namespace WpfHelpers
     /// </summary>
     public class BaseViewModel : INotifyPropertyChanged, IDisposable
     {
-        /// <summary>
-        /// Диспатчер WPF, необходим для обновления привязок команд
-        /// </summary>
-        protected readonly Dispatcher _dispatcher;
-
         /// <summary>
         /// Событие изменения свойства
         /// </summary>
@@ -30,18 +24,8 @@ namespace WpfHelpers
         /// конструктор
         /// </summary>
         /// <param name="dispatcher">Диспатчер WPF</param>
-        protected BaseViewModel(Dispatcher dispatcher)
+        protected BaseViewModel()
         {
-            #region validate
-
-            if (dispatcher == null)
-            {
-                throw new ArgumentNullException("dispatcher");
-            }
-
-            #endregion
-
-            _dispatcher = dispatcher;
         }
 
         /// <summary>
@@ -66,20 +50,9 @@ namespace WpfHelpers
                 var e = new PropertyChangedEventArgs(propertyName);
                 handler(this, e);
             }
-        }
 
-        /// <summary>
-        /// Вызывает обновление биндингов, например, на буттонах
-        /// (автоматически в .net3.5 этого не происходит, похоже,
-        /// хотя в .net4 происходит)
-        /// Именно эта функция использует диспатчер
-        /// </summary>
-        protected virtual void OnCommandInvalidate()
-        {
-            this._dispatcher.BeginInvoke(
-                new Action(CommandManager.InvalidateRequerySuggested));
+            CommandManager.InvalidateRequerySuggested();
         }
-
 
         [Conditional("DEBUG")]
         [DebuggerStepThrough]
@@ -107,11 +80,6 @@ namespace WpfHelpers
         protected virtual void DisposeViewModel()
         {
             
-        }
-
-        protected void BeginInvoke(Action a)
-        {
-            _dispatcher.BeginInvoke(a);
         }
 
         #region Implementation of IDisposable

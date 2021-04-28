@@ -14,24 +14,34 @@ namespace SqlServerValidator.Visitor
     public class ButcherVisitor : TSqlFragmentVisitor, ICarveResult
     {
         /// <summary>
-        /// duplicates allowed
+        /// cte names container
         /// </summary>
-        private List<ITableName> _tableList = new List<ITableName>();
+        //private readonly HashSet<string> _cteList = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
 
         /// <summary>
         /// duplicates allowed
         /// </summary>
-        private List<IColumnName> _columnList = new List<IColumnName>();
+        private readonly List<ITableName> _tableList = new List<ITableName>();
 
         /// <summary>
         /// duplicates allowed
         /// </summary>
-        private List<IIndexName> _indexList = new List<IIndexName>();
+        private readonly List<IColumnName> _columnList = new List<IColumnName>();
+
+        /// <summary>
+        /// duplicates allowed
+        /// </summary>
+        private readonly List<IIndexName> _indexList = new List<IIndexName>();
+
+        /// <summary>
+        /// duplicates allowed
+        /// </summary>
+        private readonly List<IFunctionName> _functionList = new List<IFunctionName>();
 
         /// <summary>
         /// NO duplicates allowed
         /// </summary>
-        private Dictionary<string, IVariableRef2> _variableReferenceList = new Dictionary<string, IVariableRef2>(SqlVariableStringComparer.Instance);
+        private readonly Dictionary<string, IVariableRef2> _variableReferenceList = new Dictionary<string, IVariableRef2>(SqlVariableStringComparer.Instance);
 
         public IReadOnlyList<ITableName> TableList => _tableList;
 
@@ -39,12 +49,18 @@ namespace SqlServerValidator.Visitor
 
         public IReadOnlyList<IIndexName> IndexList => _indexList;
 
+        public IReadOnlyList<IFunctionName> FunctionList => _functionList;
+
 
         public IReadOnlyList<ITableName> TempTableList => _tableList.FindAll(j => j.IsTempTable);
 
         public IReadOnlyList<ITableName> TableVariableList => _tableList.FindAll(j => j.IsTableVariable);
 
         public IReadOnlyCollection<IVariableRef> VariableReferenceList => _variableReferenceList.Values;
+
+        public IReadOnlyList<ITableName> CteList => _tableList.FindAll(j => j.IsCte);
+
+        private int _appendOnlyTableVariables = 0;
 
         /// <summary>
         /// did * used in select queries?
@@ -111,7 +127,7 @@ namespace SqlServerValidator.Visitor
                 _tableList.Any(j => j.IsSame(tableName));
         }
 
-        public bool IsColumnReferenced(string columnName)
+        public bool IsColumnReferenced(string columnName, bool isAlias = false)
         {
             if (columnName == null)
             {
@@ -119,7 +135,7 @@ namespace SqlServerValidator.Visitor
             }
 
             return
-                _columnList.Any(j => j.IsSame(columnName));
+                _columnList.Any(j => j.IsSame(columnName, isAlias));
         }
 
         public bool IsVariableReferenced(string variableName)
@@ -828,7 +844,6 @@ namespace SqlServerValidator.Visitor
         public override void ExplicitVisit(AlterColumnEncryptionKeyStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(FunctionReturnType node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(DropColumnEncryptionKeyStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
-        public override void ExplicitVisit(WithCtesAndXmlNamespaces node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(ColumnEncryptionKeyValue node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(ColumnEncryptionKeyValueParameter node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(CommonTableExpression node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
@@ -882,7 +897,6 @@ namespace SqlServerValidator.Visitor
         public override void ExplicitVisit(CallTarget node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(TransactionStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(WhileStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
-        public override void ExplicitVisit(FunctionCall node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(DeleteStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(AtTimeZoneCall node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(UpdateDeleteSpecificationBase node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
@@ -1076,7 +1090,6 @@ namespace SqlServerValidator.Visitor
         public override void ExplicitVisit(JoinTableReference node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(SchemaObjectName node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(QuerySpecification node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
-        public override void ExplicitVisit(SelectScalarExpression node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(TableDefinition node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(SelectStatement node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(ColumnReferenceExpression node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
@@ -1096,23 +1109,97 @@ namespace SqlServerValidator.Visitor
         #endregion
 
 
+        public override void ExplicitVisit(SelectScalarExpression node)
+        {
+            //Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString());
+
+            if (node.ColumnName != null && !string.IsNullOrEmpty(node.ColumnName.Value))
+            {
+                AddColumn(
+                    new SqlServerColumnName(
+                        node.ColumnName.Value,
+                        true
+                        )
+                    );
+            }
+            
+            node.AcceptChildren(this);
+        }
+
+
+        public override void ExplicitVisit(WithCtesAndXmlNamespaces node)
+        {
+            //Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString());
+
+            foreach (var ctee in node.CommonTableExpressions)
+            {
+                //_cteList.Add(ctee.ExpressionName.Value);
+
+                AddTable(
+                    new SqlServerCteName(
+                        ctee.ExpressionName.Value
+                        )
+                    );
+
+                RemoveAliased(ctee.ExpressionName.Value);
+            }
+
+            node.AcceptChildren(this);
+        }
+
+
+
+        public override void ExplicitVisit(FunctionCall node)
+        {
+            //Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString());
+
+            AddFunction(
+                new SqlServerFunctionName(
+                    node.CallTarget,
+                    node.FunctionName
+                    )
+                );
+
+            try
+            {
+                _appendOnlyTableVariables++;
+
+                //do not accept children due to we'll receive a incorrect identifier (which is function name, not a column name)
+                //node.AcceptChildren(this);
+
+                foreach (var parameter in node.Parameters)
+                {
+                    parameter.Accept(this);
+                }
+
+                node.Collation?.Accept(this);
+                node.OverClause?.Accept(this);
+                node.WithinGroupClause?.Accept(this);
+            }
+            finally
+            {
+                _appendOnlyTableVariables--;
+            }
+        }
+
+
         public override void ExplicitVisit(CreateIndexStatement node)
         {
             var table = new SqlServerTableName(node.OnName);
-            _tableList.Add(table);
+            AddTable(table);
 
             var index = new SqlServerIndexName(table, node.Name.Value);
-            _indexList.Add(index);
+            AddIndex(index);
 
             foreach (var ncolumn in node.Columns)
             {
-                var column = new SqlServerColumnName(ncolumn.Column.MultiPartIdentifier.ToSqlString());
-                _columnList.Add(column);
+                var column = new SqlServerColumnName(ncolumn.Column.MultiPartIdentifier.ToSqlString(), false);
+                AddColumn(column);
             }
             foreach (var ncolumn in node.IncludeColumns)
             {
-                var column = new SqlServerColumnName(ncolumn.MultiPartIdentifier.ToSqlString());
-                _columnList.Add(column);
+                var column = new SqlServerColumnName(ncolumn.MultiPartIdentifier.ToSqlString(), false);
+                AddColumn(column);
             }
         }
 
@@ -1121,10 +1208,10 @@ namespace SqlServerValidator.Visitor
         public override void ExplicitVisit(DropIndexClause node)
         {
             var table = new SqlServerTableName(node.Object);
-            _tableList.Add(table);
+            AddTable(table);
 
             var index = new SqlServerIndexName(table, node.Index.Value);
-            _indexList.Add(index);
+            AddIndex(index);
         }
 
 
@@ -1138,13 +1225,15 @@ namespace SqlServerValidator.Visitor
         {
             IsStarReferenced = true;
 
-            _columnList.Add(
+            AddColumn(
                 new SqlServerColumnName(
-                    "*"
+                    "*",
+                    false
                     )
                 );
 
-            node.AcceptChildren(this);
+            //no need to AcceptChildren, due to queiries with like `select alias.* from my_table alias` will works incorrectly
+            //node.AcceptChildren(this);
         }
 
 
@@ -1154,7 +1243,7 @@ namespace SqlServerValidator.Visitor
                 node.SchemaObjectName
                 );
 
-            _tableList.Add(tableName);
+            AddTable(tableName);
 
             node.AcceptChildren(this);
         }
@@ -1164,9 +1253,10 @@ namespace SqlServerValidator.Visitor
         {
             var columnName = node.Identifiers.Last().ToSourceSqlString();
 
-            _columnList.Add(
+            AddColumn(
                 new SqlServerColumnName(
-                    columnName
+                    columnName,
+                    false
                     )
                 );
 
@@ -1180,18 +1270,37 @@ namespace SqlServerValidator.Visitor
                 node.Variable.Name
                 );
 
-            _tableList.Add(tableName);
+            AddTable(tableName);
 
             //uncomment this line will result in error!!! table variable will be added to variable list!  node.AcceptChildren(this);
         }
 
         public override void ExplicitVisit(NamedTableReference node)
         {
-            var tableName = new SqlServerTableName(
-                node.SchemaObject
-                );
+            var fullName = node.SchemaObject.ToSourceSqlString();
 
-            _tableList.Add(tableName);
+            ITableName tableName;
+            //if (_tableList.Any(t => t.IsCte && t.FullTableName  _cteList.Contains(fullName))
+            //{
+            //    tableName = new SqlServerCteName(
+            //        fullName
+            //        );
+            //}
+            //else
+            {
+                tableName = new SqlServerTableName(
+                    node.SchemaObject
+                    );
+            }
+
+            //remove previously added aliased pseudo-tables 
+
+            if (node.Alias != null && !string.IsNullOrEmpty(node.Alias.Value))
+            {
+                RemoveAliased(node.Alias.Value);
+            }
+
+            AddTable(tableName);
 
             node.AcceptChildren(this);
         }
@@ -1204,7 +1313,7 @@ namespace SqlServerValidator.Visitor
                     o
                     );
 
-                _tableList.Add(tableName);
+                AddTable(tableName);
             }
 
             node.AcceptChildren(this);
@@ -1212,9 +1321,10 @@ namespace SqlServerValidator.Visitor
 
         public override void ExplicitVisit(ColumnDefinition node)
         {
-            _columnList.Add(
+            AddColumn(
                 new SqlServerColumnName(
-                    node.ColumnIdentifier.Value
+                    node.ColumnIdentifier.Value,
+                    false
                     )
                 );
 
@@ -1227,11 +1337,12 @@ namespace SqlServerValidator.Visitor
                 node.SchemaObjectName
                 );
 
-            _tableList.Add(tableName);
+            AddTable(tableName);
 
-            _columnList.Add(
+            AddColumn(
                 new SqlServerColumnName(
-                    node.ColumnIdentifier.Value
+                    node.ColumnIdentifier.Value,
+                    false
                     )
                 );
 
@@ -1244,7 +1355,7 @@ namespace SqlServerValidator.Visitor
                 node.SchemaObjectName
                 );
 
-            _tableList.Add(tableName);
+            AddTable(tableName);
 
             node.AcceptChildren(this);
         }
@@ -1255,16 +1366,17 @@ namespace SqlServerValidator.Visitor
                 node.SchemaObjectName
                 );
 
-            _tableList.Add(tableName);
+            AddTable(tableName);
 
             node.AcceptChildren(this);
         }
 
         public override void ExplicitVisit(AlterTableDropTableElement node)
         {
-            _columnList.Add(
+            AddColumn(
                 new SqlServerColumnName(
-                    node.Name.Value
+                    node.Name.Value,
+                    false
                     )
                 );
 
@@ -1277,7 +1389,7 @@ namespace SqlServerValidator.Visitor
                 node.VariableName.Value
                 );
 
-            _tableList.Add(tableName);
+            AddTable(tableName);
 
             node.AcceptChildren(this);
         }
@@ -1292,10 +1404,10 @@ namespace SqlServerValidator.Visitor
         public override void ExplicitVisit(AlterIndexStatement node)
         {
             var table = new SqlServerTableName(node.OnName);
-            _tableList.Add(table);
+            AddTable(table);
 
             var index = new SqlServerIndexName(table, node.Name.Value);
-            _indexList.Add(index);
+            AddIndex(index);
 
             node.AcceptChildren(this);
         }
@@ -1303,7 +1415,7 @@ namespace SqlServerValidator.Visitor
         public override void ExplicitVisit(TruncateTableStatement node)
         {
             var table = new SqlServerTableName(node.TableName);
-            _tableList.Add(table);
+            AddTable(table);
 
             node.AcceptChildren(this);
         }
@@ -1330,7 +1442,7 @@ namespace SqlServerValidator.Visitor
                     _tableList.Last(),
                     indexReference.ToSourceSqlString()
                     );
-                _indexList.Add(index);
+                AddIndex(index);
             }
 
             node.AcceptChildren(this);
@@ -1348,6 +1460,84 @@ namespace SqlServerValidator.Visitor
 
             _variableReferenceList[variableName].IncrementReferenceCount();
         }
+
+
+
+        private void AddTable(ITableName table)
+        {
+            if (table is null)
+            {
+                throw new ArgumentNullException(nameof(table));
+            }
+
+            if (_appendOnlyTableVariables == 0 || (_appendOnlyTableVariables > 0 && table.IsTableVariable))
+            {
+                if (!table.IsCte)
+                {
+                    if (_tableList.Any(t => t.IsCte && t.IsSame(table.FullTableName)))
+                    {
+                        //it's a reference (usage) to the declared cte
+                        //we already have that cte, no need to this copy
+                        return;
+                    }
+                }
+
+                _tableList.Add(table);
+            }
+        }
+        private void AddColumn(IColumnName column)
+        {
+            if (column is null)
+            {
+                throw new ArgumentNullException(nameof(column));
+            }
+
+            if (_appendOnlyTableVariables == 0)
+            {
+                if (!column.IsStar)
+                {
+                    if (column.IsAlias)
+                    {
+                        _columnList.RemoveAll(c => c.IsSame(column.ColumnName, false));
+                    }
+                    else
+                    {
+                        if (_columnList.Any(c => c.IsSame(column.ColumnName, true)))
+                        {
+                            return;
+                        }
+                    }
+                }
+
+                _columnList.Add(column);
+            }
+        }
+        private void AddIndex(IIndexName index)
+        {
+            if (index is null)
+            {
+                throw new ArgumentNullException(nameof(index));
+            }
+
+            _indexList.Add(index);
+        }
+
+        private void AddFunction(IFunctionName function)
+        {
+            if (function is null)
+            {
+                throw new ArgumentNullException(nameof(function));
+            }
+
+            _functionList.Add(function);
+        }
+
+        private void RemoveAliased(string alias)
+        {
+            //do not compare against IsSame method! we need to **exactly** equality here!
+            _tableList.RemoveAll(t => !t.IsCte && StringComparer.InvariantCultureIgnoreCase.Compare(t.FullTableName, alias) == 0);
+        }
+
     }
 
 }

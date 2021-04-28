@@ -7,12 +7,12 @@ using Main.WorkspaceWrapper;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.FindSymbols;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Task = System.Threading.Tasks.Task;
 
 namespace Main.Inclusion.Scanner
 {
@@ -54,7 +54,7 @@ namespace Main.Inclusion.Scanner
             _containerPropertySet = _scanScheme.GetAllContainerProperties();
         }
 
-        public List<IFoundSqlInclusion> Scan(
+        public async Task<List<IFoundSqlInclusion>> ScanAsync(
             Microsoft.CodeAnalysis.Document document
             )
         {
@@ -67,19 +67,19 @@ namespace Main.Inclusion.Scanner
 
             var duplicateChecker = GetDuplicateChecker();
 
-            ProcessDocumentModel(
+            await ProcessDocumentModelAsync(
                 document,
                 duplicateChecker,
                 result
-                );
+                )/*.ConfigureAwait(false)*/;
 
             return
                 result.ToList();
         }
 
 
-        public List<IFoundSqlInclusion> Scan(
-            IWorkspaceWrapper subjectWorkspace,
+        public async Task<List<IFoundSqlInclusion>> ScanAsync(
+            Workspace subjectWorkspace,
             IProcessLogger processLogger
             )
         {
@@ -99,9 +99,9 @@ namespace Main.Inclusion.Scanner
 
             var before = DateTime.Now;
 
-            var totalDocumentCount = subjectWorkspace.Workspace.CurrentSolution.Projects.Sum(p => p.Documents.Count());
+            var totalDocumentCount = subjectWorkspace.CurrentSolution.Projects.Sum(p => p.Documents.Count());
 
-            var graph = subjectWorkspace.Workspace.CurrentSolution.GetProjectDependencyGraph();
+            var graph = subjectWorkspace.CurrentSolution.GetProjectDependencyGraph();
 
             var projectIdList = graph
                 .GetTopologicallySortedProjects()
@@ -111,15 +111,15 @@ namespace Main.Inclusion.Scanner
             var processedDocumentCount = 0;
             foreach (var projectId in projectIdList)
             {
-                var project = subjectWorkspace.Workspace.CurrentSolution.GetProject(projectId);
+                var project = subjectWorkspace.CurrentSolution.GetProject(projectId);
 
                 foreach (var document in project.Documents)
                 {
-                    ProcessDocumentModel(
+                    await ProcessDocumentModelAsync(
                         document,
                         duplicateChecker,
                         result
-                        );
+                        )/*.ConfigureAwait(false)*/;
 
                     processedDocumentCount++;
 
@@ -140,7 +140,7 @@ namespace Main.Inclusion.Scanner
                 result.ToList();
         }
 
-        private void ProcessDocumentModel(
+        private async Task ProcessDocumentModelAsync(
             Microsoft.CodeAnalysis.Document document,
             IDuplicateChecker duplicateChecker,
             List<IFoundSqlInclusion> result
@@ -161,7 +161,7 @@ namespace Main.Inclusion.Scanner
                 throw new ArgumentNullException(nameof(result));
             }
 
-            var model = document.GetSemanticModelAsync().Result;
+            var model = await document.GetSemanticModelAsync()/*.ConfigureAwait(false)*/;
 
             if (model == null)
             {
@@ -212,43 +212,44 @@ namespace Main.Inclusion.Scanner
                 comments.Add(comment);
             }
 
-            ProcessAssignments(
-              document,
-              model,
-              root,
-              duplicateChecker,
-              comments,
-              ref result
-              );
-
-            ProcessInvocations(
+            var a = await ProcessAssignmentsAsync(
                 document,
                 model,
                 root,
                 duplicateChecker,
-                comments,
-                ref result
-                );
+                comments
+                )/*.ConfigureAwait(false)*/;
+            result.AddRange(a);
 
-            ProcessGenerators(
+            var i = await ProcessInvocationsAsync(
                 document,
                 model,
                 root,
                 duplicateChecker,
-                comments,
-                ref result
-                );
+                comments
+                )/*.ConfigureAwait(false)*/;
+            result.AddRange(i);
+
+            var g = await ProcessGeneratorsAsync(
+                document,
+                model,
+                root,
+                duplicateChecker,
+                comments
+                )/*.ConfigureAwait(false)*/;
+            result.AddRange(g);
         }
 
-        private void ProcessAssignments(
+        private async Task<List<IFoundSqlInclusion>> ProcessAssignmentsAsync(
             Document document,
             SemanticModel model,
             CompilationUnitSyntax root,
             IDuplicateChecker duplicateChecker,
-            IReadOnlyCollection<int> comments,
-            ref List<IFoundSqlInclusion> result
+            IReadOnlyCollection<int> comments
             )
         {
+            var result = new List<IFoundSqlInclusion>();
+
             var assignments = (
                 from assignment in root.DescendantNodes().OfType<AssignmentExpressionSyntax>()
                 select assignment)
@@ -317,23 +318,12 @@ namespace Main.Inclusion.Scanner
 
 
                 var right = assignment.Right;
-                //LiteralExpressionSyntax right = assignment.Right as LiteralExpressionSyntax;
-                //if (right == null)
-                //{
-                //    continue;
-                //}
 
-                if (!model.Compilation.TryGetStringValue(document, right, out var sqlBody))
+                var sqlBody = await model.Compilation.TryGetStringValueAsync(document, right)/*.ConfigureAwait(false)*/;
+                if (string.IsNullOrEmpty(sqlBody))
                 {
                     continue;
                 }
-
-                //var cv = model.GetConstantValue(right);
-                //if (!cv.HasValue)
-                //{
-                //    continue;
-                //}
-                //var sqlBody = cv.Value?.ToString();
 
                 var isMuted = comments.Contains(
                     assignment.Right.GetLocation().GetLineSpan().StartLinePosition.Line - 1
@@ -350,20 +340,21 @@ namespace Main.Inclusion.Scanner
                 {
                     result.Add(inclusion);
                 }
-
-
             }
+
+            return result;
         }
 
-        private void ProcessInvocations(
+        private async Task<List<IFoundSqlInclusion>> ProcessInvocationsAsync(
             Document document,
             SemanticModel model,
             CompilationUnitSyntax root,
             IDuplicateChecker duplicateChecker,
-            IReadOnlyCollection<int> comments,
-            ref List<IFoundSqlInclusion> result
+            IReadOnlyCollection<int> comments
             )
         {
+            var result = new List<IFoundSqlInclusion>();
+
             var invocations =
                 (from invocation in root.DescendantNodes().OfType<InvocationExpressionSyntax>()
                  select invocation)
@@ -493,17 +484,11 @@ namespace Main.Inclusion.Scanner
 
                         ArgumentSyntax argumentSyntax = argumentListSyntax.Arguments[argIndex];
 
-                        if (!model.Compilation.TryGetStringValue(document, argumentSyntax.Expression, out var sqlBody))
+                        var sqlBody = await model.Compilation.TryGetStringValueAsync(document, argumentSyntax.Expression)/*.ConfigureAwait(false)*/;
+                        if (string.IsNullOrEmpty(sqlBody))
                         {
                             continue;
                         }
-
-                        //var cv = model.GetConstantValue(argumentSyntax.Expression);
-                        //if (!cv.HasValue)
-                        //{
-                        //    continue;
-                        //}
-                        //var sqlBody = cv.Value?.ToString();
 
                         var isMuted = comments.Contains(
                             argumentSyntax.Expression.GetLocation().GetLineSpan().StartLinePosition.Line - 1
@@ -524,19 +509,19 @@ namespace Main.Inclusion.Scanner
                     }
                 }
             }
+
+            return result;
         }
 
-        private void ProcessGenerators(
+        private async Task<List<IFoundSqlInclusion>> ProcessGeneratorsAsync(
             Document document,
             SemanticModel model,
             CompilationUnitSyntax root,
             IDuplicateChecker duplicateChecker,
-            IReadOnlyCollection<int> comments,
-            ref List<IFoundSqlInclusion> result
+            IReadOnlyCollection<int> comments
             )
         {
-            //if (!document.Name.Contains("Program.cs"))
-            //    return;
+            var result = new List<IFoundSqlInclusion>();
 
             var members = root
                 .DescendantNodes()
@@ -554,7 +539,6 @@ namespace Main.Inclusion.Scanner
                     continue;
                 }
 
-                //var fullTypeName = symbol.GetFullTypeName2();
                 var fullTypeName = model.GetFullTypeName(e);
 
                 if (!_scanScheme.GeneratorDictionary.ContainsKey(fullTypeName))
@@ -588,7 +572,6 @@ namespace Main.Inclusion.Scanner
                 {
                     SyntaxNode node = reff;
 
-                    //while(node.Parent != null && node.DescendantNodesAndTokens().Last().Kind() != SyntaxKind.SemicolonToken)
                     while(node.Parent != null && !(node is StatementSyntax))
                     {
                         node = node.Parent;
@@ -680,17 +663,11 @@ namespace Main.Inclusion.Scanner
                         {
                             var argumentSyntax = argumentListSyntax.Arguments[0];
 
-                            if (!model.Compilation.TryGetStringValue(document, argumentSyntax.Expression, out var queryTemplate))
+                            var queryTemplate = await model.Compilation.TryGetStringValueAsync(document, argumentSyntax.Expression)/*.ConfigureAwait(false)*/;
+                            if (string.IsNullOrEmpty(queryTemplate))
                             {
                                 continue;
                             }
-
-                            //var cv = model.GetConstantValue(argumentSyntax.Expression);
-                            //if (!cv.HasValue)
-                            //{
-                            //    continue;
-                            //}
-                            //var queryTemplate = cv.Value?.ToString();
 
                             generator.WithQuery(queryTemplate);
                         }
@@ -753,6 +730,8 @@ namespace Main.Inclusion.Scanner
                 int g = 0; //next iteration
 
             }
+
+            return result;
         }
 
         private static bool CheckArgumentTypes(

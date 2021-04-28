@@ -1,6 +1,4 @@
-﻿using System.Xml.Serialization;
-
-namespace ReSequel.TaskRelated
+﻿namespace Extension.TaskRelated
 {
     public sealed class WorkingTaskSqlExecutor
     {

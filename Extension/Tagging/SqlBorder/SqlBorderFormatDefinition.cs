@@ -2,7 +2,6 @@ using Microsoft.VisualStudio.Utilities;
 using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Text.Classification;
 using System.Windows.Media;
-using System.Threading;
 
 namespace Extension.Tagging.SqlBorder
 {

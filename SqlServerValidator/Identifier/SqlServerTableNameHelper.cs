@@ -16,16 +16,6 @@ namespace SqlServerValidator.Identifier
         {
             for (var cc = 0; cc < Math.Min(mine.Count, foreign.Count); cc++)
             {
-                //var result = StringComparer.InvariantCultureIgnoreCase.Compare(
-                //    mine[cc],
-                //    foreign[cc]
-                //    );
-
-                //if (result != 0)
-                //{
-                //    return false;
-                //}
-
                 var r = Regex.IsMatch(mine[cc], foreign[cc].WildCardToRegular(), RegexOptions.IgnoreCase);
 
                 if(!r)
@@ -66,16 +56,6 @@ namespace SqlServerValidator.Identifier
                     lexem = lexem.Substring(1, lexem.Length - 2);
                 }
             }
-
-            //if (lexem.StartsWith("["))
-            //{
-            //    lexem = lexem.Substring(1);
-            //}
-
-            //if (lexem.EndsWith("]"))
-            //{
-            //    lexem = lexem.Substring(0, lexem.Length - 1);
-            //}
 
             return lexem;
         }

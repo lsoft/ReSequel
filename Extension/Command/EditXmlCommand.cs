@@ -1,19 +1,9 @@
 using System;
 using System.ComponentModel.Design;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using Extension.CompositionRoot;
 using Extension.ConfigurationRelated;
 using Extension.Other;
-using Main.Other;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 using Ninject;
-using Ninject.Parameters;
-using Ninject.Syntax;
 using Task = System.Threading.Tasks.Task;
 
 namespace Extension.Command

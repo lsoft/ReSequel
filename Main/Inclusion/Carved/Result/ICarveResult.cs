@@ -1,8 +1,6 @@
 ﻿
 using Main.Sql.Identifier;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 using Main.Sql.VariableRef;
 
 namespace Main.Inclusion.Carved.Result
@@ -24,6 +22,10 @@ namespace Main.Inclusion.Carved.Result
             get;
         }
 
+        IReadOnlyList<ITableName> CteList
+        {
+            get;
+        }
 
         IReadOnlyList<IColumnName> ColumnList
         {
@@ -31,6 +33,11 @@ namespace Main.Inclusion.Carved.Result
         }
 
         IReadOnlyList<IIndexName> IndexList
+        {
+            get;
+        }
+
+        IReadOnlyList<IFunctionName> FunctionList
         {
             get;
         }
@@ -65,7 +72,7 @@ namespace Main.Inclusion.Carved.Result
 
         bool IsTableReferenced(string tableName);
 
-        bool IsColumnReferenced(string columnName);
+        bool IsColumnReferenced(string columnName, bool isAlias = false);
 
         bool IsVariableReferenced(string variableName);
 

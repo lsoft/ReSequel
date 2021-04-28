@@ -5,11 +5,11 @@ using Main.Inclusion.Scanner;
 using Main.Validator;
 using Main.Logger;
 using Main.Progress;
-using Main.Inclusion;
-using Main.Other;
 using Main.Inclusion.Found;
 using Main.Inclusion.Validated;
 using System.Threading.Tasks;
+using Task = System.Threading.Tasks.Task;
+using Microsoft.CodeAnalysis;
 
 namespace Main.SolutionValidator
 {
@@ -65,13 +65,13 @@ namespace Main.SolutionValidator
             _logger = logger;
         }
 
-        public List<IValidatedSqlInclusion> Execute(
-            string pathToSubjectSolution
+        public async Task<List<IValidatedSqlInclusion>> ExecuteAsync(
+            Workspace subjectWorkspace
             )
         {
-            if (pathToSubjectSolution == null)
+            if (subjectWorkspace == null)
             {
-                throw new ArgumentNullException(nameof(pathToSubjectSolution));
+                throw new ArgumentNullException(nameof(subjectWorkspace));
             }
 
             Progress.Start();
@@ -80,20 +80,12 @@ namespace Main.SolutionValidator
 
             try
             {
-                List<IFoundSqlInclusion> foundInclusionList;
-                using (IWorkspaceWrapper subjectWorkspace = _workspaceFactory.Open(pathToSubjectSolution))
-                {
-                    //no need this:
-                    //subjectWorkspace.Compile(false);
-                    //this solution will be complied document by document
+                var scanner = _scannerFactory.Create();
 
-                    var scanner = _scannerFactory.Create();
-
-                    foundInclusionList = scanner.Scan(
-                        subjectWorkspace,
-                        _logger
-                        );
-                }
+                var foundInclusionList = await scanner.ScanAsync(
+                    subjectWorkspace,
+                    _logger
+                    )/*.ConfigureAwait(false)*/;
 
                 var validationInclusionList = foundInclusionList.ConvertAll(j => (IValidatedSqlInclusion) new ValidatedSqlInclusion(j))
                     ;

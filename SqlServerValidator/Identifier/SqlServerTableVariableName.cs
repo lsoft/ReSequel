@@ -16,32 +16,12 @@ namespace SqlServerValidator.Identifier
             get;
         }
 
-        public bool IsRegularTable
-        {
-            get
-            {
-                return
-                    false;
-            }
-        }
+        public bool IsRegularTable => false;
 
-        public bool IsTempTable
-        {
-            get
-            {
-                return
-                    false;
-            }
-        }
+        public bool IsTempTable => false;
 
-        public bool IsTableVariable
-        {
-            get
-            {
-                return
-                    true;
-            }
-        }
+        public bool IsTableVariable => true;
+        public bool IsCte => false;
 
         public SqlServerTableVariableName(
             string tableVariableName

@@ -16,8 +16,8 @@
         /// </summary>
         /// <param name="parent">Родительский объект</param>
         public ParentedViewModel(
-            IViewModelParent<TFinish> parent)
-            : base(parent.Dispatcher)
+            IViewModelParent<TFinish> parent
+            )
         {
             _parent = parent;
         }

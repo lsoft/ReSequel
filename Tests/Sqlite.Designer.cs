@@ -12,7 +12,7 @@ namespace Tests {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.9.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.8.1.0")]
     internal sealed partial class Sqlite : global::System.Configuration.ApplicationSettingsBase {
         
         private static Sqlite defaultInstance = ((Sqlite)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Sqlite())));

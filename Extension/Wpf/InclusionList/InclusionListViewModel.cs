@@ -1,36 +1,31 @@
-﻿using Extension.Cache;
-using Extension.ConfigurationRelated;
-using Main.Other;
-using Main;
-using Main.Inclusion.Found;
-using Main.Inclusion.Scanner;
+﻿using Main.Other;
 using Main.Logger;
 using Main.SolutionValidator;
-using Main.WorkspaceWrapper;
 using Microsoft.CodeAnalysis;
-using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.LanguageServices;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.TextManager.Interop;
+using Microsoft.VisualStudio.TaskStatusCenter;
+using Microsoft.VisualStudio.Threading;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Threading;
 using WpfHelpers;
 using Extension.Other;
-using System.Runtime.CompilerServices;
 using Microsoft.VisualStudio.Threading;
 using Extension.ExtensionStatus;
 using Main.Helper;
+using Task = System.Threading.Tasks.Task;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.ComponentModelHost;
 
 namespace Extension.Wpf.InclusionList
 {
@@ -54,6 +49,10 @@ namespace Extension.Wpf.InclusionList
         private List<string> _columns;
         private string _columnNames;
         private bool _columnParseResult;
+
+        private List<EnteredIndexName> _indexes;
+        private string _indexNames;
+        private bool _indexParseResult;
 
         private long _scanningIsInProgress;
 
@@ -181,6 +180,19 @@ namespace Extension.Wpf.InclusionList
             }
         }
 
+        public string IndexNames
+        {
+            get => _indexNames;
+            set
+            {
+                _indexNames = value;
+
+                _indexParseResult = TrySplitIndexNames(out _indexes);
+
+                OnPropertyChanged();
+            }
+        }
+
         public bool FilterCheckBoxesEnabled
         {
             get
@@ -231,7 +243,6 @@ namespace Extension.Wpf.InclusionList
                 _selectedInclusion = value;
 
                 OnPropertyChanged();
-                OnCommandInvalidate();
             }
         }
 
@@ -261,11 +272,12 @@ namespace Extension.Wpf.InclusionList
                                 List<InclusionWrapper> wrappers = null;
                                 try
                                 {
-                                    //ThreadHelper.ThrowIfNotOnUIThread(nameof(DoScanCommand));
-
                                     var solutionName = _extensionStatus.SolutionName;
 
-                                    wrappers = await System.Threading.Tasks.Task.Run(() => PerformScanning(solutionName));
+                                    await TaskScheduler.Default;
+
+                                    wrappers = await PerformScanningAsync(solutionName)/*.ConfigureAwait(false)*/;
+                                    //wrappers = await System.Threading.Tasks.Task.Run(async () => await PerformScanningAsync(solutionName));
 
                                     ErrorMessage = string.Empty;
                                 }
@@ -273,10 +285,10 @@ namespace Extension.Wpf.InclusionList
                                 {
                                     ErrorMessage = excp.AggregateMessages();
                                 }
-                                //finally
-                                //{
-                                //    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                                //}
+                                finally
+                                {
+                                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                                }
 
                                 SearchingMessage = string.Empty;
 
@@ -294,7 +306,6 @@ namespace Extension.Wpf.InclusionList
                                 Interlocked.Exchange(ref _scanningIsInProgress, 0L);
 
                                 OnPropertyChanged();
-                                OnCommandInvalidate();
                             }
                         },
                         a =>
@@ -440,11 +451,10 @@ namespace Extension.Wpf.InclusionList
         }
 
         public InclusionListViewModel(
-            Dispatcher dispatcher,
             ISolutionValidatorFactory solutionValidatorFactory,
             ILastMessageProcessLogger processLogger,
             IExtensionStatus extensionStatus
-            ) : base(dispatcher)
+            )
         {
             if (solutionValidatorFactory == null)
             {
@@ -544,6 +554,14 @@ namespace Extension.Wpf.InclusionList
                     }
                 }
 
+                if (_indexes != null)
+                {
+                    if (_indexes.Any(index => !inclusion.Status.Result.CarveResult.IsIndexReferenced(index.TableName, index.IndexName)))
+                    {
+                        return false;
+                    }
+                }
+
                 return
                     true;
             }
@@ -581,7 +599,7 @@ namespace Extension.Wpf.InclusionList
             OnPropertyChanged();
         }
 
-        private List<InclusionWrapper> PerformScanning(
+        private async Task<List<InclusionWrapper>> PerformScanningAsync(
             string solutionFullPath
             )
         {
@@ -590,12 +608,15 @@ namespace Extension.Wpf.InclusionList
                 throw new ArgumentNullException(nameof(solutionFullPath));
             }
 
+            var componentModel = (IComponentModel)Package.GetGlobalService(typeof(SComponentModel));
+            var workspace = (Workspace)componentModel.GetService<VisualStudioWorkspace>();
+
             var solutionValidator = _solutionValidatorFactory.Create(
                 );
 
-            var validationInclusionList = solutionValidator.Execute(
-                solutionFullPath
-                );
+            var validationInclusionList = await solutionValidator.ExecuteAsync(
+                workspace
+                )/*.ConfigureAwait(false)*/;
 
             var wrappers = validationInclusionList
                 .ConvertAll(j => new InclusionWrapper(this._filterIndexDictionary, j))
@@ -651,6 +672,63 @@ namespace Extension.Wpf.InclusionList
 
             return
                 result.Count > 0;
+        }
+
+        private bool TrySplitIndexNames(out List<EnteredIndexName> result)
+        {
+            result = new List<EnteredIndexName>();
+
+            if (!string.IsNullOrWhiteSpace(_indexNames))
+            {
+                var parts = _indexNames.Split(' ', ',');
+
+                var entereds =
+                    from part in parts
+                    let trimmed = part.Trim()
+                    where !string.IsNullOrWhiteSpace(trimmed)
+                    let lastDotIndex = trimmed.LastIndexOf('.')
+                    let tableName = lastDotIndex > 0 ? trimmed.Substring(0, lastDotIndex) : string.Empty
+                    let indexName = lastDotIndex > 0 ? trimmed.Substring(lastDotIndex + 1) : trimmed
+                    select new EnteredIndexName(tableName, indexName);
+
+                result.AddRange(entereds);
+            }
+
+            return
+                result.Count > 0;
+        }
+
+
+        private class EnteredIndexName
+        {
+            public string TableName
+            {
+                get;
+            }
+            public string IndexName
+            {
+                get;
+            }
+
+            public EnteredIndexName(
+                string tableName,
+                string indexName
+                )
+            {
+                if (tableName is null)
+                {
+                    throw new ArgumentNullException(nameof(tableName));
+                }
+
+                if (indexName is null)
+                {
+                    throw new ArgumentNullException(nameof(indexName));
+                }
+
+                TableName = tableName;
+                IndexName = indexName;
+            }
+
         }
     }
 }

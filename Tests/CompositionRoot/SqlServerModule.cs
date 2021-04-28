@@ -1,4 +1,3 @@
-using Main;
 using Main.Sql;
 using Main.Sql.ConnectionString;
 using Ninject.Modules;

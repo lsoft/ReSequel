@@ -1,14 +1,11 @@
 ﻿using System;
-using System.IO;
 using Extension.Cache;
 using Extension.ConfigurationRelated;
 using Extension.ExtensionStatus;
 using Extension.ExtensionStatus.FullyLoaded;
 using Extension.Tagging.Extractor;
-using Main.Helper;
 using Main.Inclusion.Scanner;
 using Main.Logger;
-using Main.Other;
 using Main.ScanRelated;
 using Main.SolutionValidator;
 using Main.Sql.ConnectionString;
@@ -65,48 +62,8 @@ namespace Extension.CompositionRoot.Modules
                 .InSingletonScope()
                 ;
 
-            Bind<Scan>()
-                .ToMethod(
-                    c =>
-                    {
-                        var solutionNameProvider = c.Kernel.Get<ISolutionNameProvider>();
-
-                        if (string.IsNullOrWhiteSpace(solutionNameProvider.SolutionName))
-                        {
-                            //no open solution found, so return empty Scan
-                            return new Scan();
-                        }
-
-                        var configurationProvider = c.Kernel.Get<IConfigurationProvider>();
-                        if (!configurationProvider.TryRead(out _))
-                        {
-                            throw new InvalidOperationException("Cannot read configuration file");
-                        }
-
-                        var solutionNamePath = new FileInfo(solutionNameProvider.SolutionName);
-                        var solutionFileName = solutionNamePath.Name;
-                        var solutionFileNameWithoutExtension =
-                            solutionNamePath.Extension.Length > 0
-                                ? solutionFileName.Substring(0, solutionFileName.Length - solutionNamePath.Extension.Length)
-                                : solutionFileName;
-                        var solutionFolder = solutionNamePath.Directory.FullName;
-                        var specificScanFilePath = Path.Combine(solutionFolder, $"{solutionFileNameWithoutExtension}.{Root.ScanSchemeFileName}");
-                        var generalScanFilePath = Path.Combine(solutionFolder, Root.ScanSchemeFileName);
-
-                        if (File.Exists(specificScanFilePath))
-                        {
-                            return specificScanFilePath.ReadXml<Scan>();
-                        }
-
-                        if (!File.Exists(generalScanFilePath))
-                        {
-                            //if scan file does not exists for this solution, we create it with default one
-                            Root.ExtractEmbeddedResource(generalScanFilePath, "Extension." + Root.ScanSchemeFileName);
-                        }
-
-                        var scan = generalScanFilePath.ReadXml<Scan>();
-                        return scan;
-                    })
+            Bind<IScanProvider>()
+                .To<ScanProvider>()
                 .InTransientScope()
                 ;
 
@@ -127,8 +84,7 @@ namespace Extension.CompositionRoot.Modules
 
             Bind<ISolutionValidator>()
                 .To<DefaultSolutionValidator>()
-                //.InSingletonScope()
-                //not a singleton
+                .InTransientScope()
                 ;
 
             Bind<IVsSolutionEventsExt, SqlInclusionCache>()
@@ -165,12 +121,6 @@ namespace Extension.CompositionRoot.Modules
                 .InSingletonScope()
                 ;
 
-
-            //_kernel
-            //    .Bind<MessageBox>()
-            //    .ToSelf()
-            //    .InSingletonScope()
-            //    ;
 
             _dte = AsyncPackage.GetGlobalService(typeof(EnvDTE.DTE)) as EnvDTE.DTE;
 

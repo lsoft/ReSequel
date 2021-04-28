@@ -17,7 +17,8 @@
             VerticalAlignment="Stretch"
             HorizontalContentAlignment="Left"
             Margin="2,0,5,0"
-            Content="Not started yet..."
+            Content="{Binding DetailsButtonText}"
+            Foreground="{Binding DetailsButtonForeground}"
             Click="DetailsButton_Click"
             >
             <xctk:SplitButton.DropDownContent>
@@ -37,7 +38,7 @@
                             Content="Ctrl+C"
                             Padding="10,0,10,0"
                             ToolTip="Copy SQL body to clipboard"
-                            Click="CopyToCliboard_Click"
+                            Command="{Binding CopyToClipboardCommand}"
                             />
 
                         <Button
@@ -45,7 +46,7 @@
                             Content="Mute everywhere"
                             Padding="10,0,10,0"
                             ToolTip="Mute this query for all solutions"
-                            Click="MuteEverywhere_Click"
+                            Command="{Binding MuteEverywhereCommand}"
                             />
 
                         <Button
@@ -53,7 +54,7 @@
                             Content="Mute here"
                             Padding="10,0,10,0"
                             ToolTip="Mute this query only for this solution"
-                            Click="MuteHere_Click"
+                            Command="{Binding MuteHereCommand}"
                         />
 
                     </StackPanel>
@@ -64,7 +65,8 @@
                         Name="ErrorMessageLabel"
                         MinWidth="200"
                         MaxWidth="600"
-                        Text="Analysis is in progress..."
+                        Text="{Binding ErrorMessageText}"
+                        Foreground="{Binding ErrorMessageForeground}"
                         TextWrapping="Wrap"
                         />
                     

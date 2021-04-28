@@ -1,10 +1,6 @@
 ﻿using System;
 using System.ComponentModel.Design;
-using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
 using Extension.ConfigurationRelated;
-using Extension.Wpf;
 using Extension.Wpf.ChooseDefaultExecutor;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;

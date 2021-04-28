@@ -18,6 +18,8 @@
  - open\close solution
  - reload solution
  - close Visual Studio
+15) Index names has a more complex input format: the items are separated by a spaces or commas, as usual. But each item may have 2 parts: optional table name and required index name; they are separated by a (last) dot. Both parts are wildcards.
+16) `Table names` includes a regular table names, table variables, temp tables, and CTE names.
 
 'Require using a star in a select query' means that SQL query MUST contain * in a column list, otherwise this query will removed from the results.
 

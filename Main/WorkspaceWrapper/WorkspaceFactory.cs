@@ -1,39 +1,24 @@
-using System.Linq;
-using System.Text;
 
 using ProjectId = Microsoft.CodeAnalysis.ProjectId;
 using Project = Microsoft.CodeAnalysis.Project;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
-using System.Diagnostics;
-using System.Reflection;
-using Microsoft.CodeAnalysis.Text;
 using System;
 using Microsoft.CodeAnalysis.MSBuild;
 using System.Collections.Generic;
 using Main.Other;
-using System.Threading.Tasks;
 
 namespace Main.WorkspaceWrapper
 {
     public class WorkspaceFactory : IWorkspaceFactory
     {
-        private readonly Compiler _compiler;
 
         public WorkspaceFactory(
-            Compiler compiler
             )
         {
-            if (compiler == null)
-            {
-                throw new ArgumentNullException(nameof(compiler));
-            }
-
-            _compiler = compiler;
         }
 
-        public IWorkspaceWrapper Open(
+        public Workspace Open(
             string pathToSubjectSolution
             )
         {
@@ -47,10 +32,7 @@ namespace Main.WorkspaceWrapper
                     ).Result;
 
                 return
-                    new WorkspaceWrapper(
-                        _compiler,
-                        workspace
-                        );
+                    workspace;
             }
             catch
             {
@@ -73,7 +55,7 @@ namespace Main.WorkspaceWrapper
             }
         }
 
-        public IWorkspaceWrapper CreateWorkspace(
+        public Workspace CreateWorkspace(
             List<PortableExecutableReference> metadataReferences,
             string projectName
             )
@@ -113,10 +95,7 @@ namespace Main.WorkspaceWrapper
                 workspace.ApplyChanges(executorProject);
 
                 return
-                    new WorkspaceWrapper(
-                        _compiler,
-                        workspace
-                        );
+                    workspace;
             }
             catch
             {

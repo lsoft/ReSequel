@@ -3,11 +3,11 @@ using Main.Sql;
 using Main.Sql.ConnectionString;
 using Ninject;
 using Ninject.Modules;
-using ReSequel.TaskRelated;
+using Extension.TaskRelated;
 using SqlServerValidator;
 using SqlServerValidator.Executor;
 
-namespace ReSequel.CompositionRoot
+namespace Extension.CompositionRoot
 {
     public class SqlServerExecutorModule : NinjectModule
     {

@@ -1,32 +1,14 @@
 ﻿using System;
-using System.ComponentModel.Design;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
 using Extension.Command;
 using Extension.CompositionRoot;
-using Extension.ConfigurationRelated;
 using Extension.Wpf.ChooseDefaultExecutor;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.Win32;
 using Task = System.Threading.Tasks.Task;
-
-using EnvDTE;
-using EnvDTE80;
-using Microsoft.VisualStudio.Shell;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Reflection;
-using Extension.Tagging;
-using Ninject;
-using Extension.Cache;
-using Extension.Tagging.Extractor;
 using Extension.Wpf.InclusionList;
 
 namespace Extension

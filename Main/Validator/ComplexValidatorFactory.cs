@@ -2,8 +2,6 @@ using Main.Sql;
 using Main.Progress;
 
 using System;
-using System.Linq;
-using Main.Sql.ConnectionString;
 
 namespace Main.Validator
 {

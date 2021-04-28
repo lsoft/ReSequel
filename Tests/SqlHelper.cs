@@ -1,6 +1,4 @@
-﻿using System;
-using System.Data.Common;
-using System.Data.SqlClient;
+﻿using System.Data.Common;
 using Main.Helper;
 
 namespace Tests

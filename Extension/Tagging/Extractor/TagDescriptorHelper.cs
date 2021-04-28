@@ -11,9 +11,7 @@
 
 using System;
 using Extension.Tagging.SqlQuery;
-using Main;
 using Main.Helper;
-using Main.Inclusion;
 using Main.Inclusion.Validated;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Tagging;
@@ -52,9 +50,7 @@ namespace Extension.Tagging.Extractor
                     snapshotSpan,
                     new SqlQueryTag(
                         inclusion,
-                        //inclusion.Location,//TargetSyntax.GetLocation().GetLineSpan(),
                         (start, end)
-                        //inclusion.SqlBody
                         )
                     );
         }

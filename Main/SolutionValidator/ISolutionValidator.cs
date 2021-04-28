@@ -2,6 +2,8 @@
 using Main.Progress;
 using Main.Inclusion.Validated;
 using System.Threading.Tasks;
+using Task = System.Threading.Tasks.Task;
+using Microsoft.CodeAnalysis;
 
 namespace Main.SolutionValidator
 {
@@ -12,8 +14,8 @@ namespace Main.SolutionValidator
             get;
         }
 
-        List<IValidatedSqlInclusion> Execute(
-            string pathToSubjectSolution
+        Task<List<IValidatedSqlInclusion>> ExecuteAsync(
+            Workspace subjectWorkspace
             );
     }
 

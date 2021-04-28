@@ -2,7 +2,6 @@ using System.IO;
 using Main.Sql;
 using Main.Sql.ConnectionString;
 using Ninject.Modules;
-using SqliteValidator;
 using SqliteValidator.Butcher;
 using SqliteValidator.Executor;
 using SqliteValidator.Validator;

@@ -5,6 +5,9 @@
     <Setting Name="DatabaseName" Type="System.String" Scope="User">
       <Value Profile="(Default)">__resequel_TestScopeDatabase_FeelFreeToDeleteIt</Value>
     </Setting>
+    <Setting Name="ConnectionString" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Data Source=.; Initial Catalog={0}; Integrated Security=true; Connection Timeout=10; Max Pool Size=50;</Value>
+    </Setting>
     <Setting Name="CreateDatabaseScript" Type="System.String" Scope="User">
       <Value Profile="(Default)">USE [master]
 GO
@@ -171,11 +174,13 @@ CREATE TABLE [dbo].[TestTable1](
 ) ON [PRIMARY]
 GO
 
+
 CREATE NONCLUSTERED INDEX [TestTable1_Index0] ON [dbo].[TestTable1]
 (
 	[name] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
+
 
 CREATE TABLE [dbo].[TestTable2](
 	[id] [int] NOT NULL,
@@ -202,15 +207,19 @@ CREATE TABLE [dbo].[TestTable3](
 ) ON [PRIMARY]
 GO
 
-
-use [master]
-
+create function dbo.get_name1() returns varchar(20) as
+begin
+	return 'getted name'
+end
+GO
+create function dbo.get_name2(incoming_name varchar(100)) returns varchar(20) as
+begin
+	return 'getted name'
+end
 GO
 
-</Value>
-    </Setting>
-    <Setting Name="ConnectionString" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Data Source=.; Initial Catalog={0}; Integrated Security=true; Connection Timeout=10; Max Pool Size=50;</Value>
+use [master]
+GO</Value>
     </Setting>
   </Settings>
 </SettingsFile>

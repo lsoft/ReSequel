@@ -1,7 +1,5 @@
 using Extension.Cache;
 using Extension.ConfigurationRelated;
-using Main;
-using System.Diagnostics.CodeAnalysis;
 using System.Windows.Controls;
 
 namespace Extension.Wpf.ChooseDefaultExecutor
@@ -30,7 +28,6 @@ namespace Extension.Wpf.ChooseDefaultExecutor
             }
 
             var viewmodel = new ChooseDefaultExecutorViewModel(
-                this.Dispatcher,
                 configurationProvider,
                 cache
                 );

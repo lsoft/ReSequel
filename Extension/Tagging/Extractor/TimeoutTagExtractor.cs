@@ -8,23 +8,17 @@ using Extension.Cache;
 using Extension.CompositionRoot;
 using Extension.ExtensionStatus;
 using Extension.Tagging.SqlQuery;
-using Main;
 using Main.Inclusion.Scanner;
-using Main.Inclusion;
 using Main.Inclusion.Validated;
-using Main.Progress;
-using Main.Validator;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Tagging;
 using System.Threading.Tasks;
-using Main.Inclusion.Found;
+using Task = System.Threading.Tasks.Task;
 using Microsoft.VisualStudio.Shell;
-using Ninject.Infrastructure.Disposal;
+using Microsoft.VisualStudio.Threading;
 
 namespace Extension.Tagging.Extractor
 {
@@ -39,11 +33,10 @@ namespace Extension.Tagging.Extractor
         private readonly SqlInclusionCache _cache;
         private readonly TimeSpan _timeout;
         private readonly AutoResetEvent _changesExistsSignal = new AutoResetEvent(false);
-        private readonly ManualResetEvent _stopSignal = new ManualResetEvent(false);
 
         private readonly ConcurrentDictionary<string, DocumentDescriptor> _descriptors = new ConcurrentDictionary<string, DocumentDescriptor>(StringComparer.InvariantCultureIgnoreCase);
 
-        private Thread _t;
+        private IVsTask _task;
 
         private long _status = NotStarted;
         private readonly object _extractLocker = new object();
@@ -142,8 +135,16 @@ namespace Extension.Tagging.Extractor
             var result = new List<ITagSpan<SqlQueryTag>>();
 
             var origDocumentId = workspace.GetDocumentIdInCurrentContext(textContainer);
-            var origDocument = workspace.CurrentSolution.GetDocument(origDocumentId);
+            if (origDocumentId == null)
+            {
+                return result;
+            }
 
+            var origDocument = workspace.CurrentSolution.GetDocument(origDocumentId);
+            if (origDocument == null)
+            {
+                return result;
+            }
             if (origDocument.FilePath == null)
             {
                 return result;
@@ -202,9 +203,10 @@ namespace Extension.Tagging.Extractor
                 return;
             }
 
-            _t = new Thread(DoWork);
-            _t.IsBackground = true;
-            _t.Start();
+            _task = ThreadHelper.JoinableTaskFactory.RunAsyncAsVsTask<bool>(
+                VsTaskRunContext.UIThreadBackgroundPriority,
+                DoWorkAsync
+                );
         }
 
         public void SyncStop(
@@ -220,68 +222,97 @@ namespace Extension.Tagging.Extractor
                 return;
             }
 
-            _stopSignal.Set();
-
-            if (_t != null)
+            if (_task != null)
             {
-                _t.Join();
+                _task.Cancel();
             }
 
-            _stopSignal.Dispose();
             _changesExistsSignal.Dispose();
         }
 
-        private void DoWork(
+        private async Task<bool> DoWorkAsync(
+            CancellationToken token
             )
         {
-            while (true)
+            await TaskScheduler.Default;
+
+            try
             {
-                var freshList = GetFreshDescriptors();
-                if (freshList != null && freshList.Count > 0)
+                while (!token.WaitHandle.WaitOne(0))
                 {
-                    foreach (var fresh in freshList.OrderBy(j => j.LastChangedDate))
+                    var freshList = GetFreshDescriptors();
+                    if (freshList != null && freshList.Count > 0)
                     {
-                        ProcessDescriptor(fresh);
-                    }
-                }
-
-                var waitTimeout =
-                    //TimeSpan.FromMilliseconds(-1); //infinity
-                    TimeSpan.FromSeconds(10); //some kind of guarantee that descriptors will be processed even the _changesExistsSignal is lost somehow
-
-                var oldestUnprocessed = GetOldestUnprocessedDescriptor();
-                if (oldestUnprocessed != null)
-                {
-                    waitTimeout = (oldestUnprocessed.LastChangedDate + _timeout) - DateTime.Now;
-                }
-
-                if (waitTimeout > TimeSpan.Zero)
-                {
-                    var waitResult = WaitHandle.WaitAny(
-                        new WaitHandle[]
+                        foreach (var fresh in freshList.OrderBy(j => j.LastChangedDate))
                         {
-                            _changesExistsSignal,
-                            _stopSignal
-                        },
-                        waitTimeout
-                    );
+                            await ProcessDescriptorAsync(fresh);
 
-                    if (waitResult == 1)
-                    {
-                        //exit signal
-                        return;
+                            //await System.Threading.Tasks.Task.Run(async () => await ProcessDescriptorAsync(fresh));
+
+                            //ThreadHelper.JoinableTaskFactory.Run(
+                            //    async delegate
+                            //    {
+                            //        await ProcessDescriptorAsync(fresh);
+                            //    });
+                        }
                     }
 
-                    if (waitResult == 0)
+                    var waitTimeout =
+                        //TimeSpan.FromMilliseconds(-1); //infinity
+                        TimeSpan.FromSeconds(10); //some kind of guarantee that descriptors will be processed even the _changesExistsSignal is lost somehow
+
+                    var oldestUnprocessed = GetOldestUnprocessedDescriptor();
+                    if (oldestUnprocessed != null)
                     {
-                        //new changes exists
-                        //repeat!
-                        continue;
+                        waitTimeout = (oldestUnprocessed.LastChangedDate + _timeout) - DateTime.Now;
+
+                        if (waitTimeout < TimeSpan.Zero)
+                        {
+                            //some descriptors should be processed, but they are not processed for some reason
+                            //to prevent CPU overheat, let's wait for 1 second
+                            waitTimeout = TimeSpan.FromSeconds(1);
+                        }
                     }
 
-                    //wait timeout fires! just repeat this cycle
+                    if (waitTimeout > TimeSpan.Zero)
+                    {
+                        var waitResult = WaitHandle.WaitAny(
+                            new WaitHandle[]
+                            {
+                                _changesExistsSignal,
+                                token.WaitHandle
+                            },
+                            waitTimeout
+                        );
+
+                        if (waitResult == 1)
+                        {
+                            //exit signal
+                            return true;
+                        }
+
+                        if (waitResult == 0)
+                        {
+                            //new changes exists
+                            //repeat!
+                            continue;
+                        }
+
+                        //wait timeout fires! just repeat this cycle
+                    }
                 }
             }
+            catch (OperationCanceledException oce)
+            {
+                //it's OK
+            }
+            catch (Exception excp)
+            {
+                Debug.WriteLine(excp.Message);
+                Debug.WriteLine(excp.StackTrace);
+            }
+
+            return true;
         }
 
         private List<DocumentDescriptor> GetFreshDescriptors()
@@ -309,79 +340,7 @@ namespace Extension.Tagging.Extractor
                 oldestDescriptor;
         }
 
-        /*
-        private void DoWorkOld(
-            )
-        {
-            bool? successDescriptorProcess = null;
-            while(true)
-            {
-                var now = DateTime.Now;
-
-                DocumentDescriptor oldestDescriptor = null;
-
-                var waitTimeout =
-                    //TimeSpan.FromMilliseconds(-1); //infinity
-                    TimeSpan.FromSeconds(10); //some kind of guarantee that descriptors will be processed even the _changesExistsSignal is lost somehow
-
-                if(successDescriptorProcess.GetValueOrDefault(true))
-                //if (!successDescriptorProcess.HasValue || successDescriptorProcess.Value)
-                {
-                    if (_descriptors.Count > 0)
-                    {
-                        oldestDescriptor =
-                            (from v in _descriptors.Values
-                             where !v.IsProcessed
-                             orderby v.LastChangedDate ascending
-                             select v).FirstOrDefault();
-
-                        if (oldestDescriptor != null)
-                        {
-                            waitTimeout = oldestDescriptor.LastChangedDate.Add(_timeout) - now;
-                        }
-                    }
-                }
-
-                if (waitTimeout > TimeSpan.Zero)
-                {
-                    var waitResult = WaitHandle.WaitAny(
-                        new WaitHandle[]
-                        {
-                            _changesExistsSignal,
-                            _stopSignal
-                        },
-                        waitTimeout
-                        );
-
-                    if (waitResult == 1)
-                    {
-                        //exit signal
-                        return;
-                    }
-
-                    if (waitResult == 0)
-                    {
-                        //new changes exists
-                        //repeat!
-                        continue;
-                    }
-                }
-
-                if (oldestDescriptor != null)
-                {
-                    //awaked by timeout
-                    //we need to process choosen descriptor
-                    successDescriptorProcess = ProcessDescriptor(oldestDescriptor);
-                }
-                else
-                {
-                    successDescriptorProcess = null;
-                }
-            }
-        }
-        //*/
-
-        private bool ProcessDescriptor(
+        private async Task<bool> ProcessDescriptorAsync(
             DocumentDescriptor descriptor
             )
         {
@@ -402,7 +361,7 @@ namespace Extension.Tagging.Extractor
                 var inclusionScanner = _inclusionScannerFactory.Create(
                     );
 
-                var foundInclusionList = inclusionScanner.Scan(
+                var foundInclusionList = await inclusionScanner.ScanAsync(
                     document
                     );
 
@@ -579,13 +538,18 @@ namespace Extension.Tagging.Extractor
                 int end
                 )
             {
-                Updater.Raise(
-                    LastSnapshot,
-                    start,
-                    end
-                    );
-
-                IsProcessed = true;
+                try
+                {
+                    Updater.Raise(
+                        LastSnapshot,
+                        start,
+                        end
+                        );
+                }
+                finally
+                {
+                    IsProcessed = true;
+                }
             }
         }
     }

@@ -6,11 +6,11 @@ namespace Main.Inclusion.Scanner
     public sealed class InclusionScannerFactory : IInclusionScannerFactory
     {
         private readonly ISolutionNameProvider _solutionNameProvider;
-        private readonly Func<Scan> _scanFunc;
+        private readonly IScanProvider _scanProvider;
 
         public InclusionScannerFactory(
             ISolutionNameProvider solutionNameProvider,
-            Func<Scan> scanFunc
+            IScanProvider scanProvider
             )
         {
             if (solutionNameProvider == null)
@@ -18,18 +18,18 @@ namespace Main.Inclusion.Scanner
                 throw new ArgumentNullException(nameof(solutionNameProvider));
             }
 
-            if (scanFunc == null)
+            if (scanProvider == null)
             {
-                throw new ArgumentNullException(nameof(scanFunc));
+                throw new ArgumentNullException(nameof(scanProvider));
             }
 
             _solutionNameProvider = solutionNameProvider;
-            _scanFunc = scanFunc;
+            _scanProvider = scanProvider;
         }
 
         public IInclusionScanner Create()
         {
-            var scan = _scanFunc();
+            var scan = _scanProvider.CreateScan();
 
             var result = new InclusionScanner(
                 _solutionNameProvider,

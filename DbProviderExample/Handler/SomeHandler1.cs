@@ -33,7 +33,7 @@ select 20";
             dbp.PrepareQuery("print 1", "print 2");
 
             dbp.SqlText = "select 10 a union all select 20";
-            dbp.SqlText = "select * from dbo.Station";
+            dbp.SqlText = "select * from dbo.Station with(index=ix_unknown_index)";
             dbp.SqlText = a;
             dbp.SqlText = b;
             dbp.SqlText = a + b;

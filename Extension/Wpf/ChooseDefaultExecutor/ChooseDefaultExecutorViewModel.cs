@@ -93,10 +93,9 @@ namespace Extension.Wpf.ChooseDefaultExecutor
         }
 
         public ChooseDefaultExecutorViewModel(
-            Dispatcher dispatcher,
             IConfigurationProvider configurationProvider,
             SqlInclusionCache cache
-            ) : base(dispatcher)
+            )
         {
             if (configurationProvider == null)
             {
@@ -170,7 +169,6 @@ namespace Extension.Wpf.ChooseDefaultExecutor
             }
 
             OnPropertyChanged(string.Empty);
-            OnCommandInvalidate();
         }
     }
 

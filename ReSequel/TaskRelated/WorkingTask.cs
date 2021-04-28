@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace ReSequel.TaskRelated
+namespace Extension.TaskRelated
 {
     [XmlRoot(ElementName = "Task")]
     public sealed class WorkingTask

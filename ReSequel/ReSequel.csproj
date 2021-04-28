@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>ReSequel</RootNamespace>
     <AssemblyName>ReSequel</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <NuGetPackageImportStamp>
@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="CompositionRoot\CommonComponentsModule.cs" />
     <Compile Include="CompositionRoot\Root.cs" />
+    <Compile Include="CompositionRoot\ScanProvider.cs" />
     <Compile Include="CompositionRoot\SqlServerExecutorModule.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

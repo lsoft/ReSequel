@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using Main.Helper;
 using Main.Sql.Identifier;
-using Microsoft.SqlServer.Dac.Model;
 
 namespace SqlServerValidator.Identifier
 {
@@ -46,23 +46,36 @@ namespace SqlServerValidator.Identifier
 
         public bool IsSame(string tableName, string indexName)
         {
-            if (string.IsNullOrWhiteSpace(tableName))
+            if (tableName == null)
             {
-                throw new ArgumentException("Incoming table name is empty or null", nameof(tableName));
+                throw new ArgumentException("Incoming table name is null", nameof(tableName));
             }
             if (string.IsNullOrWhiteSpace(indexName))
             {
                 throw new ArgumentException("Incoming index name is empty or null", nameof(indexName));
             }
 
-            if (!ParentTable.IsSame(tableName))
+            if (!indexName.IsCorrectWildcard())
             {
-                return false;
+                throw new ArgumentException("Invalid index name wild card: " + indexName);
+            }
+
+            if (!string.IsNullOrEmpty(tableName))
+            {
+                if (!tableName.IsCorrectWildcard())
+                {
+                    throw new ArgumentException("Invalid table name wild card: " + tableName);
+                }
+
+                if (!ParentTable.IsSame(tableName))
+                {
+                    return false;
+                }
             }
 
             var foreign = indexName.RemoveParentheses();
 
-            var r = Regex.IsMatch(_mine, foreign, RegexOptions.IgnoreCase);
+            var r = Regex.IsMatch(_mine, foreign.WildCardToRegular(), RegexOptions.IgnoreCase);
 
             return
                 r;

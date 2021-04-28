@@ -23,6 +23,11 @@ namespace Main.Sql.Identifier
             get;
         }
 
+        bool IsCte
+        {
+            get;
+        }
+
         bool IsSame(
             string otherTableName
             );

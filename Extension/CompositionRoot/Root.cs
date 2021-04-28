@@ -6,21 +6,11 @@ using Extension.Tagging.Extractor;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Ninject;
-using Ninject.Extensions.ChildKernel;
-using Ninject.Parameters;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.IO;
-using System.IO.Packaging;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Extension.CompositionRoot.Modules;
 using Main.Other;
-using Main.Sql;
+using Extension.Helper;
 
 namespace Extension.CompositionRoot
 {
@@ -35,7 +25,7 @@ namespace Extension.CompositionRoot
         {
             //ThreadHelper.ThrowIfNotOnUIThread(nameof(Root));
 
-            ExtractEmbeddedResource(ConfigurationFileName.GetFullPathToFile(), "Extension." + ConfigurationFileName);
+            ReflectionHelper.ExtractEmbeddedResource(ConfigurationFileName.GetFullPathToFile(), "Extension." + ConfigurationFileName);
 
             CurrentRoot = new Root(
                 "Configuration.xml"
@@ -165,24 +155,6 @@ namespace Extension.CompositionRoot
         private void DTEEvents_OnBeginShutdown()
         {
             Root.CurrentRoot.Dispose();
-        }
-
-
-        public static void ExtractEmbeddedResource(
-            string fullPath,
-            string resourceName
-        )
-        {
-            if (!File.Exists(fullPath))
-            {
-                using (var target = new FileStream(fullPath, FileMode.Create, FileAccess.Write, FileShare.None))
-                using (var source = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
-                {
-                    source.CopyTo(target);
-
-                    target.Flush();
-                }
-            }
         }
 
     }

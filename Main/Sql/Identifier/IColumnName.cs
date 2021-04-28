@@ -1,13 +1,13 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Main.Sql.Identifier
 {
     public interface IColumnName
     {
         string ColumnName
+        {
+            get;
+        }
+
+        bool IsAlias
         {
             get;
         }
@@ -18,7 +18,8 @@ namespace Main.Sql.Identifier
         }
 
         bool IsSame(
-            string otherColumnName
+            string otherColumnName,
+            bool isAlias = false
             );
 
     }

@@ -1,19 +1,20 @@
 using System;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Threading;
-using Main.Helper;
 using Main.Other;
 using Main.SolutionValidator;
-using ReSequel.CompositionRoot;
-using ReSequel.TaskRelated;
+using Extension.CompositionRoot;
+using Extension.TaskRelated;
+using System.Threading.Tasks;
+using Task = System.Threading.Tasks.Task;
+using Main.WorkspaceWrapper;
+using System.Collections.Generic;
+using Main.Inclusion.Validated;
 
-namespace ReSequel
+namespace Extension
 {
     public class Program
     {
-        public static int Main(string[] args)
+        public static async Task<int> Main(string[] args)
         {
             if (args.Length != 4)
             {
@@ -54,10 +55,16 @@ namespace ReSequel
 
                 MSBuildRegisterer.RegisterDefaultOnce();
 
-                var processedInclusions = solutionValidator.Execute(
-                    task.TargetSolution
-                    );
+                List<IValidatedSqlInclusion> processedInclusions;
 
+                var workspaceFactory = root.GetInstance<IWorkspaceFactory>();
+                using (var workspace = workspaceFactory.Open(task.TargetSolution))
+                {
+                    processedInclusions = await solutionValidator.ExecuteAsync(
+                        workspace
+                        );
+                }
+                
                 solutionValidator.Progress.UpdateMessage();
 
                 //make results: checking reports

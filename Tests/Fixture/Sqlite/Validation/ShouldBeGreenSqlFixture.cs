@@ -1,8 +1,4 @@
-﻿using System;
-using System.Data.SqlClient;
-using System.IO;
-using System.Reflection;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Tests.Fixture.Sqlite.Validation
 {

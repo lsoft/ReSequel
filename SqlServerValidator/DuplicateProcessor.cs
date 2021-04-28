@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Main.Sql.ConnectionString;
-using Main.Sql.VariableRef;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using SqlServerValidator.UndeclaredDeterminer;
 using SqlServerValidator.Visitor;

@@ -37,6 +37,19 @@ namespace Tests {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=.; Initial Catalog={0}; Integrated Security=true; Connection Timeout=" +
+            "10; Max Pool Size=50;")]
+        public string ConnectionString {
+            get {
+                return ((string)(this["ConnectionString"]));
+            }
+            set {
+                this["ConnectionString"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("USE [master]\r\nGO\r\n\r\nif exists( select * from sys.databases where name = \'{0}\' )\r\n" +
             "begin\r\n\talter database {0} set single_user with rollback immediate\r\n\tDROP DATABA" +
             "SE {0}\r\nend\r\nGO\r\n\r\n/****** Object:  Database [{0}]    ******/\r\nCREATE DATABASE [" +
@@ -78,42 +91,31 @@ namespace Tests {
             " OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS =" +
             " ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]\r\nGO\r\n\r\n\r\n\r\n\r\nCREATE TABLE [dbo].[TestTa" +
             "ble1](\r\n\t[id] [int] NOT NULL,\r\n\t[name] [varchar](100) NOT NULL,\r\n\t[additional] [" +
-            "varchar](100) NULL,\r\n CONSTRAINT [PK_TestTable1] PRIMARY KEY CLUSTERED \r\n(\r\n\t[id" +
-            "] ASC\r\n)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OF" +
-            "F, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]\r\n) ON [PRIMARY]\r\nGO" +
-            "\r\n\r\n\r\nCREATE NONCLUSTERED INDEX [TestTable1_Index0] ON [dbo].[TestTable1]\r\n(\r\n\t[" +
-            "name] ASC\r\n)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB " +
-            "= OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS" +
-            " = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]\r\nGO\r\n\r\n\r\nCREATE TABLE [db" +
-            "o].[TestTable2](\r\n\t[id] [int] NOT NULL,\r\n\t[name] [varchar](100) NOT NULL,\r\n\t[add" +
-            "itional] [varchar](100) NULL,\r\n CONSTRAINT [PK_TestTable2] PRIMARY KEY CLUSTERED" +
-            " \r\n(\r\n\t[id] ASC\r\n)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DU" +
-            "P_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]\r\n) ON [PR" +
-            "IMARY]\r\nGO\r\n\r\n\r\nCREATE TABLE [dbo].[TestTable3](\r\n\t[id] [int] NOT NULL,\r\n\t[name]" +
-            " [varbinary](max) NOT NULL,\r\n\t[additional] [varbinary](max) NULL,\r\n\t[custom_colu" +
-            "mn] [int] NOT NULL,\r\n\t[database_version] [int] NOT NULL,\r\n CONSTRAINT [PK_TestTa" +
-            "ble3] PRIMARY KEY CLUSTERED \r\n(\r\n\t[id] ASC\r\n)WITH (PAD_INDEX = OFF, STATISTICS_N" +
-            "ORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS =" +
-            " ON) ON [PRIMARY]\r\n) ON [PRIMARY]\r\nGO\r\n\r\nuse [master]GO")]
+            "varchar](100) NULL,\r\n\t[day] [datetime] NULL,\r\n CONSTRAINT [PK_TestTable1] PRIMAR" +
+            "Y KEY CLUSTERED \r\n(\r\n\t[id] ASC\r\n)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE =" +
+            " OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRI" +
+            "MARY]\r\n) ON [PRIMARY]\r\nGO\r\n\r\n\r\nCREATE NONCLUSTERED INDEX [TestTable1_Index0] ON " +
+            "[dbo].[TestTable1]\r\n(\r\n\t[name] ASC\r\n)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPU" +
+            "TE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOC" +
+            "KS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]\r" +
+            "\nGO\r\n\r\n\r\nCREATE TABLE [dbo].[TestTable2](\r\n\t[id] [int] NOT NULL,\r\n\t[name] [varch" +
+            "ar](100) NOT NULL,\r\n\t[additional] [varchar](100) NULL,\r\n CONSTRAINT [PK_TestTabl" +
+            "e2] PRIMARY KEY CLUSTERED \r\n(\r\n\t[id] ASC\r\n)WITH (PAD_INDEX = OFF, STATISTICS_NOR" +
+            "ECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = O" +
+            "N) ON [PRIMARY]\r\n) ON [PRIMARY]\r\nGO\r\n\r\n\r\nCREATE TABLE [dbo].[TestTable3](\r\n\t[id]" +
+            " [int] NOT NULL,\r\n\t[name] [varbinary](max) NOT NULL,\r\n\t[additional] [varbinary](" +
+            "max) NULL,\r\n\t[custom_column] [int] NOT NULL,\r\n\t[database_version] [int] NOT NULL" +
+            ",\r\n CONSTRAINT [PK_TestTable3] PRIMARY KEY CLUSTERED \r\n(\r\n\t[id] ASC\r\n)WITH (PAD_" +
+            "INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS" +
+            " = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]\r\n) ON [PRIMARY]\r\nGO\r\n\r\ncreate functio" +
+            "n dbo.get_name() returns varchar(10) as\r\nbegin\r\n\treturn \'getted name\'\r\nend\r\nGO\r\n" +
+            "\r\nuse [master]GO")]
         public string CreateDatabaseScript {
             get {
                 return ((string)(this["CreateDatabaseScript"]));
             }
             set {
                 this["CreateDatabaseScript"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=.; Initial Catalog={0}; Integrated Security=true; Connection Timeout=" +
-            "10; Max Pool Size=50;")]
-        public string ConnectionString {
-            get {
-                return ((string)(this["ConnectionString"]));
-            }
-            set {
-                this["ConnectionString"] = value;
             }
         }
     }

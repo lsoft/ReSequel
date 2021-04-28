@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using Main.Inclusion.Validated;
 using Main.Inclusion.Validated.Result;
 using Main.Progress;
@@ -127,23 +127,95 @@ namespace Main.Validator.UnitProvider
 
                 inclusion.SetStatusInProgress(0, inclusion.Inclusion.FormattedQueriesCount);
 
-                foreach (var sqlBody in inclusion.Inclusion.FormattedSqlBodies)
+                var enume = inclusion.Inclusion.FormattedSqlBodies.GetEnumerator();
+                try
                 {
-                    if (_shouldBreak())
+                    while (true)
                     {
-                        yield break;
-                    }
+                        try
+                        {
+                            if (!enume.MoveNext())
+                            {
+                                break;
+                            }
+                        }
+                        catch (Exception excp)
+                        {
+                            Debug.WriteLine(excp.Message);
+                            Debug.WriteLine(excp.StackTrace);
 
-                    if (bag?.Result?.IsFailed ?? false)
-                    {
-                        //one of the variants of the generator has failed.
-                        //so there is no need to continue validate that generator
-                        break;
-                    }
+                            bag.SetValidationResult(
+                                new ExceptionValidationResult(
+                                    inclusion.Inclusion.SqlBody,
+                                    excp
+                                    )
+                                );
 
-                    var unit = new ValidationUnit(bag, sqlBody);
-                    yield return unit;
+                            //so there is no need to continue validate that generator
+                            break;
+                        }
+
+
+                        //string sqlBody;
+                        //try
+                        //{
+                        //    sqlBody = enume.Current;
+                        //}
+                        //catch (Exception excp)
+                        //{
+                        //    Debug.WriteLine(excp.Message);
+                        //    Debug.WriteLine(excp.StackTrace);
+
+                        //    bag.SetValidationResult(
+                        //        new ExceptionValidationResult(
+                        //            inclusion.Inclusion.SqlBody,
+                        //            excp
+                        //            )
+                        //        );
+
+                        //    //so there is no need to continue validate that generator
+                        //    break;
+                        //}
+                        var sqlBody = enume.Current;
+
+                        if (_shouldBreak())
+                        {
+                            yield break;
+                        }
+
+                        if (bag?.Result?.IsFailed ?? false)
+                        {
+                            //one of the variants of the generator has failed.
+                            //so there is no need to continue validate that generator
+                            break;
+                        }
+
+                        var unit = new ValidationUnit(bag, sqlBody);
+                        yield return unit;
+                    }
                 }
+                finally
+                {
+                    enume.Dispose();
+                }
+
+                //foreach (var sqlBody in inclusion.Inclusion.FormattedSqlBodies)
+                //{
+                //    if (_shouldBreak())
+                //    {
+                //        yield break;
+                //    }
+
+                //    if (bag?.Result?.IsFailed ?? false)
+                //    {
+                //        //one of the variants of the generator has failed.
+                //        //so there is no need to continue validate that generator
+                //        break;
+                //    }
+
+                //    var unit = new ValidationUnit(bag, sqlBody);
+                //    yield return unit;
+                //}
 
                 _progress.AddProcessedInclusionCount(1);
             }

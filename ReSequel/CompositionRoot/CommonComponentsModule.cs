@@ -11,10 +11,11 @@ using Main.Sql;
 using Main.Validator;
 using Main.WorkspaceWrapper;
 using Ninject.Modules;
-using ReSequel.TaskRelated;
+using Extension.TaskRelated;
 using SqlServerValidator.Validator.Factory;
+using ReSequel.CompositionRoot;
 
-namespace ReSequel.CompositionRoot
+namespace Extension.CompositionRoot
 {
     internal sealed class CommonComponentsModule : NinjectModule
     {
@@ -101,18 +102,10 @@ namespace ReSequel.CompositionRoot
                     new FileInfo(_task.TargetSolution).Name
                 );
 
-            Bind<Scan>()
-                .ToMethod(
-                    c =>
-                    {
-                         var filePath = _pathToXmlScanSchema.GetFullPathToFile();
-
-                        var scan = filePath.ReadXml<Scan>();
-
-                        return
-                            scan;
-                    })
+            Bind<IScanProvider>()
+                .To<ScanProvider>()
                 .InTransientScope()
+                .WithConstructorArgument("pathToXmlScanSchema", _pathToXmlScanSchema)
                 ;
 
             Bind<IInclusionScannerFactory>()

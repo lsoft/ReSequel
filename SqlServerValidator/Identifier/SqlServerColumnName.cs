@@ -15,6 +15,10 @@ namespace SqlServerValidator.Identifier
         {
             get;
         }
+        public bool IsAlias
+        {
+            get;
+        }
 
         public bool IsStar
         {
@@ -25,7 +29,8 @@ namespace SqlServerValidator.Identifier
         }
 
         public SqlServerColumnName(
-            string columnName
+            string columnName,
+            bool isAlias
             )
         {
             if (columnName == null)
@@ -34,14 +39,20 @@ namespace SqlServerValidator.Identifier
             }
 
             ColumnName = columnName;
+            IsAlias = isAlias;
             _mine = columnName.ToString().RemoveParentheses();
         }
 
-        public bool IsSame(string otherColumnName)
+        public bool IsSame(string otherColumnName, bool isAlias = false)
         {
             if (string.IsNullOrWhiteSpace(otherColumnName))
             {
                 throw new ArgumentException("Incoming column name is empty or null", nameof(otherColumnName));
+            }
+
+            if (otherColumnName == "*" && isAlias)
+            {
+                throw new ArgumentException("Incoming column name is a star AND is a alies at the same time", nameof(otherColumnName));
             }
 
             if (otherColumnName == "*")
@@ -53,6 +64,11 @@ namespace SqlServerValidator.Identifier
 
                 return
                     false;
+            }
+
+            if (this.IsAlias != isAlias)
+            {
+                return false;
             }
 
             if (!otherColumnName.IsCorrectWildcard())

@@ -121,6 +121,30 @@ namespace Extension.Wpf.InclusionList
             }
         }
 
+        public string IndexReferences
+        {
+            get
+            {
+                if (Inclusion.Status == null || Inclusion.Status.Status != ValidationStatusEnum.Processed)
+                {
+                    return
+                        string.Empty;
+                }
+
+                if (Inclusion.Status.Result.CarveResult.IndexList.Count == 0)
+                {
+                    return
+                        Inclusion.Status.Result.CarveResult.IndexNames;
+                }
+
+                return
+                    string.Format(
+                        "Index references: {0}",
+                        Inclusion.Status.Result.CarveResult.IndexNames
+                    );
+            }
+        }
+
         public Brush Foreground
         {
             get

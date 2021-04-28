@@ -6,16 +6,17 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.FindSymbols;
+using Task = System.Threading.Tasks.Task;
+using System.Threading.Tasks;
 
 namespace Main.Helper
 {
     public static partial class TypeSymbolHelper
     {
-        public static bool TryGetStringValue(
+        public static async Task<string> TryGetStringValueAsync(
             this Compilation compilation,
             Document document,
-            ExpressionSyntax expression,
-            out string result
+            ExpressionSyntax expression
         )
         {
             if (compilation == null)
@@ -31,75 +32,70 @@ namespace Main.Helper
             if (expression.IsKind(SyntaxKind.StringLiteralExpression))
             {
                 var literal = expression as LiteralExpressionSyntax;
-                result = literal.Token.ValueText;
-                return true;
+                return literal.Token.ValueText;
             }
 
             if (expression.IsKind(SyntaxKind.AddExpression))
             {
                 var binaryExpression = expression as BinaryExpressionSyntax;
-                if (TryGetStringValue(compilation, document, binaryExpression.Left, out var left))
+
+                var left = await TryGetStringValueAsync(compilation, document, binaryExpression.Left);
+                if (!string.IsNullOrEmpty(left))
                 {
-                    if (TryGetStringValue(compilation, document, binaryExpression.Right, out var right))
+                    var right = await TryGetStringValueAsync(compilation, document, binaryExpression.Right);
+                    if (!string.IsNullOrEmpty(right))
                     {
-                        result = left + right;
-                        return true;
+                        return left + right;
                     }
                 }
 
-                result = null;
-                return false;
+                return null;
             }
 
             var model = compilation.GetSemanticModel(expression.SyntaxTree);
             if (model == null)
             {
-                result = null;
-                return false;
+                return null;
             }
 
             var symbol = ModelExtensions.GetSymbolInfo(model, expression).Symbol;
 
             if (symbol == null)
             {
-                result = null;
-                return false;
+                return null;
             }
 
             var references = symbol.DeclaringSyntaxReferences.ToList();
 
             if (references.Count != 1)
             {
-                result = null;
-                return false;
+                return null;
             }
 
             //do searching for additional references, like additional assignments
             //in that case we skip this symbol usage due to uncertanity about REAL SQL body
-            var globalReferences = SymbolFinder.FindReferencesAsync(
+            var globalReferences = (await SymbolFinder.FindReferencesAsync(
                 symbol,
                 document.Project.Solution,
                 new List<Document> { document }.ToImmutableHashSet()
-                ).Result.ToList();
+                )).ToList();
 
             if (globalReferences.Count != 1)
             {
-                result = null;
-                return false;
+                return null;
             }
 
             if (DetermineSymbolIsConstant(symbol))
             {
                 //this symbol is compile-time constant value
                 //we do not need to perform additional checks
-                
+
                 var globalDefinitionLocations = globalReferences[0].Definition.Locations.ToList();
 
                 if (globalDefinitionLocations.Count != 1)
                 {
                     //something strange happened!
-                    result = null;
-                    return false;
+                    return null;
                 }
             }
             else
@@ -117,38 +113,37 @@ namespace Main.Helper
 
                 if (globalLocations.Count != 1)
                 {
-                    result = null;
-                    return false;
+                    return null;
                 }
 
             }
 
-            var defNode = references[0].GetSyntax();
+            var defNode = await references[0].GetSyntaxAsync();
 
             var svList = new List<string>();
             var evcsList = defNode.DescendantNodes().OfType<EqualsValueClauseSyntax>().ToList();
 
             if (evcsList.Count == 0)
             {
-                result = null;
-                return false;
+                return null;
             }
 
             foreach (var evcs in evcsList)
             {
-                var svResult = TryGetStringValue(compilation, document, evcs.Value, out var stringValue);
-                if (!svResult)
+                var stringValue = await TryGetStringValueAsync(compilation, document, evcs.Value);
+                if (string.IsNullOrEmpty(stringValue))
                 {
-                    result = null;
-                    return false;
+                    return null;
                 }
 
                 svList.Add(stringValue);
             }
 
-            result = string.Join(" ", svList);
+            var result = string.Join(" ", svList);
 
-            return true;
+            return result;
+
+           //return null;
         }
 
         private static bool DetermineSymbolIsConstant(

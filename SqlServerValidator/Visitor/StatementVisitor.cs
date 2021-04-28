@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Main.Inclusion.Validated.Result;
 using Main.Sql;
-using Main.Sql.Identifier;
-using Microsoft.Build.Framework;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
 using SqlServerValidator.Visitor.Known;
 
@@ -488,21 +486,23 @@ namespace SqlServerValidator.Visitor
                 return;
             }
 
-            var checkForTableOrViewResult = CheckForTableOrViewStatus(node.ToSourceSqlString(), true);
+            var sss = node.ToSourceSqlString();
+
+            var checkForTableOrViewResult = CheckForTableOrViewStatus(sss, true);
             if (!checkForTableOrViewResult.IsSuccess)
             {
                 this._result = checkForTableOrViewResult;
                 return;
             }
 
-            var checkForIndexResult = CheckForIndexStatus(node.ToSourceSqlString(), true);
+            var checkForIndexResult = CheckForIndexStatus(sss, true);
             if (!checkForIndexResult.IsSuccess)
             {
                 this._result = checkForIndexResult;
                 return;
             }
 
-            var checkForColumnResult = CheckForColumnStatus(node.ToSourceSqlString(), true);
+            var checkForColumnResult = CheckForColumnStatus(sss, true);
             if (!checkForColumnResult.IsSuccess)
             {
                 this._result = checkForColumnResult;
@@ -1556,7 +1556,7 @@ namespace SqlServerValidator.Visitor
 
             foreach (var table in _butcher.TableList)
             {
-                if (table.IsTempTable || table.IsTableVariable)
+                if (table.IsTempTable || table.IsTableVariable || table.IsCte)
                 {
                     continue;
                 }
@@ -1583,9 +1583,9 @@ namespace SqlServerValidator.Visitor
 
             foreach (var index in _butcher.IndexList)
             {
-                if (index.ParentTable.IsTempTable || index.ParentTable.IsTableVariable)
+                if (index.ParentTable.IsTempTable || index.ParentTable.IsTableVariable || index.ParentTable.IsCte)
                 {
-                    //we can't check indexes for temp tables, so skip it
+                    //we can't check indexes for these "tables", so skip it
                     continue;
                 }
 
@@ -1612,6 +1612,12 @@ namespace SqlServerValidator.Visitor
 
             if (_butcher.ColumnList.Count == 0)
             {
+                return ValidationResult.Success(sql, sql);
+            }
+
+            if (_butcher.ColumnList.All(c => c.IsStar || c.IsAlias))
+            {
+                //nothing to check
                 return ValidationResult.Success(sql, sql);
             }
 
@@ -1645,7 +1651,7 @@ namespace SqlServerValidator.Visitor
 
             foreach (var column in _butcher.ColumnList)
             {
-                if (column.IsStar)
+                if (column.IsStar || column.IsAlias)
                 {
                     continue;
                 }

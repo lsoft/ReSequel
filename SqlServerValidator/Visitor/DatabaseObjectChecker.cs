@@ -1,13 +1,8 @@
 ﻿using Main.Inclusion.Validated.Result;
 using Main.Sql;
 using Main.Sql.Identifier;
-using Microsoft.CodeAnalysis.Host.Mef;
 using SqlServerValidator.Identifier;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SqlServerValidator.Visitor
 {
@@ -54,9 +49,9 @@ WHERE
 	AND type in (N'U', N'V')
 ";
 
-            if (table.IsTempTable || table.IsTableVariable)
+            if (table.IsTempTable || table.IsTableVariable || table.IsCte)
             {
-                throw new InvalidOperationException($"Table {table.FullTableName} is temp table or table variable! These types of table cannot be validated against db scheme.");
+                throw new InvalidOperationException($"Table {table.FullTableName} is temp table or table variable or cte! These types of table cannot be validated against db scheme.");
             }
 
             var checkResult = _sqlValidator.TryCalculateRowCount(string.Format(CheckForTableOrViewExistsSql, table.FullTableName), out var rowRead);
@@ -103,7 +98,7 @@ WHERE
 	AND [index].name = N'{1}'
 ";
 
-            var checkResult = _sqlValidator.TryCalculateRowCount(string.Format(CheckForIndexExistsSql, index.ParentTable.FullTableName, index.IndexName), out var rowRead);
+            var checkResult = _sqlValidator.TryCalculateRowCount(string.Format(CheckForIndexExistsSql, index.ParentTable.FullTableName, index.IndexName.RemoveParentheses()), out var rowRead);
             var isExists = (checkResult && rowRead > 0);
             if (isExists != shouldExists)
             {
@@ -133,6 +128,11 @@ WHERE
             if (column is null)
             {
                 throw new ArgumentNullException(nameof(column));
+            }
+
+            if (column.IsAlias)
+            {
+                throw new InvalidOperationException($"Column {table.FullTableName}.{column.ColumnName} is an alias and cannot be checked for existence");
             }
 
             const string CheckForColumnExistsSql = @"

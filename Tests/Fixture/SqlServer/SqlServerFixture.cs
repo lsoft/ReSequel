@@ -1,5 +1,4 @@
 using System.Data.SqlClient;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Tests.CompositionRoot;
 
 namespace Tests.Fixture.SqlServer

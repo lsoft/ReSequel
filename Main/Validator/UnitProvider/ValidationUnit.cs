@@ -33,14 +33,6 @@ namespace Main.Validator.UnitProvider
                 throw new ArgumentNullException(nameof(sqlBody));
             }
 
-            //if (sqlBody == "")
-            //{
-            //    Console.WriteLine("ccc");
-            //    Console.WriteLine(bag.Inclusion.Inclusion.FilePath);
-            //    Console.WriteLine(bag.Inclusion.Inclusion.Location.StartLinePosition.Line);
-            //    Console.WriteLine(bag.Inclusion.Inclusion.Location.StartLinePosition.Character);
-            //}
-
             SqlBody = sqlBody;
 
             _bag = bag;

@@ -1,17 +1,15 @@
 using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Main.WorkspaceWrapper
 {
     public interface IWorkspaceFactory
     {
-        IWorkspaceWrapper Open(
+        Workspace Open(
             string pathToSubjectSolution
             );
 
-        IWorkspaceWrapper CreateWorkspace(
+        Workspace CreateWorkspace(
             List<PortableExecutableReference> metadataReferences,
             string projectName
             );

@@ -863,8 +863,29 @@ drop table #droptable;select --please do not change this formatting
         {
             var sqlBody = @"
 select
-	    row_number() OVER(order by id) as #t
+	row_number() OVER(order by id) as #t
 from dbo.TestTable0
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void SelectColumnAlias0()
+        {
+            var sqlBody = @"
+select
+    id,
+	id + 1 new_column
+from dbo.TestTable1
+order by
+    new_column
 ";
 
             var processed = ValidateAgainstSchema(
@@ -1029,7 +1050,7 @@ SELECT
     1, 2
 FROM dbo.TestTable1
 WHERE
-    getdate() < dateadd(day, @a, @b)
+    getdate() < dateadd(day, @c, @d)
 ";
 
             var processed = ValidateAgainstSchema(
@@ -1543,5 +1564,137 @@ where
 
             Assert.IsFalse(report.IsSuccess, report.FailMessage);
         }
+
+
+        [TestMethod]
+        public void CorrectInsertWithFunction1()
+        {
+            const string sqlBody = @"
+insert into [TestTable2] (id, name)
+values ( 1, dbo.get_name1() )
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void CorrectInsertWithFunction2()
+        {
+            const string sqlBody = @"
+insert into [TestTable2] (id, name)
+values ( 1, dbo.get_name2('a') )
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void CorrectSelectFromAlias()
+        {
+            const string sqlBody = @"
+select
+    tt2.*
+from TestTable2 tt2
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+
+        [TestMethod]
+        public void CorrectUpdateCte0()
+        {
+            const string sqlBody = @"
+with cte as (
+	select id, name from TestTable2
+)
+update cte
+set name = ''
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+
+        [TestMethod]
+        public void CorrectUpdateFromAlias0()
+        {
+            const string sqlBody = @"
+update tt2
+set name = name
+from TestTable2 tt2
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void CorrectSelectFromAlias0()
+        {
+            const string sqlBody = @"
+select
+	testtable2.name
+from dbo.TestTable2 testtable2
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void CorrectSelectFromAlias1()
+        {
+            const string sqlBody = @"
+select
+	TestTable.day,
+	TestTable3.custom_column
+from [dbo].[TestTable1] as TestTable
+left join [dbo].[TestTable3] as TestTable3 on TestTable.id = TestTable3.id
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
     }
 }

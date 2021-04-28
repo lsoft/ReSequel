@@ -1,7 +1,4 @@
 using System.Collections.Generic;
-using Microsoft.Build.Locator;
-using System.Data.SqlClient;
-using Main;
 using Main.Inclusion.Carved.Result;
 using Main.Inclusion.Found;
 using Main.Inclusion.Scanner.Generator;
@@ -10,7 +7,6 @@ using Main.Progress;
 using Main.Sql;
 using Main.Validator;
 using Microsoft.CodeAnalysis.CSharp;
-using SqlServerValidator;
 using Tests.CompositionRoot;
 
 namespace Tests.Fixture

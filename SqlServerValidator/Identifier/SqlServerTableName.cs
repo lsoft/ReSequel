@@ -8,7 +8,6 @@ using SqlServerValidator.Visitor;
 
 namespace SqlServerValidator.Identifier
 {
-
     [DebuggerDisplay("{FullTableName}")]
     public class SqlServerTableName : ITableName
     {
@@ -24,7 +23,7 @@ namespace SqlServerValidator.Identifier
             get
             {
                 return
-                    !IsTempTable && !IsTableVariable;
+                    !IsTempTable;
             }
         }
 
@@ -37,14 +36,9 @@ namespace SqlServerValidator.Identifier
             }
         }
 
-        public bool IsTableVariable
-        {
-            get
-            {
-                return
-                    false;
-            }
-        }
+        public bool IsTableVariable => false;
+
+        public bool IsCte => false;
 
         public SqlServerTableName(
             SchemaObjectName objectName

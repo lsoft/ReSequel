@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Main</RootNamespace>
     <AssemblyName>Main</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <NuGetPackageImportStamp>
@@ -80,7 +80,9 @@
     <Compile Include="Inclusion\Validated\ValidatedSqlInclusionEqualityComparer.cs" />
     <Compile Include="Inclusion\Validated\Status\ValidationStatusEnum.cs" />
     <Compile Include="Inclusion\Validated\Status\ValidationStatus.cs" />
+    <Compile Include="ScanRelated\IScanProvider.cs" />
     <Compile Include="Sql\ChooseSqlExecutorFactory.cs" />
+    <Compile Include="Sql\Identifier\IFunctionName.cs" />
     <Compile Include="Sql\Identifier\IIndexName.cs" />
     <Compile Include="Sql\ISqlButcher.cs" />
     <Compile Include="Sql\ISqlButcherFactory.cs" />
@@ -145,10 +147,8 @@
     <Compile Include="Validator\IValidator.cs" />
     <Compile Include="Validator\ComplexValidator.cs" />
     <Compile Include="WorkspaceWrapper\IWorkspaceFactory.cs" />
-    <Compile Include="WorkspaceWrapper\IWorkspaceWrapper.cs" />
     <Compile Include="WorkspaceWrapper\WorkspaceFactory.cs" />
     <Compile Include="WorkspaceWrapper\WorkspaceHelper.cs" />
-    <Compile Include="WorkspaceWrapper\WorkspaceWrapper.cs" />
     <Compile Include="Other\Compiler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

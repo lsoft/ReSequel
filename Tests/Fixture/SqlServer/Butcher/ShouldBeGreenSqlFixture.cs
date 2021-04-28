@@ -1,5 +1,4 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Linq;
 
 namespace Tests.Fixture.SqlServer.Butcher
 {
@@ -649,5 +648,309 @@ select id, [name] from @t
             Assert.IsTrue(carveResult.IsColumnReferenced("name"));
         }
 
+        [TestMethod]
+        public void InsertWithFunction1()
+        {
+            const string sqlBody = @"
+insert into [TestTable2] (id, name)
+values ( 1, dbo.get_name() )
+";
+
+            var carveResult = Carve(
+                sqlBody
+                );
+
+            Assert.IsNotNull(carveResult);
+
+            Assert.AreEqual(1, carveResult.TableList.Count);
+            Assert.AreEqual(0, carveResult.TempTableList.Count);
+            Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(2, carveResult.ColumnList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+            Assert.AreEqual(0, carveResult.IndexList.Count);
+            Assert.AreEqual(1, carveResult.FunctionList.Count);
+
+            Assert.IsTrue(carveResult.IsTableReferenced("TestTable2"));
+            Assert.IsTrue(carveResult.IsColumnReferenced("id"));
+            Assert.IsTrue(carveResult.IsColumnReferenced("name"));
+        }
+
+        [TestMethod]
+        public void InsertWithFunction2()
+        {
+            const string sqlBody = @"
+insert into [TestTable2] (id, name)
+values ( 1, server_name.database_name.dbo.get_name(old_name) )
+";
+
+            var carveResult = Carve(
+                sqlBody
+                );
+
+            Assert.IsNotNull(carveResult);
+
+            Assert.AreEqual(1, carveResult.TableList.Count);
+            Assert.AreEqual(0, carveResult.TempTableList.Count);
+            Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(2, carveResult.ColumnList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+            Assert.AreEqual(0, carveResult.IndexList.Count);
+            Assert.AreEqual(1, carveResult.FunctionList.Count);
+
+            Assert.IsTrue(carveResult.IsTableReferenced("TestTable2"));
+            Assert.IsTrue(carveResult.IsColumnReferenced("id"));
+            Assert.IsTrue(carveResult.IsColumnReferenced("name"));
+            //we do not parse columns in the function invocation: Assert.IsTrue(carveResult.IsColumnReferenced("old_name"));
+        }
+
+        [TestMethod]
+        public void SelectFromAlias()
+        {
+            const string sqlBody = @"
+select
+    tt2.*
+from TestTable2 tt2
+";
+
+            var carveResult = Carve(
+                sqlBody
+                );
+
+            Assert.IsNotNull(carveResult);
+
+            Assert.AreEqual(1, carveResult.TableList.Count);
+            Assert.AreEqual(0, carveResult.TempTableList.Count);
+            Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(1, carveResult.ColumnList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+            Assert.AreEqual(0, carveResult.IndexList.Count);
+            Assert.AreEqual(0, carveResult.FunctionList.Count);
+
+            Assert.IsTrue(carveResult.IsTableReferenced("TestTable2"));
+            Assert.IsTrue(carveResult.IsColumnReferenced("*"));
+        }
+
+
+        [TestMethod]
+        public void UpdateCte0()
+        {
+            const string sqlBody = @"
+with cte as (
+	select id, name from TestTable2
+)
+update cte
+set name = ''
+";
+
+            var carveResult = Carve(
+                sqlBody
+                );
+
+            Assert.IsNotNull(carveResult);
+
+            Assert.AreEqual(2, carveResult.TableList.Count);
+            Assert.AreEqual(0, carveResult.TempTableList.Count);
+            Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(1, carveResult.CteList.Count);
+            Assert.AreEqual(3, carveResult.ColumnList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+            Assert.AreEqual(0, carveResult.IndexList.Count);
+            Assert.AreEqual(0, carveResult.FunctionList.Count);
+
+            Assert.IsTrue(carveResult.IsTableReferenced("TestTable2"));
+            Assert.IsTrue(carveResult.IsTableReferenced("cte"));
+            Assert.IsTrue(carveResult.IsColumnReferenced("id"));
+            Assert.IsTrue(carveResult.IsColumnReferenced("name"));
+        }
+
+        [TestMethod]
+        public void JoinCte0()
+        {
+            const string sqlBody = @"
+with cte as (
+	select id, name from TestTable2
+)
+select
+	*
+from TestTable1
+join cte ctealias on ctealias.id = TestTable1.id
+";
+
+            var carveResult = Carve(
+                sqlBody
+                );
+
+            Assert.IsNotNull(carveResult);
+
+            Assert.AreEqual(3, carveResult.TableList.Count);
+            Assert.AreEqual(0, carveResult.TempTableList.Count);
+            Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(1, carveResult.CteList.Count);
+            Assert.AreEqual(5, carveResult.ColumnList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+            Assert.AreEqual(0, carveResult.IndexList.Count);
+            Assert.AreEqual(0, carveResult.FunctionList.Count);
+
+            Assert.IsTrue(carveResult.IsTableReferenced("TestTable2"));
+            Assert.IsTrue(carveResult.IsTableReferenced("cte"));
+            Assert.IsTrue(carveResult.IsStarReferenced);
+            Assert.IsTrue(carveResult.IsColumnReferenced("id"));
+            Assert.IsTrue(carveResult.IsColumnReferenced("name"));
+        }
+
+        [TestMethod]
+        public void UpdateFromAlias0()
+        {
+            const string sqlBody = @"
+update tt2
+set name = name
+from TestTable2 tt2
+
+";
+
+            var carveResult = Carve(
+                sqlBody
+                );
+
+            Assert.IsNotNull(carveResult);
+
+            Assert.AreEqual(1, carveResult.TableList.Count);
+            Assert.AreEqual(0, carveResult.TempTableList.Count);
+            Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(0, carveResult.CteList.Count);
+            Assert.AreEqual(2, carveResult.ColumnList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+            Assert.AreEqual(0, carveResult.IndexList.Count);
+            Assert.AreEqual(0, carveResult.FunctionList.Count);
+
+            Assert.IsTrue(carveResult.IsTableReferenced("TestTable2"));
+            Assert.IsTrue(carveResult.IsColumnReferenced("name"));
+        }
+
+        [TestMethod]
+        public void SelectFromAlias0()
+        {
+            const string sqlBody = @"
+select
+	testtable2.name
+from dbo.TestTable2 testtable2
+";
+
+            var carveResult = Carve(
+                sqlBody
+                );
+
+            Assert.IsNotNull(carveResult);
+
+            Assert.AreEqual(1, carveResult.TableList.Count);
+            Assert.AreEqual(0, carveResult.TempTableList.Count);
+            Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(0, carveResult.CteList.Count);
+            Assert.AreEqual(1, carveResult.ColumnList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+            Assert.AreEqual(0, carveResult.IndexList.Count);
+            Assert.AreEqual(0, carveResult.FunctionList.Count);
+
+            Assert.IsTrue(carveResult.IsTableReferenced("TestTable2"));
+            Assert.IsTrue(carveResult.IsColumnReferenced("name"));
+        }
+
+        [TestMethod]
+        public void SelectFromAlias1()
+        {
+            const string sqlBody = @"
+select
+	testtable1.day,
+	testtable3.custom_column
+from dbo.TestTable1 testtable1
+join dbo.TestTable3 testtable3 on testtable1.id = testtable3.id
+";
+
+            var carveResult = Carve(
+                sqlBody
+                );
+
+            Assert.IsNotNull(carveResult);
+
+            Assert.AreEqual(2, carveResult.TableList.Count);
+            Assert.AreEqual(0, carveResult.TempTableList.Count);
+            Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(0, carveResult.CteList.Count);
+            Assert.AreEqual(4, carveResult.ColumnList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+            Assert.AreEqual(0, carveResult.IndexList.Count);
+            Assert.AreEqual(0, carveResult.FunctionList.Count);
+
+            Assert.IsTrue(carveResult.IsTableReferenced("TestTable1"));
+            Assert.IsTrue(carveResult.IsTableReferenced("TestTable3"));
+            Assert.IsTrue(carveResult.IsColumnReferenced("id"));
+            Assert.IsTrue(carveResult.IsColumnReferenced("day"));
+            Assert.IsTrue(carveResult.IsColumnReferenced("custom_column"));
+        }
+
+        [TestMethod]
+        public void SelectWithDateAdd()
+        {
+            const string sqlBody = @"
+select
+	*
+from TestTable1
+where
+    '20210101' > dateadd( YEAR, -1, '20210101' )
+";
+
+            var carveResult = Carve(
+                sqlBody
+                );
+
+            Assert.IsNotNull(carveResult);
+
+            Assert.AreEqual(1, carveResult.TableList.Count);
+            Assert.AreEqual(0, carveResult.TempTableList.Count);
+            Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(0, carveResult.CteList.Count);
+            Assert.AreEqual(1, carveResult.ColumnList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+            Assert.AreEqual(0, carveResult.IndexList.Count);
+            Assert.AreEqual(1, carveResult.FunctionList.Count);
+
+            Assert.IsTrue(carveResult.IsTableReferenced("TestTable1"));
+            Assert.IsTrue(carveResult.IsStarReferenced);
+        }
+
+        [TestMethod]
+        public void SelectColumnAlias0()
+        {
+            const string sqlBody = @"
+select
+    id,
+	id + 1 new_column
+from dbo.TestTable1
+order by
+    new_column
+";
+
+            var carveResult = Carve(
+                sqlBody
+                );
+
+            Assert.IsNotNull(carveResult);
+
+            Assert.AreEqual(1, carveResult.TableList.Count);
+            Assert.AreEqual(0, carveResult.TempTableList.Count);
+            Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(0, carveResult.CteList.Count);
+            Assert.AreEqual(3, carveResult.ColumnList.Count);
+            Assert.AreEqual(0, carveResult.VariableReferenceList.Count);
+            Assert.AreEqual(0, carveResult.IndexList.Count);
+            Assert.AreEqual(0, carveResult.FunctionList.Count);
+
+            Assert.IsTrue(carveResult.IsTableReferenced("TestTable1"));
+            Assert.IsTrue(carveResult.IsColumnReferenced("id"));
+            Assert.IsTrue(carveResult.IsColumnReferenced("new_column", true));
+            Assert.IsFalse(carveResult.IsColumnReferenced("new_column", false));
+        }
+
     }
+
 }

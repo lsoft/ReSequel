@@ -1,12 +1,9 @@
 ﻿using Extension.CompositionRoot;
-using Main;
-using Main.Inclusion;
 using Main.Inclusion.Validated;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 
 namespace Extension.Cache
 {

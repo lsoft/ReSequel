@@ -3,8 +3,6 @@ namespace Extension.Wpf.InclusionList
     using System;
     using System.Runtime.InteropServices;
     using Extension.Cache;
-    using Extension.Command;
-    using Extension.ConfigurationRelated;
     using Microsoft.VisualStudio.Shell;
     using Ninject;
 
@@ -18,7 +16,7 @@ namespace Extension.Wpf.InclusionList
     /// This class derives from the ToolWindowPane class provided from the MPF in order to use its
     /// implementation of the IVsUIElementPane interface.
     /// </para>
-      /// </remarks>
+    /// </remarks>
     [Guid("52150C9D-D6AC-41C2-9E1D-CC89454E8348")]
     public class InclusionListWindow : ToolWindowPane
     {

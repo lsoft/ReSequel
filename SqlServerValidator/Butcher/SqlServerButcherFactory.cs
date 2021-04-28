@@ -1,4 +1,3 @@
-using Main;
 using Main.Sql;
 
 namespace SqlServerValidator.Butcher
