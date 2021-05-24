@@ -1696,5 +1696,56 @@ left join [dbo].[TestTable3] as TestTable3 on TestTable.id = TestTable3.id
             Assert.IsTrue(report.IsSuccess, report.FailMessage);
         }
 
+        [TestMethod]
+        public void SubstringInSelect0()
+        {
+            var sqlBody = @"
+SELECT SUBSTRING([name], 1, @length)
+from TestTable0
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void SubstringInSelect1()
+        {
+            var sqlBody = @"
+SELECT SUBSTRING([name], @start, @length)
+from TestTable0
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void SubstringInSelect2()
+        {
+            var sqlBody = @"
+SELECT SUBSTRING(@body, @start, @length)
+from TestTable0
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
     }
 }

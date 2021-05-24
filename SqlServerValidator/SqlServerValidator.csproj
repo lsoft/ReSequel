@@ -72,6 +72,7 @@
     <Compile Include="VariableReferenceStringComparer.cs" />
     <Compile Include="Visitor\ButcherVisitor.cs" />
     <Compile Include="Visitor\DatabaseObjectChecker.cs" />
+    <Compile Include="Visitor\FunctionArgumentVisitor.cs" />
     <Compile Include="Visitor\Known\IKnownVariable.cs" />
     <Compile Include="Visitor\Known\KnownTableVariable.cs" />
     <Compile Include="Visitor\Known\KnownVariable.cs" />

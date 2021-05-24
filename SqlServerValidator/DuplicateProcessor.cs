@@ -111,131 +111,22 @@ namespace SqlServerValidator
                 }
             }
 
+
+            //process only variables inside a functions call
+            var fav = new FunctionArgumentVisitor();
+            statement.Accept(fav);
+
+            foreach (var fv in fav.Variables)
+            {
+                processedVariables.Add(fv.Name, fv);
+            }
+
             var result = string.Join(Environment.NewLine, processedVariables.Values.Select(j => j.ToSqlDeclaration())) + Environment.NewLine + statement.ToSourceSqlString();
 
             return
                 result;
         }
 
-
-        //public string SuggestDuplicates(
-        //    TSqlFragment statement,
-        //    List<IKnownVariable> knownTokens
-        //    )
-        //{
-        //    if (statement == null)
-        //    {
-        //        throw new ArgumentNullException(nameof(statement));
-        //    }
-
-        //    if (knownTokens == null)
-        //    {
-        //        throw new ArgumentNullException(nameof(knownTokens));
-        //    }
-
-        //    //determine unknown variable references
-        //    var butcher = new ButcherVisitor();
-        //    statement.Accept(butcher);
-
-        //    //prepare known variables
-        //    var knownVariables = new HashSet<string>(SqlVariableStringComparer.Instance);
-        //    foreach (var knownToken in knownTokens)
-        //    {
-        //        knownVariables.Add(knownToken.Name);
-        //    }
-
-        //    //process only variables with multiple references
-        //    var processedVariables = new Dictionary<string, IKnownVariable>(SqlVariableStringComparer.Instance);
-        //    foreach(var variable in butcher.VariableReferenceList.Where(j => j.ReferenceCount > 1))
-        //    {
-        //        var variableName = variable.Name;
-
-        //        if (knownVariables.Contains(variableName))
-        //        {
-        //            //Это известная переменная, которая будет объявлена в скрипте
-        //            //ее не надо переименовывать
-        //            continue;
-        //        }
-
-        //        if (!processedVariables.ContainsKey(variableName))
-        //        {
-        //            //it's a duplicate
-        //            var v = new KnownVariable(variableName, "varchar(10)");
-
-        //            processedVariables.Add(variableName, v);
-        //        }
-        //    }
-
-        //    var result = string.Join(Environment.NewLine, processedVariables.Values.Select(j => j.ToSqlDeclaration())) + Environment.NewLine + statement.ToSourceSqlString();
-
-        //    return
-        //        result;
-        //}
-
-        //public static string ProcessDuplicates(
-        //    this TSqlFragment statement,
-        //    List<IKnownVariable> knownTokens
-        //    )
-        //{
-        //    if (statement == null)
-        //    {
-        //        throw new ArgumentNullException(nameof(statement));
-        //    }
-
-        //    if (knownTokens == null)
-        //    {
-        //        throw new ArgumentNullException(nameof(knownTokens));
-        //    }
-
-        //    //fix duplicate variables
-        //    var knownVariables = new HashSet<string>(SqlVariableStringComparer.Instance);
-        //    foreach (var knownToken in knownTokens)
-        //    {
-        //        knownVariables.Add(knownToken.Name);
-        //    }
-
-        //    var processedVariables = new Dictionary<string, IKnownVariable>(SqlVariableStringComparer.Instance);
-        //    for (var tokenIndex = statement.FirstTokenIndex; tokenIndex <= statement.LastTokenIndex; tokenIndex++)
-        //    {
-        //        var token = statement.ScriptTokenStream[tokenIndex];
-
-        //        if (token.TokenType != TSqlTokenType.Variable)
-        //        {
-        //            continue;
-        //        }
-
-        //        var variableName = token.Text;
-
-        //        if (variableName.StartsWith(StatementVisitor.SqlServerSpecificVariablePrefix))
-        //        {
-        //            continue;
-        //        }
-        //        if (!variableName.StartsWith(StatementVisitor.SqlServerVariablePrefix))
-        //        {
-        //            continue;
-        //        }
-
-        //        if (knownVariables.Contains(variableName))
-        //        {
-        //            //Это известная переменная, которая будет объявлена в скрипте
-        //            //ее не надо переименовывать
-        //            continue;
-        //        }
-
-        //        if (!processedVariables.ContainsKey(variableName))
-        //        {
-        //            //it's a duplicate
-        //            var v = new KnownVariable(variableName, "varchar(10)");
-
-        //            processedVariables.Add(variableName, v);
-        //        }
-        //    }
-
-        //    var result = string.Join(Environment.NewLine, processedVariables.Values.Select(j => j.ToSqlDeclaration())) + Environment.NewLine + statement.ToSourceSqlString();
-
-        //    return
-        //        result;
-        //}
 
         private string RenameDuplicates(
             TSqlFragment statement,
@@ -260,9 +151,6 @@ namespace SqlServerValidator
             }
 
             var processedVariables = new HashSet<string>(SqlVariableStringComparer.Instance);
-
-            ////clone the token stream because we want to modify it
-            //var tokenStream = statement.ScriptTokenStream.Skip(statement.FirstTokenIndex).Take(statement.LastTokenIndex - statement.FirstTokenIndex + 1).ToList();
 
             //revert info container
             var revertList = new List<(int, string)>();

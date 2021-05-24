@@ -1277,21 +1277,9 @@ namespace SqlServerValidator.Visitor
 
         public override void ExplicitVisit(NamedTableReference node)
         {
-            var fullName = node.SchemaObject.ToSourceSqlString();
-
-            ITableName tableName;
-            //if (_tableList.Any(t => t.IsCte && t.FullTableName  _cteList.Contains(fullName))
-            //{
-            //    tableName = new SqlServerCteName(
-            //        fullName
-            //        );
-            //}
-            //else
-            {
-                tableName = new SqlServerTableName(
-                    node.SchemaObject
-                    );
-            }
+            var tableName = new SqlServerTableName(
+                node.SchemaObject
+                );
 
             //remove previously added aliased pseudo-tables 
 
