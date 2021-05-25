@@ -118,7 +118,9 @@ namespace SqlServerValidator
 
             foreach (var fv in fav.Variables)
             {
-                processedVariables.Add(fv.Name, fv);
+                //if variable with this name already stored, rewrite it
+                //it is ok, due to FunctionArgumentVisitor is better aware about the variable type.
+                processedVariables[fv.Name] = fv;
             }
 
             var result = string.Join(Environment.NewLine, processedVariables.Values.Select(j => j.ToSqlDeclaration())) + Environment.NewLine + statement.ToSourceSqlString();

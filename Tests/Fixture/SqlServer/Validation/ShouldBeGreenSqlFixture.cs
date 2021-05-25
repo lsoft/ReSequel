@@ -1747,5 +1747,59 @@ from TestTable0
             Assert.IsTrue(report.IsSuccess, report.FailMessage);
         }
 
+        [TestMethod]
+        public void SubstringInSelect3()
+        {
+            var sqlBody = @"
+SELECT SUBSTRING([name], 1, @length)
+from TestTable0
+where @length > 0
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void SubstringInSelect4()
+        {
+            var sqlBody = @"
+SELECT SUBSTRING([name], @start, @length)
+from TestTable0
+where @start > 0 AND @length > 0
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void SubstringInSelect5()
+        {
+            var sqlBody = @"
+SELECT SUBSTRING(@body, @start, @length)
+from TestTable0
+where @body is not null AND @start > 0 AND @length > 0
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
     }
 }
