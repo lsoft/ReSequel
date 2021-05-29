@@ -16,19 +16,24 @@ set fmtonly on
 
 set fmtonly off
 ";
-
-
+        private readonly IUndeclaredParameterDeterminerFactory _undeclaredParameterDeterminerFactory;
         private readonly DbConnection _connection;
 
         public FmtOnlySqlValidator(
+            IUndeclaredParameterDeterminerFactory undeclaredParameterDeterminerFactory,
             DbConnection connection
             )
         {
+            if (undeclaredParameterDeterminerFactory is null)
+            {
+                throw new ArgumentNullException(nameof(undeclaredParameterDeterminerFactory));
+            }
+
             if (connection == null)
             {
                 throw new ArgumentNullException(nameof(connection));
             }
-
+            _undeclaredParameterDeterminerFactory = undeclaredParameterDeterminerFactory;
             _connection = connection;
         }
 
@@ -116,9 +121,9 @@ set fmtonly off
 
             var result = new StringBuilder();
 
-            using (var determiner = new UndeclaredParameterDeterminer(_connection))
+            using (var determiner = _undeclaredParameterDeterminerFactory.Create(_connection))
             {
-                if (determiner.TryToDetermineTypes(innerSql, out var dict))
+                if (determiner.TryToDetermineParameters(innerSql, out var dict))
                 {
                     foreach (var pair in dict)
                     {

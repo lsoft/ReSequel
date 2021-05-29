@@ -137,6 +137,7 @@ CREATE TABLE [dbo].[TestTable0](
 	[id] [int] NOT NULL,
 	[name] [varchar](100) NOT NULL,
 	[additional] [varchar](100) NULL,
+	[myxml] [xml] NULL,
  CONSTRAINT [PK_TestTable0] PRIMARY KEY CLUSTERED 
 (
 	[id] ASC
@@ -212,7 +213,7 @@ begin
 	return 'getted name'
 end
 GO
-create function dbo.get_name2(incoming_name varchar(100)) returns varchar(20) as
+create function dbo.get_name2(@incoming_name varchar(100)) returns varchar(20) as
 begin
 	return 'getted name'
 end

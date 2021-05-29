@@ -5,12 +5,12 @@ using System.Diagnostics;
 
 namespace SqlServerValidator.UndeclaredDeterminer
 {
-    public class UndeclaredParameterDeterminer : IDisposable
+    public class DescribeUndeclaredParameterDeterminer : IUndeclaredParameterDeterminer
     {
         private readonly DbConnection _connection;
         private readonly bool _shouldCleanupConnection;
 
-        public UndeclaredParameterDeterminer(
+        public DescribeUndeclaredParameterDeterminer(
             DbConnection connection
             )
         {
@@ -23,7 +23,7 @@ namespace SqlServerValidator.UndeclaredDeterminer
             _shouldCleanupConnection = false;
         }
 
-        public UndeclaredParameterDeterminer(
+        public DescribeUndeclaredParameterDeterminer(
             string connectionString
             )
         {
@@ -36,7 +36,7 @@ namespace SqlServerValidator.UndeclaredDeterminer
             _shouldCleanupConnection = true;
         }
 
-        public bool TryToDetermineTypes(
+        public bool TryToDetermineParameters(
             string innerSql,
             out IReadOnlyDictionary<string, string> result
             )

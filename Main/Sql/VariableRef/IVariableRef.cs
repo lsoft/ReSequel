@@ -12,6 +12,11 @@
             get;
         }
 
+        bool IsInScopeOfUnknownProcessing
+        {
+            get;
+        }
+
         bool IsSame(
             string otherVariableName
             );

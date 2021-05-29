@@ -4,6 +4,7 @@ using Ninject.Modules;
 using SqlServerValidator;
 using SqlServerValidator.Butcher;
 using SqlServerValidator.Executor;
+using SqlServerValidator.UndeclaredDeterminer;
 using SqlServerValidator.Validator.Factory;
 
 namespace Tests.CompositionRoot
@@ -64,6 +65,12 @@ namespace Tests.CompositionRoot
                .To<SqlServerButcherFactory>()
                .InSingletonScope()
                 ;
+
+            Bind<IUndeclaredParameterDeterminerFactory>()
+                .To<UndeclaredParameterDeterminerFactory>()
+                .InSingletonScope()
+                ;
+
         }
     }
 }

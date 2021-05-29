@@ -6,6 +6,7 @@ using Ninject.Modules;
 using Extension.TaskRelated;
 using SqlServerValidator;
 using SqlServerValidator.Executor;
+using SqlServerValidator.UndeclaredDeterminer;
 
 namespace Extension.CompositionRoot
 {
@@ -49,6 +50,11 @@ namespace Extension.CompositionRoot
 
                     return result == 0;
                 })
+                ;
+
+            Bind<IUndeclaredParameterDeterminerFactory>()
+                .To<UndeclaredParameterDeterminerFactory>()
+                .InSingletonScope()
                 ;
         }
     }

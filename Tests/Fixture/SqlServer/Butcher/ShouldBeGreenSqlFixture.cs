@@ -951,6 +951,36 @@ order by
             Assert.IsFalse(carveResult.IsColumnReferenced("new_column", false));
         }
 
+        [TestMethod]
+        public void Xml0()
+        {
+            const string sqlBody = @"
+select
+	*
+from TestTable0
+where
+	myxml.exist('/a[. = sql:variable(""@a"")]') = 1
+";
+
+            var carveResult = Carve(
+                sqlBody
+                );
+
+            Assert.IsNotNull(carveResult);
+
+            Assert.AreEqual(1, carveResult.TableList.Count);
+            Assert.AreEqual(0, carveResult.TempTableList.Count);
+            Assert.AreEqual(0, carveResult.TableVariableList.Count);
+            Assert.AreEqual(0, carveResult.CteList.Count);
+            Assert.AreEqual(1, carveResult.ColumnList.Count); //it is impossible to determine what is 'myxml.exist' - column or scheme name of the function 'exist'; we decide to parse it as a scheme name
+            Assert.AreEqual(1, carveResult.VariableReferenceList.Count);
+            Assert.AreEqual(0, carveResult.IndexList.Count);
+            Assert.AreEqual(1, carveResult.FunctionList.Count);
+
+            Assert.IsTrue(carveResult.IsTableReferenced("TestTable0"));
+            Assert.IsTrue(carveResult.IsColumnReferenced("*"));
+            Assert.IsTrue(carveResult.IsVariableReferenced("@a"));
+        }
     }
 
 }

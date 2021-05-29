@@ -25,17 +25,24 @@ namespace SqlServerValidator
 
     public class DuplicateProcessor : IDuplicateProcessor
     {
+        private readonly IUndeclaredParameterDeterminerFactory _undeclaredParameterDeterminerFactory;
         private readonly IConnectionStringContainer _connectionStringContainer;
 
         public DuplicateProcessor(
+            IUndeclaredParameterDeterminerFactory undeclaredParameterDeterminerFactory,
             IConnectionStringContainer connectionStringContainer
             )
         {
+            if (undeclaredParameterDeterminerFactory is null)
+            {
+                throw new ArgumentNullException(nameof(undeclaredParameterDeterminerFactory));
+            }
+
             if (connectionStringContainer == null)
             {
                 throw new ArgumentNullException(nameof(connectionStringContainer));
             }
-
+            _undeclaredParameterDeterminerFactory = undeclaredParameterDeterminerFactory;
             _connectionStringContainer = connectionStringContainer;
         }
 
@@ -59,9 +66,9 @@ namespace SqlServerValidator
 
             var knownDeclarations = string.Join(Environment.NewLine, knownTokens.ConvertAll(j => j.ToSqlDeclaration()));
             var renamedSql = knownDeclarations + Environment.NewLine + RenameDuplicates(statement, knownTokens);
-            using (var determiner = new UndeclaredParameterDeterminer(_connectionStringContainer.GetConnectionString()))
+            using (var determiner = _undeclaredParameterDeterminerFactory.Create(_connectionStringContainer.GetConnectionString()))
             {
-                if (determiner.TryToDetermineTypes(renamedSql, out var dict))
+                if (determiner.TryToDetermineParameters(renamedSql, out var dict))
                 {
                     foreach (var pair in dict)
                     {
@@ -83,7 +90,7 @@ namespace SqlServerValidator
 
             //process only variables with multiple references
             var processedVariables = new Dictionary<string, IKnownVariable>(SqlVariableStringComparer.Instance);
-            foreach (var variable in butcher.VariableReferenceList.Where(j => j.ReferenceCount > 1))
+            foreach (var variable in butcher.VariableReferenceList.Where(j => j.IsInScopeOfUnknownProcessing))
             {
                 var variableName = variable.Name;
 

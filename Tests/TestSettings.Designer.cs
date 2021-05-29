@@ -12,7 +12,7 @@ namespace Tests {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.8.1.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.10.0.0")]
     internal sealed partial class TestSettings : global::System.Configuration.ApplicationSettingsBase {
         
         private static TestSettings defaultInstance = ((TestSettings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new TestSettings())));
@@ -108,8 +108,9 @@ namespace Tests {
             ",\r\n CONSTRAINT [PK_TestTable3] PRIMARY KEY CLUSTERED \r\n(\r\n\t[id] ASC\r\n)WITH (PAD_" +
             "INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS" +
             " = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]\r\n) ON [PRIMARY]\r\nGO\r\n\r\ncreate functio" +
-            "n dbo.get_name() returns varchar(10) as\r\nbegin\r\n\treturn \'getted name\'\r\nend\r\nGO\r\n" +
-            "\r\nuse [master]GO")]
+            "n dbo.get_name1() returns varchar(20) as\r\nbegin\r\n\treturn \'getted name\'\r\nend\r\nGO\r" +
+            "\ncreate function dbo.get_name2(@incoming_name varchar(100)) returns varchar(20) " +
+            "as\r\nbegin\r\n\treturn \'getted name\'\r\nend\r\nGO\r\n\r\nuse [master]\r\nGO")]
         public string CreateDatabaseScript {
             get {
                 return ((string)(this["CreateDatabaseScript"]));

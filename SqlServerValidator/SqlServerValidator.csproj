@@ -63,7 +63,12 @@
     <Compile Include="DuplicateProcessor.cs" />
     <Compile Include="SqlServerHelper.cs" />
     <Compile Include="SqlVariableStringComparer.cs" />
-    <Compile Include="UndeclaredDeterminer\UndeclaredParameterDeterminer.cs" />
+    <Compile Include="UndeclaredDeterminer\AdapterUndeclaredParameterDeterminer.cs" />
+    <Compile Include="UndeclaredDeterminer\DescribeUndeclaredParameterDeterminer.cs" />
+    <Compile Include="UndeclaredDeterminer\IUndeclaredParameterDeterminer.cs" />
+    <Compile Include="UndeclaredDeterminer\IUndeclaredParameterDeterminerFactory.cs" />
+    <Compile Include="UndeclaredDeterminer\SqlXmlUndeclaredParameterDeterminer.cs" />
+    <Compile Include="UndeclaredDeterminer\UndeclaredParameterDeterminerFactory.cs" />
     <Compile Include="Validator\DescribeSqlValidator.cs" />
     <Compile Include="Validator\Factory\DescribeSqlValidatorFactory.cs" />
     <Compile Include="Validator\Factory\DetectSqlValidatorFactory.cs" />
@@ -76,6 +81,7 @@
     <Compile Include="Visitor\Known\IKnownVariable.cs" />
     <Compile Include="Visitor\Known\KnownTableVariable.cs" />
     <Compile Include="Visitor\Known\KnownVariable.cs" />
+    <Compile Include="Visitor\SqlXmlVariableExtractor.cs" />
     <Compile Include="Visitor\StatementVisitor.cs" />
     <Compile Include="Visitor\TSqlDomHelpers.cs" />
     <Compile Include="Visitor\VariableRef\VariableRef.cs" />

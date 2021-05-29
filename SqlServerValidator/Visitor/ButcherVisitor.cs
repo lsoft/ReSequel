@@ -13,6 +13,8 @@ namespace SqlServerValidator.Visitor
     [DebuggerDisplay("{TableNames}")]
     public class ButcherVisitor : TSqlFragmentVisitor, ICarveResult
     {
+        private readonly SqlXmlVariableExtractor _sqlXmlVariableExtractor = new SqlXmlVariableExtractor();
+
         /// <summary>
         /// cte names container
         /// </summary>
@@ -828,7 +830,6 @@ namespace SqlServerValidator.Visitor
         public override void ExplicitVisit(MoneyLiteral node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(XmlForClauseOption node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(BinaryLiteral node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
-        public override void ExplicitVisit(StringLiteral node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(XmlForClause node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(NullLiteral node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
         public override void ExplicitVisit(ReadOnlyForClause node) { Debug.WriteLine(node.GetType().Name.PadRight(40) + node.ToSourceSqlString()); node.AcceptChildren(this); }
@@ -1108,6 +1109,14 @@ namespace SqlServerValidator.Visitor
 
         #endregion
 
+
+        public override void ExplicitVisit(StringLiteral node)
+        {
+            foreach (var variableName in _sqlXmlVariableExtractor.ExtractNames(node.ToSqlString()))
+            {
+                AppendNewVariableReference(variableName, true);
+            }
+        }
 
         public override void ExplicitVisit(SelectScalarExpression node)
         {
@@ -1439,11 +1448,17 @@ namespace SqlServerValidator.Visitor
 
 
 
-        private void AppendNewVariableReference(string variableName)
+        private void AppendNewVariableReference(
+            string variableName,
+            bool forceToSetUnknownProcessingScope = false
+            )
         {
             if (!_variableReferenceList.ContainsKey(variableName))
             {
-                _variableReferenceList[variableName] = new SqlServerValidator.Visitor.VariableRef.VariableRef(variableName);
+                _variableReferenceList[variableName] = new SqlServerValidator.Visitor.VariableRef.VariableRef(
+                    variableName,
+                    forceToSetUnknownProcessingScope
+                    );
             }
 
             _variableReferenceList[variableName].IncrementReferenceCount();

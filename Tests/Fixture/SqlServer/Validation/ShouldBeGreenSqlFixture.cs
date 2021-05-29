@@ -644,7 +644,7 @@ insert into @t
 select id, [name] from dbo.TestTable0
 
 insert into dbo.TestTable0
-select id, [name], null from @t
+select id, [name], null, null from @t
 ";
 
             var processed = ValidateAgainstSchema(
@@ -1790,6 +1790,26 @@ where @start > 0 AND @length > 0
 SELECT SUBSTRING(@body, @start, @length)
 from TestTable0
 where @body is not null AND @start > 0 AND @length > 0
+";
+
+            var processed = ValidateAgainstSchema(
+                sqlBody
+                );
+
+            var report = processed.GenerateReport();
+
+            Assert.IsTrue(report.IsSuccess, report.FailMessage);
+        }
+
+        [TestMethod]
+        public void Xml0()
+        {
+            var sqlBody = @"
+select
+	*
+from TestTable0
+where
+	myxml.exist('/a[. = sql:variable(""@a"")]') = 1
 ";
 
             var processed = ValidateAgainstSchema(
