@@ -3,6 +3,7 @@ using Main.Sql;
 using Ninject.Modules;
 using SqlServerValidator;
 using SqlServerValidator.Executor;
+using SqlServerValidator.UndeclaredDeterminer;
 using SqlServerValidator.Validator.Factory;
 
 namespace Extension.CompositionRoot.Modules
@@ -43,6 +44,12 @@ namespace Extension.CompositionRoot.Modules
                 .ToSelf()
                 .InSingletonScope()
                 ;
+
+            Bind<IUndeclaredParameterDeterminerFactory>()
+                .To<UndeclaredParameterDeterminerFactory>()
+                .InSingletonScope()
+                ;
+
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="ReSequel.Extension.70bbd75d-9802-4f8d-8173-d8adc5440ed9" Version="0.2.38" Language="en-US" Publisher="lsoft" />
+        <Identity Id="ReSequel.Extension.70bbd75d-9802-4f8d-8173-d8adc5440ed9" Version="0.2.39" Language="en-US" Publisher="lsoft" />
         <DisplayName>ReSequel Visual Studio Extension</DisplayName>
         <Description xml:space="preserve">ReSequel: validate SQL queries, find all references by a table name or a column name.</Description>
         <MoreInfo>https://github.com/lsoft/ReSequel</MoreInfo>
