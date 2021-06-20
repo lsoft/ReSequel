@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>5fd224dc-562a-4337-9851-38d0a4b4b7fb</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Extension.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Cache\CacheUpdatedDelegate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Cache\SqlInclusionCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Cache\SqlInclusionCacheBackgroundValidator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Cache\SqlInclusionFileCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Command\ChooseDefaultExecutorCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Command\EditXmlCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Command\InclusionListCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionRoot\IVsSolutionEventsExt.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionRoot\MessageBox.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionRoot\Modules\ChildModule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionRoot\Modules\DefaultModule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionRoot\Modules\SqliteModule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionRoot\Modules\SqlServerModule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionRoot\Root.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionRoot\ScanProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConfigurationRelated\Configuration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConfigurationRelated\ConfigurationFileChangedDelegate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConfigurationRelated\ConfigurationFilePath.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConfigurationRelated\ConfigurationProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConfigurationRelated\ConfigurationSolutions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConfigurationRelated\ConfigurationSqlExecutors.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConfigurationRelated\ConfigurationSqlExecutorsSqlExecutor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConfigurationRelated\IConfigurationProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ExtensionStatus\ExtensionStatusContainer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ExtensionStatus\FullyLoaded\FullyLoadedStatusContainer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ExtensionStatus\FullyLoaded\IFullyLoadedStatusContainer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ExtensionStatus\FullyLoaded\IFullyLoadedStatusProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ExtensionStatus\IExtensionStatus.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\ReflectionHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Other\VisualStudioHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ReSequelPackage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tagging\Extractor\ITagExtractor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tagging\Extractor\ITimeoutTagExtractor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tagging\Extractor\TagDescriptorHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tagging\Extractor\TimeoutTagExtractor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tagging\SqlBorder\SqlBorderFormatDefinition.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tagging\SqlQueryAdornment\SqlQueryAdornmentTagger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tagging\SqlQueryAdornment\SqlQueryAdornmentTaggerProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tagging\SqlQuery\ITagUpdater.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tagging\SqlQuery\SqlQueryTag.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tagging\SqlQuery\SqlQueryTagger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tagging\SqlQuery\SqlQueryTaggerProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tagging\SqlQuery\TagStatusChangedDelegate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tagging\Support\IntraTextAdornmentTagger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tagging\Support\IntraTextAdornmentTagTransformer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tagging\Support\RegexTagger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tagging\ValidateButton\ValidateButtonAdornment.xaml.cs">
+      <DependentUpon>ValidateButtonAdornment.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Tagging\ValidateButton\ValidateButtonViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Wpf\ChooseDefaultExecutor\ChooseDefaultExecutorViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Wpf\ChooseDefaultExecutor\ChooseDefaultExecutorWindow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Wpf\ChooseDefaultExecutor\ChooseDefaultExecutorWindowControl.xaml.cs">
+      <DependentUpon>ChooseDefaultExecutorWindowControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Wpf\ChooseDefaultExecutor\ExecutorWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Wpf\InclusionList\InclusionListViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Wpf\InclusionList\InclusionListWindow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Wpf\InclusionList\InclusionListWindowControl.xaml.cs">
+      <DependentUpon>InclusionListWindowControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Wpf\InclusionList\InclusionWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Wpf\ProvideToolboxControlAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Wpf\Theme.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)Tagging\ValidateButton\ValidateButtonAdornment.xaml">
+      <SubType>Designer</SubType>
+      <Generator>XamlIntelliSenseFileGenerator</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Wpf\ChooseDefaultExecutor\ChooseDefaultExecutorWindowControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Wpf\InclusionList\InclusionListWindowControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)SolutionWideScannerReadme.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Configuration.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)ScanDescription.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

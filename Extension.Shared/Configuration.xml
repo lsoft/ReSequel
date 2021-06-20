@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+  <Solutions>
+    <!-- list of wild card (? and *) applied to solution full path -->
+    <Solution>*.sln</Solution>
+  </Solutions>
+  
+  
+  <!-- a list of available executors -->
+  <SqlExecutors>
+    <SqlExecutor>
+      <Name>SQL Server Database</Name>
+      <Type>SqlServer</Type>
+      <!-- need to specific database due to specific forms of SQLs -->
+      <ConnectionString>Data Source=.; Initial Catalog=master; Integrated Security=SSPI; Connection Timeout=10; Max Pool Size=50;</ConnectionString>
+      <Parameters></Parameters>
+      <IsDefault>true</IsDefault>
+    </SqlExecutor>
+    <SqlExecutor>
+      <Name>Sqlite Database</Name>
+      <Type>Sqlite</Type>
+      <!-- need to specific database due to specific forms of SQLs -->
+      <ConnectionString>Data Source=F:\projects\git\ReSequel\DbProviderExample\Handler\_example.db;</ConnectionString>
+      <Parameters>Password=;CaseSensitive=False</Parameters>
+      <IsDefault>false</IsDefault>
+    </SqlExecutor>
+  </SqlExecutors>
+
+</Configuration>
