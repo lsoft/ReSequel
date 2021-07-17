@@ -2,6 +2,7 @@
 using System;
 using Main.Inclusion.Validated;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Main.Validator
 {
@@ -12,9 +13,9 @@ namespace Main.Validator
         /// No order guarrantee!
         /// </summary>
         /// <param name="shouldBreak">Signal that validation process should be stopped prematurely.</param>
-        void Validate(
+        Task ValidateAsync(
            List<IValidatedSqlInclusion> inclusions,
            Func<bool> shouldBreak
-        );
+            );
     }
 }

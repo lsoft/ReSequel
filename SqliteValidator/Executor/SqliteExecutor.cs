@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Main.Helper;
 using Main.Inclusion.Validated.Result;
 using Main.Sql;
@@ -44,11 +45,104 @@ namespace SqliteValidator.Executor
             _connection = connection;
         }
 
-        public static SqliteConnection CreateAndConnect(string connectionString, string password, bool caseSensitive)
+        public static async Task<SqliteConnection> CreateAndConnectAsync(
+            string connectionString, 
+            string password, 
+            bool caseSensitive
+            )
         {
-            var connection = new SqliteConnection(connectionString);
+            var connection = CreateConnection(connectionString);
+
+            await connection.OpenAsync();
+
+            PrepareConnection(connection, password, caseSensitive);
+
+            return connection;
+        }
+
+        public async Task ExecuteAsync(IUnitProvider unitProvider)
+        {
+            if (unitProvider == null)
+            {
+                throw new ArgumentNullException(nameof(unitProvider));
+            }
+
+            while (unitProvider.TryRequestNextUnit(out var unit))
+            {
+                await ExecuteAsync(unit);
+            }
+        }
+
+        public async Task ExecuteAsync(IValidationUnit unit)
+        {
+            if (unit == null)
+            {
+                throw new ArgumentNullException(nameof(unit));
+            }
+
+            Interlocked.Increment(ref _processedUnits);
+
+            try
+            {
+                var result = new ComplexValidationResult();
+
+                var statements = unit.SqlBody.SplitBatch();
+
+                var validator = _sqlValidatorFactory.Create(_connection);
+
+                foreach (var statement in statements)
+                {
+                    var (checkResult, checkErrorMessage) = await validator.TryCheckSqlAsync(statement);
+                    if (!checkResult)
+                    {
+                        throw new Exception(checkErrorMessage);
+                    }
+
+                    result.Append(ValidationResult.Success(unit.SqlBody, unit.SqlBody));
+                }
+
+                unit.SetValidationResult(result);
+            }
+            catch (Exception excp)
+            {
+                unit.SetValidationResult(new ExceptionValidationResult(unit.SqlBody, excp));
+            }
+        }
+
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref _disposed, 1L) != 0L)
+            {
+                return;
+            }
+
+            _connection?.Dispose();
+
+            Interlocked.Decrement(ref AliveConnectionCount);
+        }
+
+        private static SqliteConnection CreateAndConnect(
+            string connectionString,
+            string password,
+            bool caseSensitive)
+        {
+            var connection = CreateConnection(connectionString);
+            
             connection.Open();
 
+            PrepareConnection(connection, password, caseSensitive);
+
+            return connection;
+        }
+
+        private static SqliteConnection CreateConnection(string connectionString)
+        {
+            var connection = new SqliteConnection(connectionString);
+            return connection;
+        }
+
+        private static void PrepareConnection(SqliteConnection connection, string password, bool caseSensitive)
+        {
             //set password for encoded database
             if (!string.IsNullOrEmpty(password))
             {
@@ -76,69 +170,6 @@ namespace SqliteValidator.Executor
                     command.ExecuteNonQuery();
                 }
             }
-
-            return connection;
-        }
-
-        public void Execute(IUnitProvider unitProvider)
-        {
-            if (unitProvider == null)
-            {
-                throw new ArgumentNullException(nameof(unitProvider));
-            }
-
-            while (unitProvider.TryRequestNextUnit(out var unit))
-            {
-                Execute(unit);
-            }
-        }
-
-        public void Execute(IValidationUnit unit)
-        {
-            if (unit == null)
-            {
-                throw new ArgumentNullException(nameof(unit));
-            }
-
-            Interlocked.Increment(ref _processedUnits);
-
-            try
-            {
-                var result = new ComplexValidationResult();
-
-                var statements = unit.SqlBody.SplitBatch();
-
-                var validator = _sqlValidatorFactory.Create(_connection);
-
-                foreach (var statement in statements)
-                {
-                    if (!validator.TryCheckSql(statement, out var errorMessage))
-                    {
-                        throw new Exception(errorMessage);
-                    }
-
-                    result.Append(ValidationResult.Success(unit.SqlBody, unit.SqlBody));
-                }
-
-                unit.SetValidationResult(result);
-            }
-            catch (Exception excp)
-            {
-                unit.SetValidationResult(new ExceptionValidationResult(unit.SqlBody, excp));
-            }
-        }
-
-
-        public void Dispose()
-        {
-            if (Interlocked.Exchange(ref _disposed, 1L) != 0L)
-            {
-                return;
-            }
-
-            _connection?.Dispose();
-
-            Interlocked.Decrement(ref AliveConnectionCount);
         }
 
     }

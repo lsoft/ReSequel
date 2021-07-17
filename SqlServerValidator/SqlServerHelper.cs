@@ -1,11 +1,20 @@
 using System;
 using System.Data.SqlClient;
+using System.Threading.Tasks;
 using SqlServerValidator.Visitor;
 
 namespace SqlServerValidator
 {
     public static class SqlServerHelper
     {
+        public static async Task<SqlConnection> CreateAndConnectAsync(string connectionString)
+        {
+            var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            return connection;
+        }
+
         public static SqlConnection CreateAndConnect(string connectionString)
         {
             var connection = new SqlConnection(connectionString);

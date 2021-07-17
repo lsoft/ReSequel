@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Main.Inclusion.Validated;
 using Main.Inclusion.Validated.Result;
 using Main.Validator.UnitProvider;
+using Main.Helper;
 
 namespace Main.Validator
 {
@@ -38,7 +39,7 @@ namespace Main.Validator
         /// <summary>
         /// No order guarantee!
         /// </summary>
-        public void Validate(
+        public async Task ValidateAsync(
             List<IValidatedSqlInclusion> inclusions,
             Func<bool> shouldBreak
             )
@@ -54,7 +55,8 @@ namespace Main.Validator
             }
 
             //check for sql validator can connect to RDBMS
-            if (!_executorFactory.CheckForConnectionExists(out var errorMessage))
+            var (checkResult, errorMessage) = await _executorFactory.CheckForConnectionExistsAsync();
+            if (!checkResult)
             {
                 foreach (var inclusion in inclusions)
                 {
@@ -64,7 +66,6 @@ namespace Main.Validator
                 return;
             }
 
-
             var unitProvider = new UnitProvider.UnitProvider(
                 inclusions,
                 shouldBreak,
@@ -73,11 +74,11 @@ namespace Main.Validator
 
             if (unitProvider.TotalVariantCount < 20) //hand made constant
             {
-                ProcessSequentially(unitProvider);
+                await ProcessSequentiallyAsync(unitProvider);
             }
             else
             {
-                ProcessInParallel(unitProvider);
+                await ProcessInParallelAsync(unitProvider);
             }
 
             var prematurelyStopped = shouldBreak();
@@ -94,54 +95,26 @@ namespace Main.Validator
             }
         }
 
-        private void ProcessSequentially(IUnitProvider unitProvider)
+        private async Task ProcessSequentiallyAsync(IUnitProvider unitProvider)
         {
             using (var executor = _executorFactory.Create())
             {
-                executor.Execute(unitProvider);
+                await executor.ExecuteAsync(unitProvider);
             }
         }
 
 
-        private void ProcessInParallel(IUnitProvider unitProvider)
+        private async Task ProcessInParallelAsync(IUnitProvider unitProvider)
         {
-            var executorCreated = 0;
-            var executorDisposed = 0;
-            var unitProcessedCount = 0;
-
-            var before = DateTime.Now;
-
-            var options = new ParallelOptions();
-            options.MaxDegreeOfParallelism = Environment.ProcessorCount;
-
-            Parallel.ForEach(
-                unitProvider.RequestNextUnitSync(),
-                options,
-                () =>
+            await unitProvider.RequestNextUnitSync()
+                .ParallelForEachAsync(
+                unit =>
                 {
-                    Debug.WriteLine("SqlExecutor works in thread {0}", Thread.CurrentThread.ManagedThreadId);
-                    Interlocked.Increment(ref executorCreated);
-
                     var executor = _executorFactory.Create();
-                    return executor;
+                    return executor.ExecuteAsync(unit);
                 },
-                (unit, state, executor) =>
-                {
-                    Interlocked.Increment(ref unitProcessedCount);
-                    executor.Execute(unit);
-                    return executor;
-                },
-                executor =>
-                {
-                    Debug.WriteLine("SqlExecutor (thread {0}) processed {1} variants", Thread.CurrentThread.ManagedThreadId, executor.ProcessedUnits);
-                    Interlocked.Increment(ref executorDisposed);
-
-                    executor.Dispose();
-                });
-
-            var after = DateTime.Now;
-            Debug.WriteLine("Inclusion validation checks {0} variants, takes {1}", unitProvider.TotalVariantCount, (after - before));
-            Debug.WriteLine("Executors created {0}, disposed {1}", executorCreated, executorDisposed);
+                Environment.ProcessorCount
+                );
         }
     }
 }

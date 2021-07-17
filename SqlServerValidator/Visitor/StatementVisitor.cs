@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Main.Inclusion.Validated.Result;
 using Main.Sql;
 using Microsoft.SqlServer.TransactSql.ScriptDom;
@@ -74,7 +75,7 @@ namespace SqlServerValidator.Visitor
             _result = new NotImplementedValidationResult(
                 "Not implemented yet"
                 );
-
+            !!! error !!! we need to wait until TSqlFragmentVisitor has an async version of the methods. an appropriate issue was posted by me to MS
             //process the statement with this visitor
             statement.Accept(this);
 

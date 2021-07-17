@@ -94,7 +94,7 @@ namespace Main.SolutionValidator
 
                 var validator = _validationFactory.Create(Progress);
 
-                validator.Validate(
+                await validator.ValidateAsync(
                     validationInclusionList,
                     () => false
                     );

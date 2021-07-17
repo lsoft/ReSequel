@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Main.Sql;
 using Main.Sql.ConnectionString;
 
@@ -50,22 +51,20 @@ namespace SqlServerValidator.Executor
                     );
         }
 
-        public bool CheckForConnectionExists(out string errorMessage)
+        public async Task<(bool, string)> CheckForConnectionExistsAsync()
         {
             try
             {
-                using (SqlServerHelper.CreateAndConnect(_connectionStringContainer.GetConnectionString()))
+                using (await SqlServerHelper.CreateAndConnectAsync(_connectionStringContainer.GetConnectionString()))
                 {
 
                 }
 
-                errorMessage = string.Empty;
-                return true;
+                return (true, string.Empty);
             }
             catch (Exception excp)
             {
-                errorMessage = excp.Message;
-                return false;
+                return (false, excp.Message);
             }
         }
     }

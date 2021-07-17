@@ -1,15 +1,15 @@
+using System.Threading.Tasks;
+
 namespace Main.Sql
 {
     public interface ISqlValidator
     {
-        bool TryCalculateRowCount(
-            string sql,
-            out int rowRead
+        Task<(bool, int)> TryCalculateRowCountAsync(
+            string sql
             );
 
-        bool TryCheckSql(
-            string innerSql,
-            out string errorMessage
+        Task<(bool, string)> TryCheckSqlAsync(
+            string innerSql
             );
     }
 }

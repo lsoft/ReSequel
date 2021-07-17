@@ -16,7 +16,6 @@ namespace SqlServerValidator.UndeclaredDeterminer
                 connectionString
                 );
             var sqlxmld = new SqlXmlUndeclaredParameterDeterminer(
-                connectionString
                 );
             var ad = new AdapterUndeclaredParameterDeterminer(
                 dd,
@@ -37,7 +36,6 @@ namespace SqlServerValidator.UndeclaredDeterminer
                 connection
                 );
             var sqlxmld = new SqlXmlUndeclaredParameterDeterminer(
-                connection
                 );
             var ad = new AdapterUndeclaredParameterDeterminer(
                 dd,

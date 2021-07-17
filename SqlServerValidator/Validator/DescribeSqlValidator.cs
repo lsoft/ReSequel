@@ -1,6 +1,7 @@
 using System;
 using System.Data.Common;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Main.Sql;
 
 namespace SqlServerValidator.Validator
@@ -29,14 +30,14 @@ sp_describe_first_result_set @tsql = N'
             _connection = connection;
         }
 
-        public bool TryCalculateRowCount(string sql, out int rowRead)
+        public async Task<(bool, int)> TryCalculateRowCountAsync(string sql)
         {
             if (sql is null)
             {
                 throw new ArgumentNullException(nameof(sql));
             }
 
-            rowRead = 0;
+            var rowRead = 0;
 
             try
             {
@@ -45,7 +46,7 @@ sp_describe_first_result_set @tsql = N'
                     cmd.CommandText = sql;
                     cmd.CommandTimeout = 5;
 
-                    using (var reader = cmd.ExecuteReader())
+                    using (var reader = await cmd.ExecuteReaderAsync())
                     {
                         while (reader.Read())
                         {
@@ -53,7 +54,7 @@ sp_describe_first_result_set @tsql = N'
                         }
                     }
 
-                    return true;
+                    return (true, rowRead);
                 }
             }
             catch (Exception excp)
@@ -62,13 +63,11 @@ sp_describe_first_result_set @tsql = N'
                 Debug.WriteLine(excp.StackTrace);
             }
 
-            rowRead = 0;
-            return false;
+            return (false, 0);
         }
 
-        public bool TryCheckSql(
-            string innerSql,
-            out string errorMessage
+        public async Task<(bool, string)> TryCheckSqlAsync(
+            string innerSql
             )
         {
             try
@@ -81,19 +80,16 @@ sp_describe_first_result_set @tsql = N'
                         );
                     cmd.CommandTimeout = 5;
 
-                    using (var reader = cmd.ExecuteReader())
+                    using (var reader = await cmd.ExecuteReaderAsync())
                     {
-                        errorMessage = string.Empty;
-                        return true;
+                        return (true, string.Empty);
                     }
                 }
             }
             catch (Exception excp)
             {
-                errorMessage = excp.Message;
+                return (false, excp.Message);
             }
-
-            return false;
         }
     }
 }

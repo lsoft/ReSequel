@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace Main.Sql
 {
     public interface ISqlExecutorFactory
@@ -10,6 +12,6 @@ namespace Main.Sql
         ISqlExecutor Create(
             );
 
-        bool CheckForConnectionExists(out string errorMessage);
+        Task<(bool, string)> CheckForConnectionExistsAsync();
     }
 }

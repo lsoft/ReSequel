@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Main.Inclusion.Validated.Result;
 using Main.Sql;
 using Main.Validator.UnitProvider;
@@ -66,7 +67,7 @@ namespace SqlServerValidator.Executor
                 );
         }
 
-        public void Execute(
+        public async Task ExecuteAsync(
             IUnitProvider unitProvider
             )
         {
@@ -77,11 +78,11 @@ namespace SqlServerValidator.Executor
 
             while(unitProvider.TryRequestNextUnit(out var unit))
             {
-                Execute(unit);
+                await ExecuteAsync(unit);
             }
         }
 
-        public void Execute(IValidationUnit unit)
+        public async Task ExecuteAsync(IValidationUnit unit)
         {
             if (unit == null)
             {

@@ -1,25 +1,26 @@
 using System;
+using System.Threading.Tasks;
 using Main.Validator.UnitProvider;
 
 namespace Main.Sql
 {
     public interface ISqlExecutor : IDisposable
     {
+        int ProcessedUnits
+        {
+            get;
+        }
+
         SqlExecutorTypeEnum Type
         {
             get;
         }
 
-        void Execute(
+        Task ExecuteAsync(
             IUnitProvider unitProvider
             );
 
-        void Execute(IValidationUnit unit);
-
-        int ProcessedUnits
-        {
-            get;
-        }
+        Task ExecuteAsync(IValidationUnit unit);
     }
 
 }

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SqlServerValidator.UndeclaredDeterminer
 {
     public interface IUndeclaredParameterDeterminer : IDisposable
     {
-        bool TryToDetermineParameters(
-                string innerSql,
-                out IReadOnlyDictionary<string, string> result
-                );
+        Task<(bool, IReadOnlyDictionary<string, string>)> TryToDetermineParametersAsync(
+            string innerSql
+            );
     }
 }

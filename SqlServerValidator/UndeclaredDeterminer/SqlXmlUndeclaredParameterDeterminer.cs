@@ -3,43 +3,21 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace SqlServerValidator.UndeclaredDeterminer
 {
     public class SqlXmlUndeclaredParameterDeterminer : IUndeclaredParameterDeterminer
     {
-        private readonly DbConnection _connection;
-        private readonly bool _shouldCleanupConnection;
-
         public SqlXmlUndeclaredParameterDeterminer(
-            DbConnection connection
             )
         {
-            if (connection == null)
-            {
-                throw new ArgumentNullException(nameof(connection));
-            }
-
-            _connection = connection;
-            _shouldCleanupConnection = false;
         }
 
-        public SqlXmlUndeclaredParameterDeterminer(
-            string connectionString
-            )
-        {
-            if (connectionString == null)
-            {
-                throw new ArgumentNullException(nameof(connectionString));
-            }
-
-            _connection = SqlServerHelper.CreateAndConnect(connectionString);
-            _shouldCleanupConnection = true;
-        }
-
-        public bool TryToDetermineParameters(
-            string innerSql,
-            out IReadOnlyDictionary<string, string> result
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public async Task<(bool, IReadOnlyDictionary<string, string>)> TryToDetermineParametersAsync(
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+            string innerSql
             )
         {
             if (innerSql == null)
@@ -57,9 +35,7 @@ namespace SqlServerValidator.UndeclaredDeterminer
                     dict.Add(variableName, "int");
                 }
 
-                result = dict;
-                return
-                    true;
+                return (true, dict);
             }
             catch (Exception excp)
             {
@@ -67,46 +43,12 @@ namespace SqlServerValidator.UndeclaredDeterminer
                 Debug.WriteLine(excp.StackTrace);
             }
 
-            result = null;
-            return
-                false;
+            return (false, null);
         }
 
 
         public void Dispose()
         {
-            if (_shouldCleanupConnection)
-            {
-                _connection.Close();
-                _connection.Dispose();
-            }
-        }
-
-
-
-
-        private string FilterType(
-            string type
-            )
-        {
-            if (StringComparer.InvariantCultureIgnoreCase.Compare(type, "ntext") == 0)
-            {
-                return
-                    "varchar(10)";
-            }
-            if (StringComparer.InvariantCultureIgnoreCase.Compare(type, "text") == 0)
-            {
-                return
-                    "varchar(10)";
-            }
-            if (StringComparer.InvariantCultureIgnoreCase.Compare(type, "image") == 0)
-            {
-                return
-                    "varbinary(10)";
-            }
-
-            return
-                type;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Main.Sql;
 using Main.Sql.ConnectionString;
 
@@ -57,38 +58,36 @@ namespace SqliteValidator.Executor
                 );
         }
 
-        public bool CheckForConnectionExists(out string errorMessage)
+        public async Task<(bool, string)> CheckForConnectionExistsAsync()
         {
             try
             {
                 if (!_connectionStringContainer.TryGetParameter(PasswordKey, out var password))
                 {
-                    errorMessage = $"No password parameter provided. Provide parameter with name {PasswordKey} and leave it empty";
-                    return false;
+                    var errorMessage = $"No password parameter provided. Provide parameter with name {PasswordKey} and leave it empty";
+                    return (false, errorMessage);
                 }
                 if (!_connectionStringContainer.TryGetParameter(CaseSensitiveKey, out var caseSensitiveString))
                 {
-                    errorMessage = $"No case sensitive parameter provided. Provide parameter with name {CaseSensitiveKey} and set its value";
-                    return false;
+                    var errorMessage = $"No case sensitive parameter provided. Provide parameter with name {CaseSensitiveKey} and set its value";
+                    return (false, errorMessage);
                 }
                 if (!bool.TryParse(caseSensitiveString, out var caseSensitive))
                 {
-                    errorMessage = $"Case sensitive parameter should be True or False";
-                    return false;
+                    var errorMessage = $"Case sensitive parameter should be True or False";
+                    return (false, errorMessage);
                 }
 
-                using (SqliteExecutor.CreateAndConnect(_connectionStringContainer.GetConnectionString(), password, caseSensitive))
+                using (await SqliteExecutor.CreateAndConnectAsync(_connectionStringContainer.GetConnectionString(), password, caseSensitive))
                 {
 
                 }
 
-                errorMessage = string.Empty;
-                return true;
+                return (true, string.Empty);
             }
             catch (Exception excp)
             {
-                errorMessage = excp.Message;
-                return false;
+                return (false, excp.Message);
             }
         }
 

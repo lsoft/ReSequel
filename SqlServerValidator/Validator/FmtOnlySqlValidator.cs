@@ -2,6 +2,7 @@ using System;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Text;
+using System.Threading.Tasks;
 using Main.Sql;
 using SqlServerValidator.UndeclaredDeterminer;
 
@@ -37,14 +38,14 @@ set fmtonly off
             _connection = connection;
         }
 
-        public bool TryCalculateRowCount(string sql, out int rowRead)
+        public async Task<(bool, int)> TryCalculateRowCountAsync(string sql)
         {
             if (sql is null)
             {
                 throw new ArgumentNullException(nameof(sql));
             }
 
-            rowRead = 0;
+            var rowRead = 0;
 
             try
             {
@@ -53,7 +54,7 @@ set fmtonly off
                     cmd.CommandText = sql;
                     cmd.CommandTimeout = 5;
 
-                    using (var reader = cmd.ExecuteReader())
+                    using (var reader = await cmd.ExecuteReaderAsync())
                     {
                         while (reader.Read())
                         {
@@ -61,7 +62,7 @@ set fmtonly off
                         }
                     }
 
-                    return true;
+                    return (true, rowRead);
                 }
             }
             catch (Exception excp)
@@ -70,19 +71,17 @@ set fmtonly off
                 Debug.WriteLine(excp.StackTrace);
             }
 
-            rowRead = 0;
-            return false;
+            return (false, 0);
         }
 
 
-        public bool TryCheckSql(
-            string innerSql,
-            out string errorMessage
+        public async Task<(bool, string)> TryCheckSqlAsync(
+            string innerSql
             )
         {
             try
             {
-                var declarationBlock = BuildVariableDeclarationBlock(
+                var declarationBlock = await BuildVariableDeclarationBlockAsync(
                     innerSql
                     );
 
@@ -96,21 +95,18 @@ set fmtonly off
 
                     using (var reader = cmd.ExecuteReader())
                     {
-                        errorMessage = string.Empty;
-                        return true;
+                        return (true, string.Empty);
                     }
 
                 }
             }
             catch (Exception excp)
             {
-                errorMessage = excp.Message;
+                return (false, excp.Message);
             }
-
-            return false;
         }
 
-        private string BuildVariableDeclarationBlock(
+        private async Task<string> BuildVariableDeclarationBlockAsync(
             string innerSql
             )
         {
@@ -123,9 +119,10 @@ set fmtonly off
 
             using (var determiner = _undeclaredParameterDeterminerFactory.Create(_connection))
             {
-                if (determiner.TryToDetermineParameters(innerSql, out var dict))
+                var dr = await determiner.TryToDetermineParametersAsync(innerSql);
+                if (dr.Item1)
                 {
-                    foreach (var pair in dict)
+                    foreach (var pair in dr.Item2)
                     {
                         var name = pair.Key;
                         var type = pair.Value;

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Main.Sql.ConnectionString;
 
 namespace Main.Sql
@@ -38,11 +39,11 @@ namespace Main.Sql
             return result;
         }
 
-        public bool CheckForConnectionExists(out string errorMessage)
+        public async Task<(bool, string)> CheckForConnectionExistsAsync()
         {
             var factory = GetFactory();
 
-            var result = factory.CheckForConnectionExists(out errorMessage);
+            var result = await factory.CheckForConnectionExistsAsync();
 
             return result;
         }

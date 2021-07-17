@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace SqlServerValidator.UndeclaredDeterminer
 {
@@ -36,9 +37,8 @@ namespace SqlServerValidator.UndeclaredDeterminer
             _shouldCleanupConnection = true;
         }
 
-        public bool TryToDetermineParameters(
-            string innerSql,
-            out IReadOnlyDictionary<string, string> result
+        public async Task<(bool, IReadOnlyDictionary<string, string>)> TryToDetermineParametersAsync(
+            string innerSql
             )
         {
             if (innerSql == null)
@@ -63,9 +63,9 @@ execute sp_describe_undeclared_parameters @tsql = N'
                     command.CommandText = sql;
                     command.CommandTimeout = 10;
 
-                    using (var reader = command.ExecuteReader())
+                    using (var reader = await command.ExecuteReaderAsync())
                     {
-                        while (reader.Read())
+                        while (await reader.ReadAsync())
                         {
                             var name = (string) reader["name"];
                             var type = (string) reader["suggested_system_type_name"];
@@ -78,9 +78,7 @@ execute sp_describe_undeclared_parameters @tsql = N'
                     }
                 }
 
-                result = dict;
-                return
-                    true;
+                return (true, dict);
             }
             catch (Exception excp)
             {
@@ -88,9 +86,7 @@ execute sp_describe_undeclared_parameters @tsql = N'
                 Debug.WriteLine(excp.StackTrace);
             }
 
-            result = null;
-            return
-                false;
+            return (false, null);
         }
 
 
@@ -102,8 +98,6 @@ execute sp_describe_undeclared_parameters @tsql = N'
                 _connection.Dispose();
             }
         }
-
-
 
 
         private string FilterType(

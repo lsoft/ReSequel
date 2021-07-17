@@ -75,10 +75,10 @@ namespace Tests.Fixture
                 status
                 );
 
-            validator.Validate(
+            validator.ValidateAsync(
                 validationInclusionList,
                 () => false
-                );
+                ).GetAwaiter().GetResult();
 
             return
                 validationInclusionList[0];
@@ -118,10 +118,10 @@ namespace Tests.Fixture
                 status
             );
 
-            validator.Validate(
+            validator.ValidateAsync(
                 validationInclusionList,
                 () => false
-            );
+                ).GetAwaiter().GetResult();
 
             return
                 validationInclusionList[0];

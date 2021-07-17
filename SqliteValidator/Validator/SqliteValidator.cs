@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.Common;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Main.Sql;
 using Microsoft.Data.Sqlite;
 
@@ -17,14 +18,14 @@ namespace SqliteValidator.Validator
             _connection = connection ?? throw new ArgumentNullException(nameof(connection));
         }
 
-        public bool TryCalculateRowCount(string sql, out int rowRead)
+        public async Task<(bool, int)> TryCalculateRowCountAsync(string sql)
         {
             if (sql is null)
             {
                 throw new ArgumentNullException(nameof(sql));
             }
 
-            rowRead = 0;
+            var rowRead = 0;
 
             try
             {
@@ -33,7 +34,7 @@ namespace SqliteValidator.Validator
                     cmd.CommandText = sql;
                     cmd.CommandTimeout = 5;
 
-                    using (var reader = cmd.ExecuteReader())
+                    using (var reader = await cmd.ExecuteReaderAsync())
                     {
                         while (reader.Read())
                         {
@@ -41,7 +42,7 @@ namespace SqliteValidator.Validator
                         }
                     }
 
-                    return true;
+                    return (true, rowRead);
                 }
             }
             catch (Exception excp)
@@ -50,14 +51,12 @@ namespace SqliteValidator.Validator
                 Debug.WriteLine(excp.StackTrace);
             }
 
-            rowRead = 0;
-            return false;
+            return (false, 0);
         }
 
 
-        public bool TryCheckSql(
-            string innerSql, 
-            out string errorMessage
+        public async Task<(bool, string)> TryCheckSqlAsync(
+            string innerSql
             )
         {
             try
@@ -73,19 +72,15 @@ namespace SqliteValidator.Validator
                     lCommand.AddDummyParameters();
 
                     command.CommandTimeout = 5;
-                    command.ExecuteNonQuery();
+                    await command.ExecuteNonQueryAsync();
                 }
 
-                errorMessage = string.Empty;
-
-                return true;
+                return (true, string.Empty);
             }
             catch (Exception excp)
             {
-                errorMessage = excp.Message;
+                return (false, excp.Message);
             }
-
-            return false;
         }
     }
 }

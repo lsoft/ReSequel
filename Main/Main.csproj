@@ -57,6 +57,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helper\AsyncHelper.cs" />
     <Compile Include="Helper\ExceptionHelper.cs" />
     <Compile Include="Helper\RegExHelper.cs" />
     <Compile Include="Helper\SqlHelper.cs" />
